@@ -1,0 +1,204 @@
+<!-- DASHBOARD RECEPCIONISTA — Stitch design -->
+<div class="dash-page">
+
+  <!-- Quick Actions -->
+  <div class="dash-quick-actions">
+    <button class="hs-quick-btn" (click)="showNuevaReserva = true" title="Nueva Reserva">
+      <span class="material-symbols-outlined">calendar_month</span>
+      <span class="label">Reservas</span>
+    </button>
+    <button class="hs-quick-btn" (click)="showCheckIn = true" title="Check-in">
+      <span class="material-symbols-outlined">key</span>
+      <span class="label">Check-in</span>
+    </button>
+    <button class="hs-quick-btn" (click)="showCheckOut = true" title="Check-out">
+      <span class="material-symbols-outlined">logout</span>
+      <span class="label">Check-out</span>
+    </button>
+    <button class="hs-quick-btn" (click)="showPagos = true" title="Pagos">
+      <span class="material-symbols-outlined">payments</span>
+      <span class="label">Pagos</span>
+    </button>
+    <button class="hs-quick-btn" (click)="irALimpieza()" title="Limpieza">
+      <span class="material-symbols-outlined">cleaning_services</span>
+      <span class="label">Limpieza</span>
+    </button>
+  </div>
+
+  <!-- Room Map -->
+  <section class="dash-section">
+    <div class="dash-section__header">
+      <h2 class="dash-section__title">
+        <span class="material-symbols-outlined">map</span>
+        MAPA DE HABITACIONES
+      </h2>
+      <div class="dash-legend">
+        <div class="dash-legend__item">
+          <span class="dash-legend__dot" style="background:var(--clr-status-available)"></span>
+          <span>Disponible</span>
+        </div>
+        <div class="dash-legend__item">
+          <span class="dash-legend__dot" style="background:var(--clr-status-occupied)"></span>
+          <span>Ocupada</span>
+        </div>
+        <div class="dash-legend__item">
+          <span class="dash-legend__dot" style="background:var(--clr-status-dirty)"></span>
+          <span>Limpieza</span>
+        </div>
+        <div class="dash-legend__item">
+          <span class="dash-legend__dot" style="background:var(--clr-status-maintenance)"></span>
+          <span>Mantenimiento</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floor rows -->
+    <div class="dash-floors">
+      @for (piso of pisos; track piso.numero) {
+        <div class="dash-floor">
+          <div class="dash-floor__label">
+            <span>PISO {{ piso.numero }}</span>
+          </div>
+          <div class="dash-floor__rooms">
+            @for (hab of piso.habitaciones; track hab.numero) {
+              <div class="hs-room-card"
+                   [class.available]="hab.estado === 'DISPONIBLE'"
+                   [class.occupied]="hab.estado === 'OCUPADA'"
+                   [class.dirty]="hab.estado === 'LIMPIEZA'"
+                   [class.maintenance]="hab.estado === 'MANTENIMIENTO'">
+                <div class="hs-room-card__header"
+                     [class.available]="hab.estado === 'DISPONIBLE'"
+                     [class.occupied]="hab.estado === 'OCUPADA'"
+                     [class.dirty]="hab.estado === 'LIMPIEZA'"
+                     [class.maintenance]="hab.estado === 'MANTENIMIENTO'">
+                  <span style="font-weight:800;font-size:14px">{{ hab.numero }}</span>
+                  <span class="material-symbols-outlined filled-icon" style="font-size:16px">
+                    {{ hab.estado === 'DISPONIBLE' ? 'check_circle' : hab.estado === 'OCUPADA' ? 'person' : hab.estado === 'LIMPIEZA' ? 'cleaning_services' : 'engineering' }}
+                  </span>
+                </div>
+                <div class="hs-room-card__body">
+                  <div class="text-label-caps" style="color:var(--clr-on-surface-variant);opacity:0.7;margin-bottom:2px;font-size:11px">{{ hab.tipo }}</div>
+                  <div class="text-label-caps" [style.color]="getRoomStatusColor(hab.estado)">
+                    {{ getHuespedNombre(hab) || hab.estado }}
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      } @empty {
+        <div class="dash-empty">
+          <span class="material-symbols-outlined" style="font-size:32px;opacity:0.4">bed</span>
+          <span>Cargando habitaciones...</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Bottom: Reservas + Hospedajes -->
+  <div class="dash-bottom-grid">
+
+    <!-- Reservas del día -->
+    <div class="hs-card">
+      <div class="hs-card-header">
+        <h3 class="text-title-sm" style="color:var(--clr-primary);display:flex;align-items:center;gap:6px">
+          <span class="material-symbols-outlined" style="color:var(--clr-secondary)">event_available</span>
+          RESERVAS DEL DÍA
+        </h3>
+        <span class="badge badge-info">{{ reservasDelDia.length }}</span>
+      </div>
+      <div class="hs-card-body" style="padding:0">
+        @if (reservasDelDia.length > 0) {
+          <table class="hs-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Hab.</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of reservasDelDia; track r.id) {
+                <tr>
+                  <td class="text-body-md">{{ r.clienteNombre }}</td>
+                  <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ r.habitacionNumero || '-' }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="getReservaStatusClass(r.estado)">{{ r.estado }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="dash-empty-row">
+            <span class="material-symbols-outlined">check_circle</span>
+            No hay reservas para hoy
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Hospedajes activos -->
+    <div class="hs-card">
+      <div class="hs-card-header">
+        <h3 class="text-title-sm" style="color:var(--clr-primary);display:flex;align-items:center;gap:6px">
+          <span class="material-symbols-outlined" style="color:var(--clr-secondary)">hotel</span>
+          HOSPEDAJES ACTIVOS
+        </h3>
+        <span class="badge badge-active">{{ hospedajesActivos.length }}</span>
+      </div>
+      <div class="hs-card-body" style="padding:0">
+        @if (hospedajesActivos.length > 0) {
+          <table class="hs-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Hab.</th>
+                <th>Checkout</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (h of hospedajesActivos; track h.id) {
+                <tr>
+                  <td class="text-body-md">{{ h.clienteNombre }}</td>
+                  <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ h.habitacionNumero }}</td>
+                  <td class="text-data-tabular">{{ h.fechaSalidaProgramada | date:'dd/MM HH:mm' }}</td>
+                  <td>
+                    <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="showCheckOut = true">
+                      CHECK-OUT
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="dash-empty-row">
+            <span class="material-symbols-outlined">inbox</span>
+            No hay huéspedes activos
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modales (lógica existente conservada) -->
+@if (showNuevaReserva) {
+  <app-nueva-reserva [visible]="showNuevaReserva"
+    (close)="showNuevaReserva = false; cargarDatos()"></app-nueva-reserva>
+}
+@if (showCheckIn) {
+  <app-checkin [visible]="showCheckIn"
+    (close)="showCheckIn = false; cargarDatos()"></app-checkin>
+}
+@if (showCheckOut) {
+  <app-checkout [visible]="showCheckOut"
+    (close)="showCheckOut = false; cargarDatos()"></app-checkout>
+}
+@if (showPagos) {
+  <app-pagos-modal [visible]="showPagos"
+    (close)="showPagos = false; cargarDatos()"></app-pagos-modal>
+}

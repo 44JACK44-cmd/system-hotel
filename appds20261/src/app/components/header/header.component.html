@@ -1,0 +1,36 @@
+<header class="hs-topbar">
+  <div class="hs-topbar__left">
+    <span class="hs-topbar__brand">HOTEL SYSTEM</span>
+    <div class="hs-topbar__meta">
+      <span class="hs-topbar__branch">Abancay, Peru</span>
+      <span class="hs-topbar__datetime">{{ fechaHoraActual() }}</span>
+    </div>
+  </div>
+
+  <div class="hs-topbar__right">
+    <div class="hs-topbar__actions">
+      <button class="hs-topbar__icon-btn" title="Notificaciones" aria-label="Notificaciones">
+        <span class="material-symbols-outlined">notifications</span>
+      </button>
+      <button class="hs-topbar__icon-btn" title="Ayuda" aria-label="Ayuda">
+        <span class="material-symbols-outlined">help</span>
+      </button>
+      <button class="hs-topbar__icon-btn" title="Configuración" aria-label="Configuración">
+        <span class="material-symbols-outlined">settings</span>
+      </button>
+    </div>
+
+    <div class="hs-topbar__user">
+      <div class="hs-topbar__user-info">
+        <span class="hs-topbar__user-name">{{ nombreUsuario }}</span>
+        <span class="hs-topbar__user-role">{{ rolLabel }}</span>
+      </div>
+      <div class="hs-topbar__avatar" [title]="nombreUsuario">
+        {{ iniciales }}
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="logout()" title="Cerrar sesión" aria-label="Cerrar sesión">
+        <span class="material-symbols-outlined">logout</span>
+      </button>
+    </div>
+  </div>
+</header>

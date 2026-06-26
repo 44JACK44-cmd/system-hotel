@@ -1,0 +1,232 @@
+<!-- CLIENTES — Hospitality Precision design -->
+<div class="cli-page">
+
+  <!-- Page header -->
+  <div class="cli-page__header">
+    <div>
+      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Directorio de Clientes</h1>
+      <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
+        Administra y revisa la base de datos de huéspedes global.
+      </p>
+    </div>
+    <button class="hs-btn hs-btn-primary" (click)="showDialog()">
+      <span class="material-symbols-outlined">add</span>
+      Nuevo Cliente
+    </button>
+  </div>
+
+  <!-- Search + filters -->
+  <div class="hs-card" style="padding:16px">
+    <div style="display:flex;gap:12px;align-items:flex-end">
+      <div class="hs-field" style="flex:1">
+        <label class="hs-label">Búsqueda Rápida</label>
+        <div class="hs-input-icon">
+          <span class="material-symbols-outlined">search</span>
+          <input class="hs-input" type="text" placeholder="Buscar por nombre, teléfono o documento..."
+            [(ngModel)]="searchTerm" (input)="search()" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p-toast />
+
+  <!-- Data Table -->
+  <div class="hs-card" style="overflow:hidden">
+    <table class="hs-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Teléfono</th>
+          <th>Documento</th>
+          <th>Email</th>
+          <th style="text-align:right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of clientes; track c.id) {
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="cli-avatar">{{ c.nombreCompleto | slice:0:1 }}</div>
+                <span class="text-body-md" style="font-weight:600">{{ c.nombreCompleto }}</span>
+              </div>
+            </td>
+            <td class="text-body-md">{{ c.telefono }}</td>
+            <td class="text-data-tabular">{{ c.documento || '-' }}</td>
+            <td class="text-body-md" style="color:var(--clr-on-surface-variant)">{{ c.email || '-' }}</td>
+            <td style="text-align:right">
+              <div style="display:flex;gap:4px;justify-content:flex-end">
+                <button class="cli-action-btn cli-action-btn--edit" (click)="editCliente(c)" title="Editar">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button class="cli-action-btn cli-action-btn--history" (click)="showHistorial(c)" title="Historial">
+                  <span class="material-symbols-outlined">history</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+              No hay clientes registrados.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <div style="padding:12px 16px;background:var(--clr-surface-container-low);border-top:1px solid var(--clr-outline-variant);font-size:12px;color:var(--clr-on-surface-variant)">
+      Mostrando {{ clientes.length }} cliente(s)
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ SLIDE PANEL: Crear / Editar ============ -->
+@if (dialogVisible) {
+  <div class="hs-overlay" (click)="dialogVisible = false"></div>
+  <div class="hs-slide-panel">
+
+    <div class="hs-slide-panel__header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="material-symbols-outlined">{{ editing ? 'edit' : 'person_add' }}</span>
+        <span style="font-weight:700;font-size:16px">{{ editing ? 'Editar Cliente' : 'Nuevo Cliente' }}</span>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="dialogVisible = false">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="hs-slide-panel__body">
+      <form [formGroup]="clienteForm" style="display:flex;flex-direction:column;gap:16px">
+
+        <div class="hs-field">
+          <label class="hs-label">Nombre Completo</label>
+          <div class="hs-input-icon">
+            <span class="material-symbols-outlined">person</span>
+            <input class="hs-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan Pérez" />
+          </div>
+        </div>
+
+        <div class="hs-field">
+          <label class="hs-label">Teléfono</label>
+          <div class="hs-input-icon">
+            <span class="material-symbols-outlined">phone</span>
+            <input class="hs-input" type="text" formControlName="telefono" placeholder="999 888 777" />
+          </div>
+        </div>
+
+        <div class="hs-field">
+          <label class="hs-label">Documento (opcional)</label>
+          <div class="hs-input-icon">
+            <span class="material-symbols-outlined">badge</span>
+            <input class="hs-input" type="text" formControlName="documento" placeholder="DNI / Pasaporte" />
+          </div>
+        </div>
+
+        <div class="hs-field">
+          <label class="hs-label">Email (opcional)</label>
+          <div class="hs-input-icon">
+            <span class="material-symbols-outlined">mail</span>
+            <input class="hs-input" type="email" formControlName="email" placeholder="cliente@correo.com" />
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="hs-slide-panel__footer">
+      <button class="hs-btn hs-btn-outline" style="flex:1" (click)="dialogVisible = false">
+        Cancelar
+      </button>
+      <button class="hs-btn hs-btn-primary" style="flex:1"
+        [disabled]="clienteForm.invalid || loading" (click)="save()">
+        @if (loading) {
+          <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+        }
+        {{ editing ? 'Guardar Cambios' : 'Crear Cliente' }}
+      </button>
+    </div>
+
+  </div>
+}
+
+<!-- ============ SLIDE PANEL: Historial ============ -->
+@if (historialVisible) {
+  <div class="hs-overlay" (click)="historialVisible = false; selectedCliente = null"></div>
+  <div class="hs-slide-panel" style="max-width:520px">
+
+  <div class="hs-slide-panel__header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="material-symbols-outlined">history</span>
+      <span style="font-weight:700;font-size:16px">Historial — {{ selectedCliente?.nombreCompleto }}</span>
+    </div>
+    <button class="hs-topbar__icon-btn" (click)="historialVisible = false; selectedCliente = null">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  <div class="hs-slide-panel__body">
+    <!-- Tabs -->
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--clr-outline-variant);margin-bottom:16px">
+      <button class="cli-tab" [class.cli-tab--active]="historialTab === '0'" (click)="historialTab = '0'">
+        <span class="material-symbols-outlined">event</span>
+        Reservas
+      </button>
+      <button class="cli-tab" [class.cli-tab--active]="historialTab === '1'" (click)="historialTab = '1'">
+        <span class="material-symbols-outlined">hotel</span>
+        Hospedajes
+      </button>
+    </div>
+
+    <!-- Reservas historial -->
+    @if (historialTab === '0') {
+      @for (r of historialReservas; track $index) {
+        <div class="cli-history-item">
+          <div class="cli-history-item__icon" style="background:rgba(5,93,182,0.1)">
+            <span class="material-symbols-outlined" style="color:var(--clr-secondary)">event</span>
+          </div>
+          <div style="flex:1">
+            <div class="text-body-md" style="font-weight:600">Hab. {{ r.habitacionNumero }}</div>
+            <div class="text-data-tabular" style="color:var(--clr-on-surface-variant)">
+              {{ r.fechaEntrada | date:'dd/MM/yy' }} — {{ r.fechaSalida | date:'dd/MM/yy' }}
+            </div>
+          </div>
+          <span class="badge" [ngClass]="r.estado === 'CONFIRMADA' ? 'badge-confirmed' : r.estado === 'CANCELADA' ? 'badge-cancelled' : 'badge-info'">{{ r.estado }}</span>
+        </div>
+      } @empty {
+        <div style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">
+          Sin reservas registradas.
+        </div>
+      }
+    }
+
+    <!-- Hospedajes historial -->
+    @if (historialTab === '1') {
+      @for (h of historialHospedajes; track $index) {
+        <div class="cli-history-item">
+          <div class="cli-history-item__icon" style="background:rgba(67,160,71,0.1)">
+            <span class="material-symbols-outlined" style="color:var(--clr-status-available)">hotel</span>
+          </div>
+          <div style="flex:1">
+            <div class="text-body-md" style="font-weight:600">Hab. {{ h.habitacionNumero }}</div>
+            <div class="text-data-tabular" style="color:var(--clr-on-surface-variant)">
+              {{ h.fechaIngreso | date:'dd/MM/yy' }} — {{ h.fechaSalidaReal ? (h.fechaSalidaReal | date:'dd/MM/yy') : 'En curso' }}
+            </div>
+          </div>
+          <span class="badge" [ngClass]="h.estado === 'ACTIVO' ? 'badge-active' : h.estado === 'FINALIZADO' ? 'badge-completed' : 'badge-info'">{{ h.estado }}</span>
+        </div>
+      } @empty {
+        <div style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">
+          Sin hospedajes registrados.
+        </div>
+      }
+    }
+  </div>
+
+</div>
+}
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>

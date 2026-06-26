@@ -1,0 +1,259 @@
+<!-- REPORTES — Hospitality Precision design -->
+<div class="rep-page">
+
+  <!-- Page header -->
+  <div class="rep-page__header">
+    <div>
+      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Reportes y Analítica</h1>
+      <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
+        Visualiza ingresos, ocupación y métricas operativas.
+      </p>
+    </div>
+  </div>
+
+  <p-toast />
+
+  <!-- KPI grid -->
+  <div class="rep-kpi-grid">
+
+    <!-- Ingresos -->
+    <div class="hs-kpi" style="grid-column:span 2">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="hs-kpi__icon" style="background:rgba(5,93,182,0.1)">
+          <span class="material-symbols-outlined" style="color:var(--clr-secondary)">payments</span>
+        </div>
+        <span class="badge badge-success">S/ {{ ingresos?.total || '0.00' }}</span>
+      </div>
+      <div style="margin-top:12px">
+        <div class="hs-kpi__label">Ingresos Totales</div>
+        <div class="hs-kpi__value" style="font-size:24px">S/ {{ ingresos?.total || '0.00' }}</div>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:var(--clr-on-surface-variant)">
+        <span>Adelantos: S/ {{ ingresos?.totalAdelantos || '0.00' }}</span>
+        <span>Saldos: S/ {{ ingresos?.totalSaldos || '0.00' }}</span>
+        <span>Ext.: S/ {{ ingresos?.totalExtensiones || '0.00' }}</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <div class="rep-date-field">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <input class="hs-input" type="date" [(ngModel)]="ingresoInicio" />
+        </div>
+        <span style="color:var(--clr-outline);align-self:center">—</span>
+        <div class="rep-date-field">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <input class="hs-input" type="date" [(ngModel)]="ingresoFin" />
+        </div>
+        <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="loadIngresos()">
+          <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Ocupación -->
+    <div class="hs-kpi">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="hs-kpi__icon" style="background:rgba(67,160,71,0.1)">
+          <span class="material-symbols-outlined" style="color:var(--clr-status-available)">bed</span>
+        </div>
+        @if (ocupacion) {
+          <span class="badge badge-active">{{ ocupacion.porcentajeOcupacion }}%</span>
+        }
+      </div>
+      <div style="margin-top:12px">
+        <div class="hs-kpi__label">Ocupación</div>
+        <div class="hs-kpi__value">{{ ocupacion?.porcentajeOcupacion || 0 }}%</div>
+        <div class="hs-progress" style="margin-top:8px">
+          <div class="hs-progress__fill" [style.width.%]="ocupacion?.porcentajeOcupacion || 0"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--clr-on-surface-variant)">
+          <span>Disp: {{ ocupacion?.disponibles || 0 }}</span>
+          <span>Ocup: {{ ocupacion?.ocupadas || 0 }}</span>
+          <span>Total: {{ ocupacion?.totalHabitaciones || 0 }}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <div class="rep-date-field" style="flex:1">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <input class="hs-input" type="date" [(ngModel)]="ocupacionFecha" />
+        </div>
+        <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="loadOcupacion()">
+          <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- No concretadas -->
+    <div class="hs-kpi">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="hs-kpi__icon" style="background:rgba(186,26,26,0.08)">
+          <span class="material-symbols-outlined" style="color:var(--clr-error)">cancelled</span>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="hs-kpi__label">No Concretadas</div>
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
+          <div><span style="font-weight:700">Canceladas:</span> {{ noConcretadas?.canceladas || 0 }}</div>
+          <div><span style="font-weight:700">No Show:</span> {{ noConcretadas?.noShow || 0 }}</div>
+          <div><span style="font-weight:700;color:var(--clr-error)">Perdido: S/ {{ noConcretadas?.totalAdelantoPerdido || '0.00' }}</span></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <div class="rep-date-field" style="flex:1">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <input class="hs-input" type="date" [(ngModel)]="noConcretadasInicio" />
+        </div>
+        <div class="rep-date-field" style="flex:1">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <input class="hs-input" type="date" [(ngModel)]="noConcretadasFin" />
+        </div>
+        <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="loadNoConcretadas()">
+          <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom section: 2 cols -->
+  <div class="rep-bottom-grid">
+
+    <!-- Historial de Incidencias -->
+    <div class="hs-card" style="overflow:hidden">
+      <div class="hs-card-header">
+        <h3 class="text-title-sm" style="color:var(--clr-primary);display:flex;align-items:center;gap:6px">
+          <span class="material-symbols-outlined" style="color:var(--clr-error)">cleaning_services</span>
+          Historial de Incidencias
+        </h3>
+        <div style="display:flex;gap:6px">
+          <button class="hs-btn hs-btn-sm hs-btn-outline" (click)="loadIncidencias()">
+            <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
+            Cargar
+          </button>
+          <button class="hs-btn hs-btn-sm hs-btn-outline" (click)="exportCSV(historialIncidencias, 'incidencias', ['habitacion','tipo','motivo','fechaInicio','duracionHoras'])">
+            <span class="material-symbols-outlined" style="font-size:16px">download</span>
+            CSV
+          </button>
+        </div>
+      </div>
+      <table class="hs-table">
+        <thead>
+          <tr><th>Habitación</th><th>Tipo</th><th>Motivo</th><th>Inicio</th><th>Duración</th></tr>
+        </thead>
+        <tbody>
+          @for (i of historialIncidencias; track $index) {
+            <tr>
+              <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ i.habitacion }}</td>
+              <td><span class="badge" [ngClass]="i.tipo === 'LIMPIEZA' ? 'badge-dirty' : 'badge-maintenance'">{{ i.tipo }}</span></td>
+              <td class="text-body-md">{{ i.motivo }}</td>
+              <td class="text-data-tabular">{{ i.fechaInicio | date:'short' }}</td>
+              <td class="text-data-tabular">{{ i.duracionHoras != null ? i.duracionHoras + 'h' : 'En curso' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">Cargue el historial para ver datos.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Ranking de Habitaciones -->
+    <div class="hs-card" style="overflow:hidden">
+      <div class="hs-card-header">
+        <h3 class="text-title-sm" style="color:var(--clr-primary);display:flex;align-items:center;gap:6px">
+          <span class="material-symbols-outlined" style="color:var(--clr-secondary)">leaderboard</span>
+          Ranking de Habitaciones
+        </h3>
+        <div style="display:flex;gap:6px">
+          <button class="hs-btn hs-btn-sm hs-btn-outline" (click)="loadRanking()">
+            <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
+            Cargar
+          </button>
+          <button class="hs-btn hs-btn-sm hs-btn-outline" (click)="exportCSV(ranking, 'ranking-habitaciones', ['numero','tipo','vecesReservada','ingresoGenerado'])">
+            <span class="material-symbols-outlined" style="font-size:16px">download</span>
+            CSV
+          </button>
+        </div>
+      </div>
+      <table class="hs-table">
+        <thead>
+          <tr><th>#</th><th>Habitación</th><th>Tipo</th><th>Veces Reservada</th><th>Ingreso Generado</th></tr>
+        </thead>
+        <tbody>
+          @for (r of ranking; track $index; let i = $index) {
+            <tr>
+              <td class="text-data-tabular" style="font-weight:700;color:var(--clr-on-surface-variant)">{{ i + 1 }}</td>
+              <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ r.numero }}</td>
+              <td class="text-body-md">{{ r.tipo }}</td>
+              <td class="text-data-tabular">{{ r.vecesReservada }}</td>
+              <td class="text-data-tabular" style="font-weight:600">S/ {{ r.ingresoGenerado }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">Cargue el ranking para ver datos.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+.rep-page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--clr-background);
+  min-height: calc(100vh - 64px);
+}
+.rep-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.rep-kpi-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .rep-kpi-grid { grid-template-columns: 1fr 1fr; }
+  .rep-kpi-grid > :first-child { grid-column: span 2; }
+}
+@media (max-width: 600px) {
+  .rep-kpi-grid { grid-template-columns: 1fr; }
+  .rep-kpi-grid > :first-child { grid-column: span 1; }
+}
+
+.rep-date-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+.rep-date-field .material-symbols-outlined {
+  font-size: 18px;
+  color: var(--clr-outline);
+  flex-shrink: 0;
+}
+.rep-date-field .hs-input {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.rep-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .rep-bottom-grid { grid-template-columns: 1fr; }
+}
+</style>

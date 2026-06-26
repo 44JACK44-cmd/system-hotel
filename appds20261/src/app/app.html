@@ -1,0 +1,44 @@
+<div class="hs-shell">
+  @if (!isPublicPage()) {
+    <app-header />
+  }
+
+  <div class="hs-body">
+    @if (!isPublicPage()) {
+      <app-sidebar />
+    }
+
+    <main class="hs-main">
+      <router-outlet />
+    </main>
+  </div>
+
+  @if (!isPublicPage()) {
+    <nav class="hs-bottom-nav" role="navigation" aria-label="Navegación móvil">
+      <a class="hs-bottom-nav__item"
+         [class.active]="isActiveRoute(dashboardRoute)"
+         [routerLink]="dashboardRoute">
+        <span class="material-symbols-outlined">concierge</span>
+        <span class="nav-label">Inicio</span>
+      </a>
+      <a class="hs-bottom-nav__item"
+         [class.active]="isActiveRoute('/recepcion/reservas')"
+         routerLink="/recepcion/reservas">
+        <span class="material-symbols-outlined">calendar_month</span>
+        <span class="nav-label">Reservas</span>
+      </a>
+      <a class="hs-bottom-nav__item"
+         [class.active]="isActiveRoute('/recepcion/clientes')"
+         routerLink="/recepcion/clientes">
+        <span class="material-symbols-outlined">group</span>
+        <span class="nav-label">Clientes</span>
+      </a>
+      <a class="hs-bottom-nav__item"
+         [class.active]="isActiveRoute('/recepcion/pagos')"
+         routerLink="/recepcion/pagos">
+        <span class="material-symbols-outlined">payments</span>
+        <span class="nav-label">Caja</span>
+      </a>
+    </nav>
+  }
+</div>

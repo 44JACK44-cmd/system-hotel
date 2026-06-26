@@ -1,0 +1,92 @@
+.hab-page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--clr-background);
+  min-height: calc(100vh - 64px);
+}
+.hab-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.hab-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 12px;
+  align-items: flex-end;
+}
+@media (max-width: 768px) {
+  .hab-filters { grid-template-columns: 1fr 1fr; }
+  .hab-filters > :last-child { grid-column: span 2; }
+}
+
+/* Action buttons */
+.hab-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.hab-action-btn .material-symbols-outlined { font-size: 18px; }
+.hab-action-btn--edit { background:rgba(5,93,182,0.08); color:var(--clr-secondary); }
+.hab-action-btn--edit:hover { background:rgba(5,93,182,0.16); }
+.hab-action-btn--status { background:rgba(70,95,136,0.1); color:var(--clr-surface-tint); }
+.hab-action-btn--status:hover { background:rgba(70,95,136,0.2); }
+.hab-action-btn--delete { background:rgba(186,26,26,0.08); color:var(--clr-error); }
+.hab-action-btn--delete:hover { background:rgba(186,26,26,0.15); }
+
+/* Status change grid */
+.hab-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.hab-status-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  transition: all 0.15s;
+  color: white;
+}
+.hab-status-btn .material-symbols-outlined { font-size: 24px; }
+.hab-status-btn--available { background: var(--clr-status-available); }
+.hab-status-btn--available:hover { filter: brightness(1.1); }
+.hab-status-btn--occupied  { background: var(--clr-status-occupied); }
+.hab-status-btn--occupied:hover { filter: brightness(1.1); }
+.hab-status-btn--dirty     { background: var(--clr-status-dirty); color: #1a1b1e; }
+.hab-status-btn--dirty:hover { filter: brightness(1.05); }
+.hab-status-btn--maintenance { background: var(--clr-status-maintenance); }
+.hab-status-btn--maintenance:hover { filter: brightness(1.1); }
+
+/* Reuse topbar icon btn style inside panels */
+.hs-topbar__icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  color: rgba(255,255,255,0.8);
+  transition: background 0.15s;
+}
+.hs-topbar__icon-btn:hover { background: rgba(255,255,255,0.15); color: white; }

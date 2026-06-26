@@ -1,0 +1,29 @@
+.pag-page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--clr-background);
+  min-height: calc(100vh - 64px);
+}
+.pag-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Reuse topbar icon btn */
+.hs-topbar__icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  color: rgba(255,255,255,0.8);
+  transition: background 0.15s;
+}
+.hs-topbar__icon-btn:hover { background: rgba(255,255,255,0.15); color: white; }

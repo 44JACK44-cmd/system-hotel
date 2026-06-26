@@ -1,0 +1,82 @@
+.usr-page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--clr-background);
+  min-height: calc(100vh - 64px);
+}
+.usr-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Stats grid */
+.usr-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .usr-stats { grid-template-columns: repeat(2, 1fr); }
+}
+.usr-stat-card {
+  background: var(--clr-surface-container-lowest);
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: var(--radius-xl);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* Avatar circle */
+.usr-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--clr-secondary-fixed);
+  color: var(--clr-on-secondary-fixed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Action buttons */
+.usr-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5,93,182,0.08);
+  color: var(--clr-secondary);
+  transition: background 0.15s;
+}
+.usr-action-btn .material-symbols-outlined { font-size: 18px; }
+.usr-action-btn:hover { background: rgba(5,93,182,0.16); }
+
+/* Reuse topbar icon btn */
+.hs-topbar__icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  color: rgba(255,255,255,0.8);
+  transition: background 0.15s;
+}
+.hs-topbar__icon-btn:hover { background: rgba(255,255,255,0.15); color: white; }

@@ -1,0 +1,264 @@
+<!-- RESERVAS — Hospitality Precision design -->
+<div class="res-page">
+
+  <!-- Page header -->
+  <div class="res-page__header">
+    <div>
+      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Gestión de Reservas</h1>
+      <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
+        Administre y supervise todas las reservas del hotel.
+      </p>
+    </div>
+    <button class="hs-btn hs-btn-primary" (click)="showNewDialog()">
+      <span class="material-symbols-outlined">add</span>
+      Nueva Reserva
+    </button>
+  </div>
+
+  <p-toast />
+  <p-confirmDialog />
+
+  <!-- Data Table -->
+  <div class="hs-card" style="overflow:hidden">
+    <table class="hs-table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Habitación</th>
+          <th>Entrada</th>
+          <th>Salida</th>
+          <th>Total</th>
+          <th>Adelanto</th>
+          <th>Estado</th>
+          <th style="text-align:right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of reservas; track r.id) {
+          <tr>
+            <td class="text-body-md" style="font-weight:600">{{ r.clienteNombre }}</td>
+            <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ r.habitacionNumero }}</td>
+            <td class="text-data-tabular">{{ r.fechaEntrada | date:'dd/MM/yy' }}</td>
+            <td class="text-data-tabular">{{ r.fechaSalida | date:'dd/MM/yy' }}</td>
+            <td class="text-data-tabular" style="font-weight:600">S/ {{ r.montoTotal }}</td>
+            <td class="text-data-tabular">S/ {{ r.montoAdelanto }}</td>
+            <td>
+              <span class="badge" [ngClass]="getReservaBadge(r.estado)">{{ r.estado }}</span>
+            </td>
+            <td style="text-align:right">
+              <div style="display:flex;gap:4px;justify-content:flex-end">
+                <button class="res-action-btn res-action-btn--view" (click)="showDetail(r)" title="Ver detalle">
+                  <span class="material-symbols-outlined">visibility</span>
+                </button>
+                @if (r.estado === 'CONFIRMADA' && isAdmin) {
+                  <button class="res-action-btn res-action-btn--cancel" (click)="cancelReserva(r)" title="Cancelar">
+                    <span class="material-symbols-outlined">cancel</span>
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+              No hay reservas registradas.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ============ SLIDE PANEL: Nueva Reserva ============ -->
+@if (newDialogVisible) {
+  <div class="hs-overlay" (click)="newDialogVisible = false"></div>
+  <div class="hs-slide-panel" style="max-width:500px">
+
+    <div class="hs-slide-panel__header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="material-symbols-outlined">calendar_month</span>
+        <span style="font-weight:700;font-size:16px">Nueva Reserva</span>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="newDialogVisible = false">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="hs-slide-panel__body">
+      <form [formGroup]="reservaForm" style="display:flex;flex-direction:column;gap:16px">
+
+        <!-- Cliente Section -->
+        <div class="hs-field">
+          <label class="hs-label">Cliente</label>
+          <div style="display:flex;gap:8px">
+            <input class="hs-input" type="text" formControlName="clienteSearch" placeholder="Buscar por teléfono..."
+              style="flex:1" />
+            <button class="hs-btn hs-btn-secondary" type="button" (click)="searchCliente()" title="Buscar">
+              <span class="material-symbols-outlined">search</span>
+            </button>
+          </div>
+          <select class="hs-select" formControlName="clienteId">
+            <option [ngValue]="null" disabled>Seleccionar cliente</option>
+            @for (c of clientes; track c.id) {
+              <option [ngValue]="c.id">{{ c.nombreCompleto }} — {{ c.telefono }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Habitación -->
+        <div class="hs-field">
+          <label class="hs-label">Habitación</label>
+          <select class="hs-select" formControlName="habitacionId">
+            <option [ngValue]="null" disabled>Seleccionar habitación</option>
+            @for (h of habitaciones; track h.id) {
+              <option [ngValue]="h.id">{{ h.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Fechas -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="hs-field">
+            <label class="hs-label">Fecha Entrada</label>
+            <input class="hs-input" type="date" formControlName="fechaEntrada" />
+          </div>
+          <div class="hs-field">
+            <label class="hs-label">Fecha Salida</label>
+            <input class="hs-input" type="date" formControlName="fechaSalida" />
+          </div>
+        </div>
+
+        <!-- Adelanto -->
+        <div class="hs-field">
+          <label class="hs-label">Monto Adelanto (S/)</label>
+          <div class="hs-input-icon">
+            <span class="material-symbols-outlined">payments</span>
+            <input class="hs-input" type="number" formControlName="montoAdelanto" step="0.01" min="0" />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="hs-field">
+            <label class="hs-label">Método Adelanto</label>
+            <select class="hs-select" formControlName="metodoAdelanto">
+              <option value="YAPE">Yape</option>
+              <option value="EFECTIVO">Efectivo</option>
+            </select>
+          </div>
+          <div class="hs-field">
+            <label class="hs-label">Referencia</label>
+            <input class="hs-input" type="text" formControlName="referenciaPago" placeholder="Opcional" />
+          </div>
+        </div>
+
+        <div class="hs-field">
+          <label class="hs-label">Observación</label>
+          <textarea class="hs-textarea" formControlName="observacion" rows="2" placeholder="Opcional"></textarea>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="hs-slide-panel__footer">
+      <button class="hs-btn hs-btn-outline" style="flex:1" (click)="newDialogVisible = false">
+        Cancelar
+      </button>
+      <button class="hs-btn hs-btn-primary" style="flex:1"
+        [disabled]="reservaForm.invalid || loading" (click)="saveReserva()">
+        @if (loading) {
+          <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+        }
+        Guardar Reserva
+      </button>
+    </div>
+
+  </div>
+}
+
+<!-- ============ SLIDE PANEL: Detalle Reserva ============ -->
+@if (detailVisible) {
+  <div class="hs-overlay" (click)="detailVisible = false"></div>
+  <div class="hs-slide-panel" style="max-width:480px">
+
+    <div class="hs-slide-panel__header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="material-symbols-outlined">info</span>
+        <span style="font-weight:700;font-size:16px">Detalle de Reserva</span>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="detailVisible = false">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="hs-slide-panel__body">
+      @if (selectedReserva) {
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="res-detail-row">
+            <span class="res-detail-label">Cliente</span>
+            <span class="res-detail-value">{{ selectedReserva.clienteNombre }}</span>
+          </div>
+          <div class="res-detail-row">
+            <span class="res-detail-label">Teléfono</span>
+            <span class="res-detail-value">{{ selectedReserva.clienteTelefono }}</span>
+          </div>
+          <div class="res-detail-row">
+            <span class="res-detail-label">Habitación</span>
+            <span class="res-detail-value">{{ selectedReserva.habitacionNumero }} ({{ selectedReserva.habitacionTipo }})</span>
+          </div>
+          <div class="res-detail-row">
+            <span class="res-detail-label">Entrada</span>
+            <span class="res-detail-value">{{ selectedReserva.fechaEntrada | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="res-detail-row">
+            <span class="res-detail-label">Salida</span>
+            <span class="res-detail-value">{{ selectedReserva.fechaSalida | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="res-detail-row">
+            <span class="res-detail-label">Total</span>
+            <span class="res-detail-value" style="font-weight:700;color:var(--clr-primary)">S/ {{ selectedReserva.montoTotal }}</span>
+          </div>
+          <div class="res-detail-row">
+            <span class="res-detail-label">Adelanto</span>
+            <span class="res-detail-value">S/ {{ selectedReserva.montoAdelanto }} ({{ selectedReserva.metodoAdelanto }})</span>
+          </div>
+          <div class="res-detail-row">
+            <span class="res-detail-label">Estado</span>
+            <span class="badge" [ngClass]="getReservaBadge(selectedReserva.estado)">{{ selectedReserva.estado }}</span>
+          </div>
+          @if (selectedReserva.observacion) {
+            <div class="res-detail-row">
+              <span class="res-detail-label">Observación</span>
+              <span class="res-detail-value">{{ selectedReserva.observacion }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+  </div>
+}
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.res-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(196,198,207,0.3);
+}
+.res-detail-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--clr-on-surface-variant);
+}
+.res-detail-value {
+  font-size: 14px;
+  color: var(--clr-on-surface);
+}
+</style>

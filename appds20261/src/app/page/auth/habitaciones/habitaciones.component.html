@@ -1,0 +1,240 @@
+<!-- GESTIÓN DE HABITACIONES — Stitch design -->
+<p-toast />
+<p-confirmDialog />
+
+<div class="hab-page">
+
+  <!-- Page header -->
+  <div class="hab-page__header">
+    <div>
+      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Gestión de Habitaciones</h1>
+      <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
+        Supervise y actualice el inventario en tiempo real.
+      </p>
+    </div>
+    @if (isAdmin) {
+      <button class="hs-btn hs-btn-primary" (click)="showDialog()">
+        <span class="material-symbols-outlined">add</span>
+        Agregar Habitación
+      </button>
+    }
+  </div>
+
+  <!-- Filter bar -->
+  <div class="hs-card" style="padding:16px">
+    <div class="hab-filters">
+      <div class="hs-field">
+        <label class="hs-label">Piso</label>
+        <select class="hs-select" [(ngModel)]="filterPiso" (change)="applyFilter()">
+          <option value="">Todos los pisos</option>
+          @for (p of pisos; track p) {
+            <option [value]="p">Piso {{ p }}</option>
+          }
+        </select>
+      </div>
+      <div class="hs-field">
+        <label class="hs-label">Estado</label>
+        <select class="hs-select" [(ngModel)]="filterEstado" (change)="applyFilter()">
+          <option value="">Todos los estados</option>
+          <option value="DISPONIBLE">Disponible</option>
+          <option value="OCUPADA">Ocupada</option>
+          <option value="LIMPIEZA">Limpieza</option>
+          <option value="MANTENIMIENTO">Mantenimiento</option>
+        </select>
+      </div>
+      <div class="hs-field" style="flex:2">
+        <label class="hs-label">Búsqueda Rápida</label>
+        <div class="hs-input-icon">
+          <span class="material-symbols-outlined">search</span>
+          <input class="hs-input" type="text" placeholder="Buscar por número o tipo..."
+            [(ngModel)]="filterSearch" (input)="applyFilter()" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <div class="hs-card" style="overflow:hidden">
+    <table class="hs-table">
+      <thead>
+        <tr>
+          <th>NÚMERO</th>
+          <th>TIPO</th>
+          <th>PISO</th>
+          <th>PRECIO BASE</th>
+          <th>ESTADO</th>
+          <th style="text-align:right">ACCIONES</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (h of filteredHabitaciones; track h.id) {
+          <tr>
+            <td>
+              <span class="text-data-tabular" style="font-weight:800;color:var(--clr-primary)">{{ h.numero }}</span>
+            </td>
+            <td class="text-body-md">{{ h.tipo }}</td>
+            <td class="text-body-md">{{ h.piso }}</td>
+            <td class="text-data-tabular">S/ {{ h.precioNoche }}</td>
+            <td>
+              <span class="badge" [ngClass]="getEstadoClass(h.estado)">
+                @if (h.estado === 'OCUPADA') {
+                  <span class="pulse-dot" style="background:var(--clr-status-occupied)"></span>
+                }
+                {{ h.estado }}
+              </span>
+            </td>
+            <td style="text-align:right">
+              <div style="display:flex;gap:4px;justify-content:flex-end">
+                @if (isAdmin) {
+                  <button class="hab-action-btn hab-action-btn--edit"
+                    (click)="editHabitacion(h)" title="Editar">
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+                }
+                <button class="hab-action-btn hab-action-btn--status"
+                  (click)="showEstadoDialog(h)" title="Cambiar Estado">
+                  <span class="material-symbols-outlined">swap_horiz</span>
+                </button>
+                @if (isAdmin) {
+                  <button class="hab-action-btn hab-action-btn--delete"
+                    (click)="deleteHabitacion(h)" title="Desactivar">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+              No hay habitaciones que coincidan con los filtros.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- Pagination info -->
+    <div style="padding:12px 16px;background:var(--clr-surface-container-low);border-top:1px solid var(--clr-outline-variant);font-size:12px;color:var(--clr-on-surface-variant)">
+      Mostrando {{ filteredHabitaciones.length }} de {{ habitaciones.length }} habitaciones
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ SLIDE PANEL: Crear / Editar ============ -->
+@if (dialogVisible) {
+  <div class="hs-overlay" (click)="dialogVisible = false"></div>
+  <div class="hs-slide-panel">
+
+    <div class="hs-slide-panel__header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="material-symbols-outlined">{{ editing ? 'edit' : 'add' }}</span>
+        <span style="font-weight:700;font-size:16px">{{ editing ? 'Editar Habitación' : 'Nueva Habitación' }}</span>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="dialogVisible = false">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="hs-slide-panel__body">
+      <form [formGroup]="habForm" style="display:flex;flex-direction:column;gap:16px">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="hs-field">
+            <label class="hs-label">Número de Habitación</label>
+            <input class="hs-input" type="text" formControlName="numero" placeholder="Ej: 101" />
+          </div>
+          <div class="hs-field">
+            <label class="hs-label">Piso</label>
+            <select class="hs-select" formControlName="piso">
+              @for (p of pisosOpt; track p.value) {
+                <option [value]="p.value">{{ p.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="hs-field">
+          <label class="hs-label">Tipo de Habitación</label>
+          <select class="hs-select" formControlName="tipo">
+            @for (t of tipos; track t.value) {
+              <option [value]="t.value">{{ t.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="hs-field">
+          <label class="hs-label">Precio Base por Noche (S/)</label>
+          <div class="hs-input-icon">
+            <span class="material-symbols-outlined">payments</span>
+            <input class="hs-input" type="number" formControlName="precioNoche"
+              placeholder="0.00" min="0" step="0.01" />
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="hs-slide-panel__footer">
+      <button class="hs-btn hs-btn-outline" style="flex:1" (click)="dialogVisible = false">
+        Cancelar
+      </button>
+      <button class="hs-btn hs-btn-primary" style="flex:1"
+        [disabled]="habForm.invalid || loading" (click)="save()">
+        @if (loading) {
+          <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+        }
+        {{ editing ? 'Guardar Cambios' : 'Crear Habitación' }}
+      </button>
+    </div>
+
+  </div>
+}
+
+<!-- ============ SLIDE PANEL: Cambiar Estado ============ -->
+@if (estadoDialogVisible) {
+  <div class="hs-overlay" (click)="estadoDialogVisible = false"></div>
+  <div class="hs-slide-panel">
+
+  <div class="hs-slide-panel__header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="material-symbols-outlined">swap_horiz</span>
+      <span style="font-weight:700;font-size:16px">Cambiar Estado — Hab. {{ selectedHabitacion?.numero }}</span>
+    </div>
+    <button class="hs-topbar__icon-btn" (click)="estadoDialogVisible = false">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  <div class="hs-slide-panel__body">
+    <p class="text-body-md" style="color:var(--clr-on-surface-variant)">
+      Estado actual:
+      <span class="badge" [ngClass]="getEstadoClass(selectedHabitacion?.estado)">{{ selectedHabitacion?.estado }}</span>
+    </p>
+    <div class="hab-status-grid">
+      <button class="hab-status-btn hab-status-btn--available" (click)="cambiarEstado('DISPONIBLE')">
+        <span class="material-symbols-outlined filled-icon">check_circle</span>
+        DISPONIBLE
+      </button>
+      <button class="hab-status-btn hab-status-btn--occupied" (click)="cambiarEstado('OCUPADA')">
+        <span class="material-symbols-outlined">person</span>
+        OCUPADA
+      </button>
+      <button class="hab-status-btn hab-status-btn--dirty" (click)="cambiarEstado('LIMPIEZA')">
+        <span class="material-symbols-outlined">cleaning_services</span>
+        LIMPIEZA
+      </button>
+      <button class="hab-status-btn hab-status-btn--maintenance" (click)="cambiarEstado('MANTENIMIENTO')">
+        <span class="material-symbols-outlined">engineering</span>
+        MANTENIMIENTO
+      </button>
+    </div>
+  </div>
+
+</div>
+}
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>

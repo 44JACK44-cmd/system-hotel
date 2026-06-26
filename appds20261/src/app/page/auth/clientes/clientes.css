@@ -1,0 +1,110 @@
+.cli-page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--clr-background);
+  min-height: calc(100vh - 64px);
+}
+.cli-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Avatar circle */
+.cli-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--clr-secondary-fixed);
+  color: var(--clr-on-secondary-fixed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Action buttons */
+.cli-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.cli-action-btn .material-symbols-outlined { font-size: 18px; }
+.cli-action-btn--edit { background:rgba(5,93,182,0.08); color:var(--clr-secondary); }
+.cli-action-btn--edit:hover { background:rgba(5,93,182,0.16); }
+.cli-action-btn--history { background:rgba(70,95,136,0.1); color:var(--clr-surface-tint); }
+.cli-action-btn--history:hover { background:rgba(70,95,136,0.2); }
+
+/* Tabs for historial panel */
+.cli-tab {
+  flex: 1;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--clr-on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+.cli-tab--active {
+  color: var(--clr-secondary);
+  border-bottom-color: var(--clr-secondary);
+}
+.cli-tab .material-symbols-outlined { font-size: 18px; }
+
+/* History items */
+.cli-history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(196,198,207,0.3);
+  transition: background 0.15s;
+}
+.cli-history-item:hover { background: rgba(244,243,247,0.5); }
+.cli-history-item__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.cli-history-item__icon .material-symbols-outlined { font-size: 20px; }
+
+/* Reuse topbar icon btn */
+.hs-topbar__icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  color: rgba(255,255,255,0.8);
+  transition: background 0.15s;
+}
+.hs-topbar__icon-btn:hover { background: rgba(255,255,255,0.15); color: white; }

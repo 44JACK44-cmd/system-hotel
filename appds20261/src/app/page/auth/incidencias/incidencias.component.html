@@ -1,0 +1,149 @@
+<!-- INCIDENCIAS — Hospitality Precision design -->
+<div class="inc-page">
+
+  <!-- Page header -->
+  <div class="inc-page__header">
+    <div>
+      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Incidencias</h1>
+      <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
+        Gestión de limpieza, mantenimiento y reportes de habitaciones.
+      </p>
+    </div>
+  </div>
+
+  <p-toast />
+
+  <!-- Split: Left = Active Incidents, Right = New Incident Form -->
+  <div class="inc-split">
+
+    <!-- Active Incidents -->
+    <div class="hs-card" style="overflow:hidden;flex:2">
+      <div class="hs-card-header">
+        <h3 class="text-title-sm" style="color:var(--clr-primary);display:flex;align-items:center;gap:6px">
+          <span class="material-symbols-outlined" style="color:var(--clr-error)">warning</span>
+          INCIDENCIAS ACTIVAS
+        </h3>
+        <span class="badge badge-error">{{ incidenciasActivas.length }}</span>
+      </div>
+      <table class="hs-table">
+        <thead>
+          <tr>
+            <th>Habitación</th>
+            <th>Tipo</th>
+            <th>Motivo</th>
+            <th>Inicio</th>
+            <th style="text-align:right">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inc of incidenciasActivas; track inc.id) {
+            <tr>
+              <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ inc.habitacionNumero }}</td>
+              <td>
+                <span class="badge" [ngClass]="inc.tipo === 'LIMPIEZA' ? 'badge-dirty' : 'badge-maintenance'">
+                  {{ inc.tipo }}
+                </span>
+              </td>
+              <td class="text-body-md">{{ inc.motivo }}</td>
+              <td class="text-data-tabular">{{ inc.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td style="text-align:right">
+                <button class="hs-btn hs-btn-sm hs-btn-success" (click)="finalizar(inc)">
+                  <span class="material-symbols-outlined" style="font-size:16px">check_circle</span>
+                  Finalizar
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+                  <span class="material-symbols-outlined" style="font-size:32px;opacity:0.4">check_circle</span>
+                  No hay incidencias activas
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- New Incident Form -->
+    <div class="hs-card" style="padding:24px;flex:1;align-self:flex-start">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--clr-outline-variant)">
+        <span class="material-symbols-outlined" style="color:var(--clr-secondary)">add_circle</span>
+        <span style="font-size:16px;font-weight:700;color:var(--clr-primary)">Registrar Incidencia</span>
+      </div>
+      <form [formGroup]="incidenciaForm" style="display:flex;flex-direction:column;gap:14px">
+
+        <div class="hs-field">
+          <label class="hs-label">Habitación</label>
+          <select class="hs-select" formControlName="habitacionId">
+            <option [ngValue]="null" disabled>Seleccionar habitación</option>
+            @for (h of habitaciones; track h.id) {
+              <option [ngValue]="h.id">{{ h.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="hs-field">
+          <label class="hs-label">Tipo</label>
+          <select class="hs-select" formControlName="tipo">
+            @for (t of tipos; track t.value) {
+              <option [value]="t.value">{{ t.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="hs-field">
+          <label class="hs-label">Motivo</label>
+          <textarea class="hs-textarea" formControlName="motivo" rows="3" placeholder="Describa el motivo..."></textarea>
+        </div>
+
+        <button class="hs-btn hs-btn-primary" style="align-self:flex-start"
+          [disabled]="incidenciaForm.invalid || loading" (click)="save()">
+          @if (loading) {
+            <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+          }
+          Guardar Incidencia
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.inc-page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--clr-background);
+  min-height: calc(100vh - 64px);
+}
+.inc-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.inc-split {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+@media (max-width: 900px) {
+  .inc-split { flex-direction: column; }
+}
+
+.hs-btn-success {
+  background: var(--clr-status-available);
+  color: white;
+  border: none;
+}
+.hs-btn-success:hover { filter: brightness(1.1); }
+</style>
