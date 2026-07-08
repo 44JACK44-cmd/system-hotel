@@ -45,4 +45,8 @@ export class HospedajeService {
       map(r => toGenericResponse<HospedajeResponse>(r, raw => raw?.listHospedaje?.[0]))
     );
   }
+
+  generarBoleto(id: number): Observable<Blob> {
+    return this.http.get(`${this.API}/boleto/${id}`, { responseType: 'blob' });
+  }
 }
