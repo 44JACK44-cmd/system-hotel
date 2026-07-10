@@ -6,7 +6,7 @@
 CREATE DATABASE system_hotel;
 USE system_hotel;
 -- ==========================================
-
+DROP DATABASE system_hotel
 -- 1. USUARIOS
 CREATE TABLE usuarios (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -121,3 +121,7 @@ INSERT INTO usuarios (nombre_completo, username, password, rol) VALUES
 -- Usuario recepcionista por defecto (contraseña: recep123)
 INSERT INTO usuarios (nombre_completo, username, password, rol) VALUES
 ('Recepcionista', 'recepcionista', 'recep123', 'RECEPCIONISTA');
+
+SELECT * FROM reservas
+
+
