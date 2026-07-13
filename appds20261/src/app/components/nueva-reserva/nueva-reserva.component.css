@@ -1,0 +1,303 @@
+/* ── Two-column grid ── */
+.nr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.nr-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Search row ── */
+.nr-search-row {
+  display: flex;
+  gap: 8px;
+}
+.nr-search-row .hs-input {
+  flex: 1;
+}
+.nr-search-btn {
+  padding: 8px 12px !important;
+  min-width: auto !important;
+}
+
+/* ── "o crear nuevo" divider ── */
+.nr-divider {
+  font-size: 11px;
+  color: var(--clr-outline);
+  margin: 8px 0;
+  text-align: center;
+  position: relative;
+}
+.nr-divider-text {
+  background: var(--clr-surface-container-lowest);
+  padding: 0 8px;
+  position: relative;
+  z-index: 1;
+}
+.nr-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--clr-outline-variant);
+  z-index: 0;
+}
+
+/* ── 2-column inner grid ── */
+.nr-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ── Spacing helper ── */
+.nr-mb-1 { margin-bottom: 8px; }
+
+/* ── Select wrapper ── */
+.nr-select-wrapper {
+  position: relative;
+}
+.nr-select-wrapper select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 36px;
+  cursor: pointer;
+}
+.nr-select-arrow {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--clr-outline);
+  font-size: 20px;
+}
+
+/* ── Fechas section ── */
+.nr-fechas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.nr-saldo {
+  text-align: right;
+}
+.nr-saldo-label {
+  font-size: 10px;
+  color: var(--clr-outline-variant);
+  font-weight: 700;
+  display: block;
+  line-height: 1;
+}
+.nr-saldo-value {
+  color: var(--clr-secondary);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* ── Date inputs ── */
+.nr-fechas-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nr-date-wrapper {
+  flex: 1;
+  position: relative;
+}
+.nr-date-input {
+  padding-right: 36px !important;
+  cursor: pointer;
+}
+.nr-date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.nr-date-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--clr-outline);
+  font-size: 18px;
+}
+.nr-date-sep {
+  color: var(--clr-outline);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ── Noches summary ── */
+.nr-noches-box {
+  background: var(--clr-surface-container-low);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  text-align: right;
+  border: 1px solid var(--clr-outline-variant);
+  margin-top: 8px;
+}
+.nr-noches-text {
+  color: var(--clr-on-surface-variant);
+}
+.nr-noches-total {
+  font-weight: 700;
+  color: var(--clr-primary);
+}
+
+/* ── Obligatorio label ── */
+.nr-obligatorio {
+  color: var(--clr-error);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 11px;
+}
+
+/* ── Adelanto row ── */
+.nr-adelanto-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.nr-monto-wrapper {
+  position: relative;
+  flex: 0 0 auto;
+  width: 45%;
+}
+.nr-monto-prefix {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--clr-on-surface-variant);
+  font-weight: 600;
+  font-size: 14px;
+  pointer-events: none;
+}
+.nr-monto-input {
+  padding-left: 28px !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Payment options ── */
+.nr-pago-opts {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.nr-radio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--clr-on-surface-variant);
+  position: relative;
+}
+.nr-radio input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.nr-radio-dot {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--clr-outline);
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.nr-radio input:checked + .nr-radio-dot {
+  border-color: var(--clr-secondary);
+  background: var(--clr-secondary);
+}
+.nr-radio input:checked + .nr-radio-dot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+}
+.nr-radio:hover .nr-radio-dot {
+  border-color: var(--clr-secondary);
+}
+
+/* ── Button overrides for reference look ── */
+.nr-btn-cancel {
+  flex: 1;
+  border: 2px solid var(--clr-secondary) !important;
+  color: var(--clr-secondary) !important;
+  background: transparent !important;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  padding: 12px 20px !important;
+}
+.nr-btn-cancel:hover {
+  background: rgba(5, 93, 182, 0.05) !important;
+}
+.nr-btn-save {
+  flex: 1;
+  background: var(--clr-secondary) !important;
+  color: var(--clr-on-secondary) !important;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  padding: 12px 20px !important;
+  box-shadow: 0 2px 8px rgba(5, 93, 182, 0.3) !important;
+}
+.nr-btn-save:hover:not(:disabled) {
+  background: var(--clr-secondary-container) !important;
+  color: var(--clr-on-secondary-container) !important;
+}
+.nr-btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Responsive: single column on narrow screens ── */
+@media (max-width: 500px) {
+  .nr-grid {
+    grid-template-columns: 1fr;
+  }
+  .nr-fechas-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .nr-date-sep {
+    display: none;
+  }
+  .nr-adelanto-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .nr-monto-wrapper {
+    width: 100%;
+  }
+}

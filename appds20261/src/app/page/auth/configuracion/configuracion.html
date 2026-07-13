@@ -1,0 +1,262 @@
+<div class="config-page">
+  <header class="config-page__header">
+    <div>
+      <h1 class="text-display-lg" style="color:var(--clr-primary)">Configuración General</h1>
+      <p class="text-body-md" style="color:var(--clr-on-surface-variant)">Gestione la identidad, finanzas y operabilidad de su sucursal.</p>
+    </div>
+    <div class="config-btn-row">
+      <button class="hs-btn hs-btn-outline" style="cursor:default;pointer-events:none;opacity:0.85">
+        Descartar Cambios
+      </button>
+      <button class="hs-btn hs-btn-primary" style="cursor:default;pointer-events:none;opacity:0.85">
+        Guardar Todo
+      </button>
+    </div>
+  </header>
+
+  <div class="config-grid">
+    <nav class="config-tabs">
+      <button class="config-tab" [class.config-tab--active]="activeTab === 'datos-hotel'" (click)="switchTab('datos-hotel')">
+        <span class="material-symbols-outlined">hotel</span>
+        <span>Datos del Hotel</span>
+      </button>
+      <button class="config-tab" [class.config-tab--active]="activeTab === 'tarifas'" (click)="switchTab('tarifas')">
+        <span class="material-symbols-outlined">payments</span>
+        <span>Tarifas</span>
+      </button>
+      <button class="config-tab" [class.config-tab--active]="activeTab === 'pagos'" (click)="switchTab('pagos')">
+        <span class="material-symbols-outlined">credit_card</span>
+        <span>Métodos de Pago</span>
+      </button>
+      <button class="config-tab" [class.config-tab--active]="activeTab === 'politicas'" (click)="switchTab('politicas')">
+        <span class="material-symbols-outlined">policy</span>
+        <span>Impuestos y Políticas</span>
+      </button>
+    </nav>
+
+    <section class="config-content">
+      @if (activeTab === 'datos-hotel') {
+        <div class="config-section">
+          <div class="config-card">
+            <h3 class="config-card__title">Información Identitaria</h3>
+            <div class="config-logo-section">
+              <div class="config-logo-upload">
+                <span class="material-symbols-outlined" style="font-size:36px;color:var(--clr-outline)">hotel</span>
+                <div class="config-logo-upload__overlay">
+                  <span class="material-symbols-outlined">upload</span>
+                </div>
+              </div>
+              <div class="config-logo-info">
+                <h4>Logo de Sucursal</h4>
+                <p>PNG o SVG recomendado. Máximo 2MB.</p>
+                <button>REEMPLAZAR IMAGEN</button>
+              </div>
+            </div>
+            <div class="config-input-grid">
+              <div class="config-field">
+                <label class="config-field__label">NOMBRE COMERCIAL <span class="ph">(*)</span></label>
+                <input class="hs-input" type="text" value="Hotel Abancay Plaza" style="cursor:default;pointer-events:none;opacity:0.85" readonly />
+              </div>
+              <div class="config-field">
+                <label class="config-field__label">RUC / ID FISCAL <span class="ph">(*)</span></label>
+                <input class="hs-input" type="text" value="20601234567" style="cursor:default;pointer-events:none;opacity:0.85" readonly />
+              </div>
+              <div class="config-field col-span-2" style="grid-column:span 2">
+                <label class="config-field__label">DIRECCIÓN FÍSICA <span class="ph">(*)</span></label>
+                <input class="hs-input" type="text" value="Av. Arenas 123, Abancay, Apurímac" style="cursor:default;pointer-events:none;opacity:0.85" readonly />
+              </div>
+              <div class="config-field">
+                <label class="config-field__label">TELÉFONO DE RECEPCIÓN <span class="ph">(*)</span></label>
+                <input class="hs-input" type="tel" value="+51 083 321456" style="cursor:default;pointer-events:none;opacity:0.85" readonly />
+              </div>
+              <div class="config-field">
+                <label class="config-field__label">CORREO ELECTRÓNICO <span class="ph">(*)</span></label>
+                <input class="hs-input" type="email" value="recepcion&#64;abancayplaza.com" style="cursor:default;pointer-events:none;opacity:0.85" readonly />
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (activeTab === 'tarifas') {
+        <div class="config-section">
+          <div class="config-card">
+            <div class="config-season-header">
+              <h3 class="config-card__title" style="margin-bottom:0">Configuración de Temporadas</h3>
+              <button class="hs-btn hs-btn-sm" style="background:rgba(5,93,182,0.1);color:var(--clr-on-secondary-container);border:none;cursor:default;pointer-events:none;opacity:0.85">
+                <span class="material-symbols-outlined" style="font-size:16px">add</span>
+                NUEVA TEMPORADA
+              </button>
+            </div>
+            <div class="config-table-wrap">
+              <table class="config-table">
+                <thead>
+                  <tr>
+                    <th>Temporada</th>
+                    <th>Rango de Fechas</th>
+                    <th>Multiplicador</th>
+                    <th>Estado</th>
+                    <th style="text-align:right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="font-weight:700">Temporada Baja</td>
+                    <td>Todo el año (Base)</td>
+                    <td>1.00x</td>
+                    <td><span class="config-badge config-badge--active">ACTIVO</span></td>
+                    <td style="text-align:right">
+                      <button style="padding:4px;border:none;background:none;border-radius:var(--radius-md);cursor:default;pointer-events:none;opacity:0.85;color:var(--clr-on-surface-variant)" class="material-symbols-outlined">edit</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:700">Fiestas Patrias</td>
+                    <td>15 Jul - 31 Jul</td>
+                    <td><span class="config-season-multiplier">1.50x</span></td>
+                    <td><span class="config-badge config-badge--scheduled">PROGRAMADO</span></td>
+                    <td style="text-align:right">
+                      <button style="padding:4px;border:none;background:none;border-radius:var(--radius-md);cursor:default;pointer-events:none;opacity:0.85;color:var(--clr-on-surface-variant)" class="material-symbols-outlined">edit</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:700">Año Nuevo</td>
+                    <td>20 Dic - 05 Ene</td>
+                    <td><span class="config-season-multiplier">1.80x</span></td>
+                    <td><span class="config-badge config-badge--scheduled">PROGRAMADO</span></td>
+                    <td style="text-align:right">
+                      <button style="padding:4px;border:none;background:none;border-radius:var(--radius-md);cursor:default;pointer-events:none;opacity:0.85;color:var(--clr-on-surface-variant)" class="material-symbols-outlined">edit</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (activeTab === 'pagos') {
+        <div class="config-section">
+          <div class="config-method-grid">
+            <div class="config-method-card">
+              <div>
+                <div class="config-method-card__header">
+                  <div class="config-method-card__icon">
+                    <span class="material-symbols-outlined">payments</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:10px;font-weight:700;color:#166534;background:#dcfce7;padding:2px 8px;border-radius:var(--radius-md)">CONFIGURADO</span>
+                    <label class="hs-toggle" style="cursor:default">
+                      <input type="checkbox" checked disabled />
+                      <span class="hs-toggle__slider"></span>
+                    </label>
+                  </div>
+                </div>
+                <h4>Efectivo</h4>
+                <p>Gestión directa en caja. Emisión de boleta o factura física/electrónica.</p>
+              </div>
+              <button class="hs-btn hs-btn-outline" style="cursor:default;pointer-events:none;opacity:0.85">Configurar Flujo</button>
+            </div>
+
+            <div class="config-method-card">
+              <div>
+                <div class="config-method-card__header">
+                  <div class="config-method-card__icon">
+                    <span class="material-symbols-outlined">credit_card</span>
+                  </div>
+                  <label class="hs-toggle" style="cursor:default">
+                    <input type="checkbox" checked disabled />
+                    <span class="hs-toggle__slider"></span>
+                  </label>
+                </div>
+                <h4>Pasarela (Stripe/Niubiz)</h4>
+                <p>Cobros automáticos mediante tarjetas Visa, Mastercard y Amex.</p>
+              </div>
+              <button class="hs-btn hs-btn-primary" style="cursor:default;pointer-events:none;opacity:0.85">Editar API Keys</button>
+            </div>
+
+            <div class="config-method-card">
+              <div>
+                <div class="config-method-card__header">
+                  <div class="config-method-card__icon">
+                    <span class="material-symbols-outlined">qr_code_2</span>
+                  </div>
+                  <label class="hs-toggle" style="cursor:default">
+                    <input type="checkbox" checked disabled />
+                    <span class="hs-toggle__slider"></span>
+                  </label>
+                </div>
+                <h4>Billeteras Digitales (Yape/Plin)</h4>
+                <p>Recepción de pagos mediante QR o número de celular. Verificación manual.</p>
+              </div>
+              <button class="hs-btn hs-btn-outline" style="cursor:default;pointer-events:none;opacity:0.85">Subir QR</button>
+            </div>
+
+            <div class="config-add-card">
+              <span class="material-symbols-outlined">add_circle</span>
+              <h4>Agregar Método</h4>
+              <p>Integra nuevas formas de pago para tus clientes.</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (activeTab === 'politicas') {
+        <div class="config-section">
+          <div class="config-card">
+            <h3 class="config-card__title">Impuestos y Facturación</h3>
+            <div class="config-tax-grid">
+              <div style="display:flex;flex-direction:column;gap:var(--sp-md)">
+                <div class="config-tax-row">
+                  <span>IGV / IVA Aplicable</span>
+                  <div class="config-tax-input">
+                    <input type="number" value="18" disabled />
+                    <span>%</span>
+                  </div>
+                </div>
+                <div class="config-tax-row">
+                  <span>Tasa de Servicio</span>
+                  <div class="config-tax-input">
+                    <input type="number" value="10" disabled />
+                    <span>%</span>
+                  </div>
+                </div>
+                <div class="config-checkbox-row">
+                  <input type="checkbox" id="tax-included" checked disabled />
+                  <label for="tax-included">Precios mostrados ya incluyen impuestos</label>
+                </div>
+              </div>
+              <div class="config-invoice-preview">
+                <div class="config-invoice-preview__header">
+                  <span class="material-symbols-outlined">info</span>
+                  <span>VISTA PREVIA DE FACTURA</span>
+                </div>
+                <div class="config-invoice-line"><span>SUBTOTAL</span> <span>$100.00</span></div>
+                <div class="config-invoice-line"><span>IGV (18%)</span> <span>$18.00</span></div>
+                <div class="config-invoice-line config-invoice-line--total"><span>TOTAL</span> <span>$118.00</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="config-card">
+            <h3 class="config-card__title">Políticas de Cancelación</h3>
+            <div style="display:flex;flex-direction:column;gap:var(--sp-lg)">
+              <div class="config-field" style="margin-bottom:0">
+                <label class="config-field__label">POLÍTICA ESTÁNDAR <span class="ph">(*)</span></label>
+                <select class="config-policy-select" disabled style="cursor:default;opacity:0.85">
+                  <option>Flexible: Cancelación gratuita hasta 24h antes</option>
+                  <option selected>Moderada: Reembolso 50% hasta 48h antes</option>
+                  <option>Estricta: Sin reembolso tras la reserva</option>
+                  <option>Personalizada...</option>
+                </select>
+              </div>
+              <div class="config-field" style="margin-bottom:0">
+                <label class="config-field__label">TÉRMINOS Y CONDICIONES <span class="ph">(*)</span></label>
+                <textarea class="config-textarea" rows="4" disabled style="cursor:default;opacity:0.85">El cliente acepta que el hotel no se hace responsable por objetos de valor no declarados en la caja fuerte de recepción. La hora de Check-out es a las 11:00 AM, penalidad de media tarifa tras 1 hora de retraso.</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+  </div>
+</div>

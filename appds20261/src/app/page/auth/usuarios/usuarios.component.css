@@ -30,8 +30,58 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.usr-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* Stat icons */
+.usr-stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+.usr-stat-icon .material-symbols-outlined { font-size: 20px; }
+.usr-stat-icon--primary { background: rgba(0,32,70,0.08); color: var(--clr-primary); }
+.usr-stat-icon--secondary { background: rgba(5,93,182,0.08); color: var(--clr-secondary); }
+.usr-stat-icon--admin { background: rgba(27,54,93,0.08); color: var(--clr-primary-container); }
+.usr-stat-icon--recep { background: rgba(0,54,112,0.08); color: var(--clr-on-secondary-container); }
+
+/* Tabs */
+.usr-tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--clr-outline-variant);
+}
+.usr-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 4px 12px 4px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--clr-on-surface-variant);
+  transition: color 0.15s, border-color 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.usr-tab:hover { color: var(--clr-primary); }
+.usr-tab .material-symbols-outlined { font-size: 20px; }
+.usr-tab--active {
+  color: var(--clr-primary);
+  border-bottom-color: var(--clr-primary);
 }
 
 /* Avatar circle */
@@ -66,6 +116,19 @@
 }
 .usr-action-btn .material-symbols-outlined { font-size: 18px; }
 .usr-action-btn:hover { background: rgba(5,93,182,0.16); }
+
+/* Log event badges */
+.usr-log-event {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 13px;
+}
+.usr-log-event .material-symbols-outlined { font-size: 16px; }
+.usr-log-event--success { color: #16a34a; }
+.usr-log-event--warning { color: #ea580c; }
+.usr-log-event--danger { color: #dc2626; }
 
 /* Reuse topbar icon btn */
 .hs-topbar__icon-btn {

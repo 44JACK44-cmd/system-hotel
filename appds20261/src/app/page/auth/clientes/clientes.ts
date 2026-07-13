@@ -28,6 +28,7 @@ export class Clientes implements OnInit {
   historialReservas: any[] = [];
   historialHospedajes: any[] = [];
   historialTab = '0';
+  detailCliente: any = null;
 
   clienteForm = this.fb.group({
     nombreCompleto: ['', Validators.required],

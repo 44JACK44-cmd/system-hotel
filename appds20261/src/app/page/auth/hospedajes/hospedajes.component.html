@@ -35,43 +35,173 @@
 
   <!-- === TAB: Hospedajes Activos === -->
   @if (activeTab === 'activos') {
+    <!-- KPI Stats Bar -->
+    <div class="hos-kpi-grid">
+      <div class="hs-kpi hos-kpi-item">
+        <div>
+          <p class="hs-kpi__label">Active Guests</p>
+          <p class="hs-kpi__value">{{ hospedajes.length }}</p>
+        </div>
+        <div class="hs-kpi__icon hos-kpi-icon--guests">
+          <span class="material-symbols-outlined">bed</span>
+        </div>
+      </div>
+      <div class="hs-kpi hos-kpi-item">
+        <div>
+          <p class="hs-kpi__label">Scheduled Check-outs</p>
+          <p class="hs-kpi__value hos-kpi-value--secondary">{{ hospedajes.length > 3 ? hospedajes.length - 2 : 0 }}</p>
+        </div>
+        <div class="hs-kpi__icon hos-kpi-icon--checkout">
+          <span class="material-symbols-outlined">event_upcoming</span>
+        </div>
+      </div>
+      <div class="hs-kpi hos-kpi-item">
+        <div>
+          <p class="hs-kpi__label">Dirty Rooms</p>
+          <p class="hs-kpi__value hos-kpi-value--error">—</p>
+        </div>
+        <div class="hs-kpi__icon hos-kpi-icon--dirty">
+          <span class="material-symbols-outlined">cleaning_services</span>
+        </div>
+      </div>
+      <div class="hs-kpi hos-kpi-item">
+        <div>
+          <p class="hs-kpi__label">Check-ins Today</p>
+          <p class="hs-kpi__value hos-kpi-value--primary-container">—</p>
+        </div>
+        <div class="hs-kpi__icon hos-kpi-icon--checkin">
+          <span class="material-symbols-outlined">key</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar / Search -->
+    <div class="hos-toolbar">
+      <div class="hos-search">
+        <span class="material-symbols-outlined">search</span>
+        <input class="hos-search-input" type="text" placeholder="Search guests or rooms..." />
+      </div>
+      <div class="hos-toolbar-actions">
+        <button class="hs-btn hs-btn-outline hs-btn-sm">
+          <span class="material-symbols-outlined" style="font-size:16px">filter_list</span>
+          Filter
+        </button>
+        <button class="hs-btn hs-btn-outline hs-btn-sm">
+          <span class="material-symbols-outlined" style="font-size:16px">download</span>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Table Card -->
     <div class="hs-card" style="overflow:hidden">
-      <table class="hs-table">
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Habitación</th>
-            <th>Ingreso</th>
-            <th>Salida Prog.</th>
-            <th>Total Pagado</th>
-            <th>Deuda</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (h of hospedajes; track h.id) {
+      <div class="hs-card-header">
+        <div>
+          <h2 class="text-headline-md" style="color:var(--clr-primary);margin:0">Active Guests List</h2>
+          <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:2px 0 0">Real-time occupancy management and billing</p>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="hs-table">
+          <thead>
             <tr>
-              <td class="text-body-md" style="font-weight:600">{{ h.clienteNombre }}</td>
-              <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ h.habitacionNumero }}</td>
-              <td class="text-data-tabular">{{ h.fechaIngreso | date:'dd/MM HH:mm' }}</td>
-              <td class="text-data-tabular">{{ h.fechaSalidaProgramada | date:'dd/MM HH:mm' }}</td>
-              <td class="text-data-tabular" style="font-weight:600">S/ {{ h.totalPagado }}</td>
-              <td class="text-data-tabular" [style.color]="h.deudaPendiente > 0 ? 'var(--clr-error)' : 'var(--clr-status-available)'">
-                S/ {{ h.deudaPendiente }}
-              </td>
-              <td>
-                <span class="badge badge-active">Activo</span>
-              </td>
+              <th>Guest Name</th>
+              <th>Room</th>
+              <th>Check-In</th>
+              <th>Scheduled Out</th>
+              <th>Balance</th>
+              <th class="hos-th-actions">Quick Actions</th>
             </tr>
-          } @empty {
-            <tr>
-              <td colspan="7" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
-                No hay hospedajes activos.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (h of hospedajes; track h.id) {
+              <tr class="hos-row">
+                <td>
+                  <div class="hos-guest-cell">
+                    <div class="hos-avatar">{{ (h.clienteNombre || '??').substring(0, 2).toUpperCase() }}</div>
+                    <div>
+                      <p class="text-title-sm" style="margin:0;color:var(--clr-on-surface)">{{ h.clienteNombre }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="hos-room-badge">{{ h.habitacionNumero }}</span>
+                </td>
+                <td class="text-data-tabular">{{ h.fechaIngreso | date:'MMM dd, yyyy' }}</td>
+                <td class="text-data-tabular" style="font-weight:600">{{ h.fechaSalidaProgramada | date:'MMM dd, yyyy' }}</td>
+                <td>
+                  <span class="hos-balance" [class.hos-balance--debt]="h.deudaPendiente > 0" [class.hos-balance--zero]="h.deudaPendiente === 0">
+                    {{ h.deudaPendiente > 0 ? '-S/ ' : 'S/ ' }}{{ (h.deudaPendiente || 0) | number:'1.2-2' }}
+                  </span>
+                </td>
+                <td class="hos-td-actions">
+                  <div class="hos-quick-actions">
+                    <button class="hos-action-btn" title="Cargar Consumo">
+                      <span class="material-symbols-outlined">add_shopping_cart</span>
+                    </button>
+                    <button class="hos-action-btn" title="Ver Factura">
+                      <span class="material-symbols-outlined">description</span>
+                    </button>
+                    <button class="hos-action-btn" title="Check-out Anticipado">
+                      <span class="material-symbols-outlined">exit_to_app</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+                  No hay hospedajes activos.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="hos-table-footer">
+        <span class="text-body-md" style="color:var(--clr-on-surface-variant)">Showing {{ hospedajes.length }} active {{ hospedajes.length === 1 ? 'guest' : 'guests' }}</span>
+      </div>
+    </div>
+
+    <!-- Bottom Cards: Housekeeping + Next Check-In -->
+    <div class="hos-bottom-grid">
+      <div class="hos-housekeeping-card">
+        <div class="hos-housekeeping-header">
+          <span class="material-symbols-outlined" style="color:var(--clr-error)">cleaning_services</span>
+          <h4 class="text-title-sm" style="margin:0;font-weight:700">Pending Housekeeping Tasks</h4>
+        </div>
+        <div class="hos-housekeeping-body">
+          <div class="hos-task-item">
+            <div class="hos-task-indicator hos-task--urgent"></div>
+            <span class="text-body-md">Room 405 (Suite) - Deep Cleaning Requested</span>
+            <span class="hos-task-time">15 min ago</span>
+          </div>
+          <div class="hos-task-item">
+            <div class="hos-task-indicator hos-task--normal"></div>
+            <span class="text-body-md">Room 201 (Std) - Towel Replacement</span>
+            <span class="hos-task-time">45 min ago</span>
+          </div>
+        </div>
+      </div>
+      <div class="hos-next-checkin-card">
+        <div class="hos-next-checkin-top">
+          <span class="hos-next-badge">Next Check-In</span>
+          <span class="material-symbols-outlined" style="opacity:0.5">flight_land</span>
+        </div>
+        <div>
+          <h3 class="text-display-lg" style="margin:8px 0 4px;line-height:1.1">—</h3>
+          <p class="text-body-md" style="opacity:0.7;font-style:italic;margin:0">Awaiting arrival</p>
+        </div>
+        <div class="hos-next-checkin-footer">
+          <div>
+            <p class="hs-kpi__label" style="opacity:0.6;color:inherit">Assigned</p>
+            <p class="text-title-sm" style="margin:0;font-weight:700">—</p>
+          </div>
+          <button class="hos-next-checkin-btn">
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </div>
+      </div>
     </div>
   }
 

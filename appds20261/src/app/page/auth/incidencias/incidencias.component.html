@@ -1,11 +1,9 @@
-<!-- INCIDENCIAS — Hospitality Precision design -->
 <div class="inc-page">
 
-  <!-- Page header -->
   <div class="inc-page__header">
     <div>
-      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Incidencias</h1>
-      <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
+      <h1 class="inc-page__title">Incidencias</h1>
+      <p class="inc-page__subtitle">
         Gestión de limpieza, mantenimiento y reportes de habitaciones.
       </p>
     </div>
@@ -13,41 +11,126 @@
 
   <p-toast />
 
-  <!-- Split: Left = Active Incidents, Right = New Incident Form -->
-  <div class="inc-split">
-
-    <!-- Active Incidents -->
-    <div class="hs-card" style="overflow:hidden;flex:2">
-      <div class="hs-card-header">
-        <h3 class="text-title-sm" style="color:var(--clr-primary);display:flex;align-items:center;gap:6px">
-          <span class="material-symbols-outlined" style="color:var(--clr-error)">warning</span>
-          INCIDENCIAS ACTIVAS
-        </h3>
-        <span class="badge badge-error">{{ incidenciasActivas.length }}</span>
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);margin:0">Limpias</p>
+      <div class="kpi-row">
+        <span class="kpi-value" style="color:var(--clr-primary)">{{ habitaciones.length }}</span>
+        <span style="background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:3px 8px;border-radius:var(--radius-md);text-transform:uppercase">{{ incidenciasActivas.length }}% Total</span>
       </div>
-      <table class="hs-table">
+    </div>
+    <div class="kpi-card">
+      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);margin:0">Sucias</p>
+      <div class="kpi-row">
+        <span class="kpi-value" style="color:var(--clr-error)">{{ incidenciasActivas.length }}</span>
+        <span style="background:#fee2e2;color:#991b1b;font-size:11px;font-weight:700;padding:3px 8px;border-radius:var(--radius-md);text-transform:uppercase">Priority</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);margin:0">En Progreso</p>
+      <div class="kpi-row">
+        <span class="kpi-value" style="color:var(--clr-secondary)">0{{ incidenciasActivas.length }}</span>
+        <span class="material-symbols-outlined" style="color:var(--clr-secondary);animation:pulse 2s cubic-bezier(0.4,0,0.6,1) infinite;font-size:20px">sync</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);margin:0">Mantenimiento</p>
+      <div class="kpi-row">
+        <span class="kpi-value" style="color:var(--clr-on-tertiary-fixed-variant)">{{ incidencias.length > incidenciasActivas.length ? incidencias.length - incidenciasActivas.length : 0 }}</span>
+        <span class="material-symbols-outlined" style="color:var(--clr-outline);font-size:20px">engineering</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="room-section">
+    <div class="room-section__header">
+      <div class="room-section__title">
+        <h2 style="font-size:20px;font-weight:600;line-height:28px;color:var(--clr-primary);margin:0">Estado de Habitaciones</h2>
+        <span style="background:var(--clr-surface-variant);color:var(--clr-on-surface-variant);padding:3px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:700;text-transform:uppercase">Planta 1 &amp; 2</span>
+      </div>
+      <div class="room-section__controls">
+        <div class="search-box">
+          <span class="material-symbols-outlined search-box__icon">search</span>
+          <input class="search-box__input" placeholder="Buscar hab..." type="text"/>
+        </div>
+        <button class="filter-btn">
+          <span class="material-symbols-outlined" style="font-size:16px">filter_list</span>
+          Filtrar
+        </button>
+      </div>
+    </div>
+
+    <div class="room-grid">
+      @for (hab of habitaciones; track hab.id) {
+        <div class="room-card">
+          <div class="room-indicator"
+            [style.background]="hab.estado === 'DISPONIBLE' ? '#22c55e' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'">
+          </div>
+          <div class="room-card__body">
+            <div class="room-card__top">
+              <h3 style="font-size:16px;font-weight:600;line-height:24px;color:var(--clr-primary);margin:0">Hab. {{ hab.numero }}</h3>
+              <span style="font-size:10px;font-weight:700;text-transform:uppercase;padding:1px 6px;border-radius:var(--radius-md);border:1px solid;line-height:1.4"
+                [style.color]="hab.estado === 'DISPONIBLE' ? '#16a34a' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'"
+                [style.borderColor]="hab.estado === 'DISPONIBLE' ? '#16a34a' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'">
+                {{ hab.estado === 'DISPONIBLE' ? 'Limpia' : hab.estado === 'OCUPADA' ? 'Sucia' : 'Manten.' }}
+              </span>
+            </div>
+            <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);margin:0">{{ hab.tipo }}</p>
+            <div class="room-card__action">
+              @if (hab.estado === 'DISPONIBLE') {
+                <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--clr-on-surface-variant)">
+                  <span class="material-symbols-outlined" style="font-size:14px">schedule</span>
+                  Hace 45m
+                </div>
+                <button style="width:100%;padding:7px 0;font-size:11px;font-weight:700;border-radius:var(--radius-md);cursor:pointer;text-align:center;border:1px solid var(--clr-outline);background:transparent;color:var(--clr-primary);font-family:Inter,sans-serif;text-transform:uppercase">DETALLES</button>
+              } @else if (hab.estado === 'OCUPADA') {
+                <button style="width:100%;padding:7px 0;font-size:11px;font-weight:700;border-radius:var(--radius-md);cursor:pointer;text-align:center;border:none;background:var(--clr-primary);color:var(--clr-on-primary);font-family:Inter,sans-serif;text-transform:uppercase">ASIGNAR</button>
+              } @else {
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:20px">warning</span>
+                  <span style="font-size:12px;font-weight:700;color:var(--clr-error)">Urgente</span>
+                </div>
+                <button style="width:100%;padding:7px 0;font-size:11px;font-weight:700;border-radius:var(--radius-md);cursor:pointer;text-align:center;border:none;background:var(--clr-tertiary);color:var(--clr-on-tertiary);font-family:Inter,sans-serif;text-transform:uppercase">VER REPORTE</button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div style="background:var(--clr-surface-container-lowest);border:1px solid var(--clr-outline-variant);border-radius:var(--radius-xl);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+    <div style="padding:var(--sp-md) var(--sp-lg);border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;gap:var(--sp-sm);background:var(--clr-surface-container-low)">
+      <h3 style="font-size:16px;font-weight:600;line-height:24px;color:var(--clr-primary);margin:0;display:flex;align-items:center;gap:6px">
+        <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:18px">warning</span>
+        INCIDENCIAS ACTIVAS
+      </h3>
+      <span class="badge badge-error">{{ incidenciasActivas.length }}</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;text-align:left">
         <thead>
-          <tr>
-            <th>Habitación</th>
-            <th>Tipo</th>
-            <th>Motivo</th>
-            <th>Inicio</th>
-            <th style="text-align:right">Acción</th>
+          <tr style="background:var(--clr-surface-container)">
+            <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Habitación</th>
+            <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Tipo</th>
+            <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Motivo</th>
+            <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Inicio</th>
+            <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap;text-align:right">Acción</th>
           </tr>
         </thead>
         <tbody>
           @for (inc of incidenciasActivas; track inc.id) {
-            <tr>
-              <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ inc.habitacionNumero }}</td>
-              <td>
+            <tr class="hover-row">
+              <td style="padding:12px 16px;font-size:13px;font-weight:700;color:var(--clr-primary);border-bottom:1px solid rgba(196,198,207,0.3);font-variant-numeric:tabular-nums">{{ inc.habitacionNumero }}</td>
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3)">
                 <span class="badge" [ngClass]="inc.tipo === 'LIMPIEZA' ? 'badge-dirty' : 'badge-maintenance'">
                   {{ inc.tipo }}
                 </span>
               </td>
-              <td class="text-body-md">{{ inc.motivo }}</td>
-              <td class="text-data-tabular">{{ inc.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</td>
-              <td style="text-align:right">
-                <button class="hs-btn hs-btn-sm hs-btn-success" (click)="finalizar(inc)">
+              <td style="padding:12px 16px;font-size:14px;border-bottom:1px solid rgba(196,198,207,0.3)">{{ inc.motivo }}</td>
+              <td style="padding:12px 16px;font-size:13px;font-weight:500;border-bottom:1px solid rgba(196,198,207,0.3);font-variant-numeric:tabular-nums">{{ inc.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3);text-align:right">
+                <button style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;background:var(--clr-status-available);color:white;border:none;border-radius:var(--radius-md);font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif" (click)="finalizar(inc)">
                   <span class="material-symbols-outlined" style="font-size:16px">check_circle</span>
                   Finalizar
                 </button>
@@ -66,18 +149,99 @@
         </tbody>
       </table>
     </div>
+  </div>
 
-    <!-- New Incident Form -->
-    <div class="hs-card" style="padding:24px;flex:1;align-self:flex-start">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--clr-outline-variant)">
-        <span class="material-symbols-outlined" style="color:var(--clr-secondary)">add_circle</span>
-        <span style="font-size:16px;font-weight:700;color:var(--clr-primary)">Registrar Incidencia</span>
+  <div class="bottom-grid">
+    <div style="background:var(--clr-surface-container-lowest);border:1px solid var(--clr-outline-variant);border-radius:var(--radius-xl);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+      <div style="padding:var(--sp-md) var(--sp-lg);border-bottom:1px solid var(--clr-outline-variant);display:flex;justify-content:space-between;align-items:center;background:var(--clr-surface-container-low)">
+        <h3 style="font-size:16px;font-weight:600;line-height:24px;color:var(--clr-primary);margin:0">Seguimiento de Personal (En vivo)</h3>
+        <button style="background:none;border:none;color:var(--clr-secondary);font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;padding:0">Gestionar Turnos</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;text-align:left">
+          <thead>
+            <tr style="background:var(--clr-surface-container)">
+              <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Personal</th>
+              <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Tarea Actual</th>
+              <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Inicio</th>
+              <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Rendimiento</th>
+              <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap;text-align:right">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="hover-row">
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3)">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;background:var(--clr-secondary-fixed);color:var(--clr-secondary)">MG</div>
+                  <div>
+                    <p style="font-size:14px;font-weight:700;color:var(--clr-primary);margin:0;line-height:1.3">María García</p>
+                    <p style="font-size:10px;color:var(--clr-on-surface-variant);margin:0;line-height:1.3">Zona A - Planta 1</p>
+                  </div>
+                </div>
+              </td>
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3)">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--clr-secondary)"></span>
+                  <span style="font-size:13px;font-weight:500;line-height:18px">Limpieza Hab. 103</span>
+                </div>
+              </td>
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3);font-size:13px;font-weight:500;font-variant-numeric:tabular-nums">10:15 AM</td>
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3)">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <div style="width:96px;height:6px;background:var(--clr-surface-variant);border-radius:var(--radius-full);overflow:hidden">
+                    <div style="height:100%;border-radius:var(--radius-full);background:#22c55e;width:90%"></div>
+                  </div>
+                  <p style="font-size:10px;font-weight:700;margin:0;color:#16a34a">Excelente</p>
+                </div>
+              </td>
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3);text-align:right">
+                <button class="material-symbols-outlined" style="background:none;border:none;color:var(--clr-on-surface-variant);cursor:pointer;font-size:20px;padding:4px">more_vert</button>
+              </td>
+            </tr>
+            <tr class="hover-row">
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3)">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;background:var(--clr-primary-fixed);color:var(--clr-primary)">JR</div>
+                  <div>
+                    <p style="font-size:14px;font-weight:700;color:var(--clr-primary);margin:0;line-height:1.3">Juan Rodríguez</p>
+                    <p style="font-size:10px;color:var(--clr-on-surface-variant);margin:0;line-height:1.3">Mantenimiento Gen.</p>
+                  </div>
+                </div>
+              </td>
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3)">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--clr-on-tertiary-fixed-variant)"></span>
+                  <span style="font-size:13px;font-weight:500;line-height:18px">Reparación Hab. 104</span>
+                </div>
+              </td>
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3);font-size:13px;font-weight:500;font-variant-numeric:tabular-nums">09:40 AM</td>
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3)">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <div style="width:96px;height:6px;background:var(--clr-surface-variant);border-radius:var(--radius-full);overflow:hidden">
+                    <div style="height:100%;border-radius:var(--radius-full);background:var(--clr-secondary-container);width:60%"></div>
+                  </div>
+                  <p style="font-size:10px;font-weight:700;margin:0;color:var(--clr-on-surface-variant)">Promedio</p>
+                </div>
+              </td>
+              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3);text-align:right">
+                <button class="material-symbols-outlined" style="background:none;border:none;color:var(--clr-on-surface-variant);cursor:pointer;font-size:20px;padding:4px">more_vert</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="background:var(--clr-surface-container-lowest);border:1px solid var(--clr-outline-variant);border-radius:var(--radius-xl);padding:var(--sp-lg);box-shadow:0 1px 3px rgba(0,0,0,0.06);align-self:flex-start">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--sp-md);padding-bottom:12px;border-bottom:1px solid var(--clr-outline-variant)">
+        <span class="material-symbols-outlined" style="color:var(--clr-error)">report_problem</span>
+        <h3 style="font-size:16px;font-weight:600;line-height:24px;color:var(--clr-primary);margin:0">Reportar Incidencia</h3>
       </div>
       <form [formGroup]="incidenciaForm" style="display:flex;flex-direction:column;gap:14px">
 
-        <div class="hs-field">
-          <label class="hs-label">Habitación</label>
-          <select class="hs-select" formControlName="habitacionId">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant)">Habitación / Área</label>
+          <select class="report-select" formControlName="habitacionId">
             <option [ngValue]="null" disabled>Seleccionar habitación</option>
             @for (h of habitaciones; track h.id) {
               <option [ngValue]="h.id">{{ h.label }}</option>
@@ -85,65 +249,39 @@
           </select>
         </div>
 
-        <div class="hs-field">
-          <label class="hs-label">Tipo</label>
-          <select class="hs-select" formControlName="tipo">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant)">Tipo</label>
+          <select class="report-select" formControlName="tipo">
             @for (t of tipos; track t.value) {
               <option [value]="t.value">{{ t.label }}</option>
             }
           </select>
         </div>
 
-        <div class="hs-field">
-          <label class="hs-label">Motivo</label>
-          <textarea class="hs-textarea" formControlName="motivo" rows="3" placeholder="Describa el motivo..."></textarea>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant)">Descripción del Problema</label>
+          <textarea class="report-textarea" formControlName="motivo" rows="3" placeholder="Ej: Aire acondicionado no enfría..."></textarea>
         </div>
 
-        <button class="hs-btn hs-btn-primary" style="align-self:flex-start"
-          [disabled]="incidenciaForm.invalid || loading" (click)="save()">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant)">Fotos / Evidencia</label>
+          <div class="upload-zone">
+            <span class="material-symbols-outlined upload-zone__icon" style="font-size:28px;color:var(--clr-on-surface-variant)">add_a_photo</span>
+            <p style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant);margin:8px 0 0">Subir Imagen</p>
+          </div>
+        </div>
+
+        <button style="width:100%;padding:12px 20px;background:var(--clr-error);color:var(--clr-on-error);border:none;border-radius:var(--radius-lg);font-family:Inter,sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:inline-flex;align-items:center;justify-content:center;gap:8px"
+          [disabled]="incidenciaForm.invalid || loading"
+          (click)="save()">
           @if (loading) {
             <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
           }
-          Guardar Incidencia
+          ENVIAR REPORTE URGENTE
         </button>
+
       </form>
     </div>
-
   </div>
 
 </div>
-
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.inc-page {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  background: var(--clr-background);
-  min-height: calc(100vh - 64px);
-}
-.inc-page__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.inc-split {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-}
-@media (max-width: 900px) {
-  .inc-split { flex-direction: column; }
-}
-
-.hs-btn-success {
-  background: var(--clr-status-available);
-  color: white;
-  border: none;
-}
-.hs-btn-success:hover { filter: brightness(1.1); }
-</style>

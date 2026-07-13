@@ -1,12 +1,9 @@
-<!-- USUARIOS — Hospitality Precision design -->
 <div class="usr-page">
-
-  <!-- Page header -->
   <div class="usr-page__header">
     <div>
-      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Gestión de Usuarios</h1>
+      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Gesti&oacute;n de Usuarios</h1>
       <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
-        Administración de personal, roles y registros de seguridad.
+        Administraci&oacute;n de personal, roles y registros de seguridad.
       </p>
     </div>
     <button class="hs-btn hs-btn-primary" (click)="showDialog()">
@@ -18,34 +15,58 @@
   <p-toast />
   <p-confirmDialog />
 
-  <!-- Stats bento -->
+  <!-- Tabs -->
+  <div class="usr-tabs">
+    <button class="usr-tab usr-tab--active">
+      <span class="material-symbols-outlined">group</span>
+      Lista de Personal
+    </button>
+    <button class="usr-tab">
+      <span class="material-symbols-outlined">history</span>
+      Historial de Accesos
+    </button>
+  </div>
+
+  <!-- Statistics Bento Grid -->
   <div class="usr-stats">
     <div class="usr-stat-card">
+      <div class="usr-stat-icon usr-stat-icon--primary">
+        <span class="material-symbols-outlined">group</span>
+      </div>
+      <div class="usr-stat-value" style="color:var(--clr-primary)">{{ usuarios.length }}</div>
       <div class="text-label-caps" style="color:var(--clr-on-surface-variant)">Total Usuarios</div>
-      <div class="text-display-lg" style="color:var(--clr-primary)">{{ usuarios.length }}</div>
     </div>
     <div class="usr-stat-card">
+      <div class="usr-stat-icon usr-stat-icon--secondary">
+        <span class="material-symbols-outlined">check_circle</span>
+      </div>
+      <div class="usr-stat-value" style="color:var(--clr-secondary)">{{ usuarios.filter(u => u.activo).length }}</div>
       <div class="text-label-caps" style="color:var(--clr-on-surface-variant)">Activos</div>
-      <div class="text-display-lg" style="color:var(--clr-secondary)">{{ usuarios.filter(u => u.activo).length }}</div>
     </div>
     <div class="usr-stat-card">
+      <div class="usr-stat-icon usr-stat-icon--admin">
+        <span class="material-symbols-outlined">shield</span>
+      </div>
+      <div class="usr-stat-value" style="color:var(--clr-primary-container)">{{ usuarios.filter(u => u.rol === 'ADMIN').length }}</div>
       <div class="text-label-caps" style="color:var(--clr-on-surface-variant)">Administradores</div>
-      <div class="text-display-lg" style="color:var(--clr-primary-container)">{{ usuarios.filter(u => u.rol === 'ADMIN').length }}</div>
     </div>
     <div class="usr-stat-card">
+      <div class="usr-stat-icon usr-stat-icon--recep">
+        <span class="material-symbols-outlined">support_agent</span>
+      </div>
+      <div class="usr-stat-value" style="color:var(--clr-on-secondary-container)">{{ usuarios.filter(u => u.rol === 'RECEPCIONISTA').length }}</div>
       <div class="text-label-caps" style="color:var(--clr-on-surface-variant)">Recepcionistas</div>
-      <div class="text-display-lg" style="color:var(--clr-on-secondary-container)">{{ usuarios.filter(u => u.rol === 'RECEPCIONISTA').length }}</div>
     </div>
   </div>
 
-  <!-- User table -->
+  <!-- User Table -->
   <div class="hs-card" style="overflow:hidden">
     <table class="hs-table">
       <thead>
         <tr>
           <th>Nombre y Apellido</th>
-          <th>Username</th>
           <th>Rol</th>
+          <th>&Uacute;ltimo Acceso</th>
           <th>Estado</th>
           <th style="text-align:right">Acciones</th>
         </tr>
@@ -55,16 +76,22 @@
           <tr>
             <td>
               <div style="display:flex;align-items:center;gap:10px">
-                <div class="usr-avatar">{{ u.nombreCompleto | slice:0:1 }}{{ u.nombreCompleto?.split(' ')[1]?.charAt(0) || '' }}</div>
+                <div class="usr-avatar"
+                  [style.background]="u.rol === 'ADMIN' ? 'var(--clr-secondary-fixed)' : 'var(--clr-tertiary-fixed)'"
+                  [style.color]="u.rol === 'ADMIN' ? 'var(--clr-on-secondary-fixed)' : 'var(--clr-on-tertiary-fixed)'">
+                  {{ u.nombreCompleto | slice:0:1 }}{{ u.nombreCompleto?.split(' ')[1]?.charAt(0) || '' }}
+                </div>
                 <div>
                   <div class="text-body-md" style="font-weight:600">{{ u.nombreCompleto }}</div>
                   <div class="text-data-tabular" style="color:var(--clr-on-surface-variant);font-size:12px">{{ u.username }}</div>
                 </div>
               </div>
             </td>
-            <td class="text-body-md" style="color:var(--clr-on-surface-variant)">{{ u.username }}</td>
             <td>
               <span class="badge" [ngClass]="u.rol === 'ADMIN' ? 'badge-info' : 'badge-confirmed'">{{ u.rol === 'ADMIN' ? 'Administrador' : 'Recepcionista' }}</span>
+            </td>
+            <td class="text-data-tabular" style="color:var(--clr-on-surface-variant)">
+              {{ u.ultimoAcceso || u.ultimo_acceso || u.createdAt || '&mdash;' }}
             </td>
             <td>
               <div style="display:flex;align-items:center;gap:8px">
@@ -72,14 +99,17 @@
                   <input type="checkbox" [checked]="u.activo" (change)="toggleStatus(u)" />
                   <span class="hs-toggle__slider"></span>
                 </label>
-                <span class="text-body-md" [style.color]="u.activo ? 'var(--clr-status-available)' : 'var(--clr-error)'" style="font-weight:600;font-size:13px">
+                <span class="text-body-md" [style.color]="u.activo ? 'var(--clr-status-available)' : 'var(--clr-on-surface-variant)'" style="font-weight:600;font-size:13px">
                   {{ u.activo ? 'Activo' : 'Inactivo' }}
                 </span>
               </div>
             </td>
-            <td style="text-align:right">
+            <td style="text-align:right;white-space:nowrap">
               <button class="usr-action-btn" (click)="editUser(u)" title="Editar">
                 <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button class="usr-action-btn" title="M&aacute;s">
+                <span class="material-symbols-outlined">more_vert</span>
               </button>
             </td>
           </tr>
@@ -94,76 +124,120 @@
     </table>
   </div>
 
-</div>
-
-<!-- ============ SLIDE PANEL: Crear / Editar ============ -->
-@if (dialogVisible) {
-  <div class="hs-overlay" (click)="dialogVisible = false"></div>
-  <div class="hs-slide-panel">
-
-    <div class="hs-slide-panel__header">
-      <div style="display:flex;align-items:center;gap:10px">
-        <span class="material-symbols-outlined">{{ editing ? 'edit' : 'person_add' }}</span>
-        <span style="font-weight:700;font-size:16px">{{ editing ? 'Editar Usuario' : 'Nuevo Usuario' }}</span>
+  <!-- Historial de Accesos -->
+  <div class="hs-card" style="overflow:hidden">
+    <div class="hs-card-header">
+      <h3 class="text-title-sm" style="color:var(--clr-primary);margin:0">Logs de Seguridad Recientes</h3>
+      <div style="display:flex;gap:8px">
+        <input class="hs-input" style="width:auto;padding:6px 12px;font-size:13px" placeholder="Buscar por usuario..." />
+        <button class="hs-btn hs-btn-outline hs-btn-sm">
+          <span class="material-symbols-outlined" style="font-size:16px">filter_list</span>
+          Filtrar
+        </button>
       </div>
-      <button class="hs-topbar__icon-btn" (click)="dialogVisible = false">
-        <span class="material-symbols-outlined">close</span>
-      </button>
     </div>
-
-    <div class="hs-slide-panel__body">
-      <form [formGroup]="userForm" style="display:flex;flex-direction:column;gap:16px">
-
-        <div class="hs-field">
-          <label class="hs-label">Nombre Completo</label>
-          <div class="hs-input-icon">
-            <span class="material-symbols-outlined">person</span>
-            <input class="hs-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan Pérez" />
-          </div>
-        </div>
-
-        <div class="hs-field">
-          <label class="hs-label">Username</label>
-          <div class="hs-input-icon">
-            <span class="material-symbols-outlined">account_circle</span>
-            <input class="hs-input" type="text" formControlName="username" placeholder="Nombre de usuario" />
-          </div>
-        </div>
-
-        <div class="hs-field">
-          <label class="hs-label">{{ editing ? 'Contraseña (dejar vacío para mantener)' : 'Contraseña' }}</label>
-          <div class="hs-input-icon">
-            <span class="material-symbols-outlined">lock</span>
-            <input class="hs-input" type="password" formControlName="password" placeholder="••••••••" />
-          </div>
-        </div>
-
-        <div class="hs-field">
-          <label class="hs-label">Rol</label>
-          <select class="hs-select" formControlName="rol">
-            <option value="RECEPCIONISTA">Recepcionista</option>
-            <option value="ADMIN">Administrador</option>
-          </select>
-        </div>
-
-      </form>
+    <div style="overflow-x:auto">
+      <table class="hs-table">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Evento</th>
+            <th>Fecha y Hora</th>
+            <th>Direcci&oacute;n IP</th>
+            <th>Dispositivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600;color:var(--clr-primary)">Ricardo D&iacute;az</td>
+            <td><span class="usr-log-event usr-log-event--success"><span class="material-symbols-outlined">login</span> Inicio de sesi&oacute;n</span></td>
+            <td class="text-data-tabular">24/05/2025 - 08:45:12</td>
+            <td class="text-data-tabular" style="color:var(--clr-on-surface-variant)">192.168.1.45</td>
+            <td style="font-size:12px;color:var(--clr-on-surface-variant)">Windows 11 / Chrome 124</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;color:var(--clr-primary)">Maria Lopez</td>
+            <td><span class="usr-log-event usr-log-event--warning"><span class="material-symbols-outlined">logout</span> Cierre de sesi&oacute;n</span></td>
+            <td class="text-data-tabular">23/05/2025 - 23:20:05</td>
+            <td class="text-data-tabular" style="color:var(--clr-on-surface-variant)">192.168.1.12</td>
+            <td style="font-size:12px;color:var(--clr-on-surface-variant)">iPad Pro / Safari Mobile</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;color:var(--clr-primary)">Ricardo D&iacute;az</td>
+            <td><span class="usr-log-event usr-log-event--danger"><span class="material-symbols-outlined">warning</span> Cambio de Contrase&ntilde;a</span></td>
+            <td class="text-data-tabular">23/05/2025 - 09:12:33</td>
+            <td class="text-data-tabular" style="color:var(--clr-on-surface-variant)">192.168.1.45</td>
+            <td style="font-size:12px;color:var(--clr-on-surface-variant)">Windows 11 / Chrome 124</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-
-    <div class="hs-slide-panel__footer">
-      <button class="hs-btn hs-btn-outline" style="flex:1" (click)="dialogVisible = false">
-        Cancelar
-      </button>
-      <button class="hs-btn hs-btn-primary" style="flex:1"
-        [disabled]="userForm.invalid || loading" (click)="save()">
-        @if (loading) {
-          <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
-        }
-        {{ editing ? 'Guardar Cambios' : 'Crear Usuario' }}
-      </button>
-    </div>
-
   </div>
-}
+
+  @if (dialogVisible) {
+    <div class="hs-overlay" (click)="dialogVisible = false"></div>
+    <div class="hs-slide-panel">
+      <div class="hs-slide-panel__header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="material-symbols-outlined">{{ editing ? 'edit' : 'person_add' }}</span>
+          <span style="font-weight:700;font-size:16px">{{ editing ? 'Editar Usuario' : 'Nuevo Usuario' }}</span>
+        </div>
+        <button class="hs-topbar__icon-btn" (click)="dialogVisible = false">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="hs-slide-panel__body">
+        <form [formGroup]="userForm" style="display:flex;flex-direction:column;gap:16px">
+          <div class="hs-field">
+            <label class="hs-label">Nombre Completo</label>
+            <div class="hs-input-icon">
+              <span class="material-symbols-outlined">person</span>
+              <input class="hs-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan P&eacute;rez" />
+            </div>
+          </div>
+
+          <div class="hs-field">
+            <label class="hs-label">Username</label>
+            <div class="hs-input-icon">
+              <span class="material-symbols-outlined">account_circle</span>
+              <input class="hs-input" type="text" formControlName="username" placeholder="Nombre de usuario" />
+            </div>
+          </div>
+
+          <div class="hs-field">
+            <label class="hs-label">{{ editing ? 'Contrase&ntilde;a (dejar vac&iacute;o para mantener)' : 'Contrase&ntilde;a' }}</label>
+            <div class="hs-input-icon">
+              <span class="material-symbols-outlined">lock</span>
+              <input class="hs-input" type="password" formControlName="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" />
+            </div>
+          </div>
+
+          <div class="hs-field">
+            <label class="hs-label">Rol</label>
+            <select class="hs-select" formControlName="rol">
+              <option value="RECEPCIONISTA">Recepcionista</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </div>
+        </form>
+      </div>
+
+      <div class="hs-slide-panel__footer">
+        <button class="hs-btn hs-btn-outline" style="flex:1" (click)="dialogVisible = false">
+          Cancelar
+        </button>
+        <button class="hs-btn hs-btn-primary" style="flex:1"
+          [disabled]="userForm.invalid || loading" (click)="save()">
+          @if (loading) {
+            <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+          }
+          {{ editing ? 'Guardar Cambios' : 'Crear Usuario' }}
+        </button>
+      </div>
+    </div>
+  }
+</div>
 
 <style>
 @keyframes spin { to { transform: rotate(360deg); } }

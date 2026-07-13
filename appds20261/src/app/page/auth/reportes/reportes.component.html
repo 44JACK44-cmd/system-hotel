@@ -1,121 +1,287 @@
-<!-- REPORTES — Hospitality Precision design -->
 <div class="rep-page">
 
-  <!-- Page header -->
+  <!-- Page Header -->
   <div class="rep-page__header">
     <div>
-      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Reportes y Analítica</h1>
-      <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
-        Visualiza ingresos, ocupación y métricas operativas.
-      </p>
+      <h1 class="rep-title">Análisis e Informes</h1>
+      <p class="rep-subtitle">Visión general del rendimiento operativo y financiero.</p>
+    </div>
+    <div class="rep-header-actions">
+      <!-- Filter Bar -->
+      <div class="rep-filter-bar">
+        <div class="rep-filter-item">
+          <span class="material-symbols-outlined rep-filter-icon">calendar_today</span>
+          <span class="rep-filter-label">Ingresos</span>
+          <input class="rep-date-input" type="date" [(ngModel)]="ingresoInicio" />
+          <span class="rep-filter-sep">—</span>
+          <input class="rep-date-input" type="date" [(ngModel)]="ingresoFin" />
+          <button class="rep-filter-btn" (click)="loadIngresos()">
+            <span class="material-symbols-outlined">refresh</span>
+          </button>
+        </div>
+        <div class="rep-filter-divider"></div>
+        <div class="rep-filter-item">
+          <span class="rep-filter-label">Ocup</span>
+          <input class="rep-date-input" type="date" [(ngModel)]="ocupacionFecha" />
+          <button class="rep-filter-btn" (click)="loadOcupacion()">
+            <span class="material-symbols-outlined">refresh</span>
+          </button>
+        </div>
+        <div class="rep-filter-divider"></div>
+        <div class="rep-filter-item">
+          <span class="rep-filter-label">NC</span>
+          <input class="rep-date-input rep-date-input--sm" type="date" [(ngModel)]="noConcretadasInicio" />
+          <span class="rep-filter-sep">—</span>
+          <input class="rep-date-input rep-date-input--sm" type="date" [(ngModel)]="noConcretadasFin" />
+          <button class="rep-filter-btn" (click)="loadNoConcretadas()">
+            <span class="material-symbols-outlined">refresh</span>
+          </button>
+        </div>
+      </div>
+      <!-- Export Buttons -->
+      <div class="rep-export-group">
+        <button class="rep-btn rep-btn-outline" (click)="exportCSV(ingresos ? [ingresos] : [], 'reporte-pdf', ['total','totalAdelantos','totalSaldos','totalExtensiones'])">
+          <span class="material-symbols-outlined rep-btn-icon">picture_as_pdf</span>
+          PDF
+        </button>
+        <button class="rep-btn rep-btn-outline" (click)="exportCSV(ingresos ? [ingresos] : [], 'reporte-excel', ['total','totalAdelantos','totalSaldos','totalExtensiones'])">
+          <span class="material-symbols-outlined rep-btn-icon">table_chart</span>
+          Excel
+        </button>
+      </div>
     </div>
   </div>
 
   <p-toast />
 
-  <!-- KPI grid -->
+  <!-- KPI Metrics Grid -->
   <div class="rep-kpi-grid">
-
-    <!-- Ingresos -->
-    <div class="hs-kpi" style="grid-column:span 2">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div class="hs-kpi__icon" style="background:rgba(5,93,182,0.1)">
-          <span class="material-symbols-outlined" style="color:var(--clr-secondary)">payments</span>
-        </div>
-        <span class="badge badge-success">S/ {{ ingresos?.total || '0.00' }}</span>
-      </div>
-      <div style="margin-top:12px">
-        <div class="hs-kpi__label">Ingresos Totales</div>
-        <div class="hs-kpi__value" style="font-size:24px">S/ {{ ingresos?.total || '0.00' }}</div>
-      </div>
-      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:var(--clr-on-surface-variant)">
-        <span>Adelantos: S/ {{ ingresos?.totalAdelantos || '0.00' }}</span>
-        <span>Saldos: S/ {{ ingresos?.totalSaldos || '0.00' }}</span>
-        <span>Ext.: S/ {{ ingresos?.totalExtensiones || '0.00' }}</span>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <div class="rep-date-field">
-          <span class="material-symbols-outlined">calendar_today</span>
-          <input class="hs-input" type="date" [(ngModel)]="ingresoInicio" />
-        </div>
-        <span style="color:var(--clr-outline);align-self:center">—</span>
-        <div class="rep-date-field">
-          <span class="material-symbols-outlined">calendar_today</span>
-          <input class="hs-input" type="date" [(ngModel)]="ingresoFin" />
-        </div>
-        <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="loadIngresos()">
-          <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
-        </button>
-      </div>
-    </div>
-
     <!-- Ocupación -->
-    <div class="hs-kpi">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div class="hs-kpi__icon" style="background:rgba(67,160,71,0.1)">
-          <span class="material-symbols-outlined" style="color:var(--clr-status-available)">bed</span>
-        </div>
-        @if (ocupacion) {
-          <span class="badge badge-active">{{ ocupacion.porcentajeOcupacion }}%</span>
-        }
+    <div class="rep-kpi-card">
+      <div class="rep-kpi-top">
+        <span class="rep-kpi-label">Ocupación</span>
+        <span class="material-symbols-outlined rep-kpi-icon">hotel</span>
       </div>
-      <div style="margin-top:12px">
-        <div class="hs-kpi__label">Ocupación</div>
-        <div class="hs-kpi__value">{{ ocupacion?.porcentajeOcupacion || 0 }}%</div>
-        <div class="hs-progress" style="margin-top:8px">
-          <div class="hs-progress__fill" [style.width.%]="ocupacion?.porcentajeOcupacion || 0"></div>
+      <div class="rep-kpi-value">{{ ocupacion?.porcentajeOcupacion || 0 }}%</div>
+      @if (ocupacion) {
+        <div class="rep-kpi-trend rep-kpi-trend--up">
+          <span class="material-symbols-outlined rep-trend-icon">trending_up</span>
+          <span>{{ ocupacion.ocupadas }}/{{ ocupacion.totalHabitaciones }} hab.</span>
         </div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--clr-on-surface-variant)">
-          <span>Disp: {{ ocupacion?.disponibles || 0 }}</span>
-          <span>Ocup: {{ ocupacion?.ocupadas || 0 }}</span>
-          <span>Total: {{ ocupacion?.totalHabitaciones || 0 }}</span>
-        </div>
+      }
+      <div class="rep-kpi-progress">
+        <div class="rep-kpi-progress-fill" [style.width.%]="ocupacion?.porcentajeOcupacion || 0"></div>
       </div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <div class="rep-date-field" style="flex:1">
-          <span class="material-symbols-outlined">calendar_today</span>
-          <input class="hs-input" type="date" [(ngModel)]="ocupacionFecha" />
-        </div>
-        <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="loadOcupacion()">
-          <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
-        </button>
+      <div class="rep-kpi-footer">
+        <span>Disp: {{ ocupacion?.disponibles || 0 }}</span>
+        <span>Ocup: {{ ocupacion?.ocupadas || 0 }}</span>
+        <span>Total: {{ ocupacion?.totalHabitaciones || 0 }}</span>
       </div>
     </div>
 
-    <!-- No concretadas -->
-    <div class="hs-kpi">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div class="hs-kpi__icon" style="background:rgba(186,26,26,0.08)">
-          <span class="material-symbols-outlined" style="color:var(--clr-error)">cancelled</span>
-        </div>
+    <!-- RevPAR -->
+    <div class="rep-kpi-card">
+      <div class="rep-kpi-top">
+        <span class="rep-kpi-label">RevPAR</span>
+        <span class="material-symbols-outlined rep-kpi-icon">monetization_on</span>
       </div>
-      <div style="margin-top:12px">
-        <div class="hs-kpi__label">No Concretadas</div>
-        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
-          <div><span style="font-weight:700">Canceladas:</span> {{ noConcretadas?.canceladas || 0 }}</div>
-          <div><span style="font-weight:700">No Show:</span> {{ noConcretadas?.noShow || 0 }}</div>
-          <div><span style="font-weight:700;color:var(--clr-error)">Perdido: S/ {{ noConcretadas?.totalAdelantoPerdido || '0.00' }}</span></div>
-        </div>
+      <div class="rep-kpi-value">
+        S/ {{ (ingresos?.total / (ocupacion?.totalHabitaciones || 1)) | number:'1.2-2' }}
       </div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <div class="rep-date-field" style="flex:1">
-          <span class="material-symbols-outlined">calendar_today</span>
-          <input class="hs-input" type="date" [(ngModel)]="noConcretadasInicio" />
-        </div>
-        <div class="rep-date-field" style="flex:1">
-          <span class="material-symbols-outlined">calendar_today</span>
-          <input class="hs-input" type="date" [(ngModel)]="noConcretadasFin" />
-        </div>
-        <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="loadNoConcretadas()">
-          <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
-        </button>
+      <div class="rep-kpi-trend rep-kpi-trend--up">
+        <span class="material-symbols-outlined rep-trend-icon">trending_up</span>
+        <span>Ingreso / Hab. Disp.</span>
       </div>
     </div>
 
+    <!-- ADR -->
+    <div class="rep-kpi-card">
+      <div class="rep-kpi-top">
+        <span class="rep-kpi-label">ADR</span>
+        <span class="material-symbols-outlined rep-kpi-icon">request_quote</span>
+      </div>
+      <div class="rep-kpi-value">
+        S/ {{ (ingresos?.total / (ocupacion?.ocupadas || 1)) | number:'1.2-2' }}
+      </div>
+      <div class="rep-kpi-trend rep-kpi-trend--down">
+        <span class="material-symbols-outlined rep-trend-icon">trending_down</span>
+        <span>Ingreso / Hab. Ocup.</span>
+      </div>
+    </div>
+
+    <!-- No Concretadas -->
+    <div class="rep-kpi-card">
+      <div class="rep-kpi-top">
+        <span class="rep-kpi-label">No Concretadas</span>
+        <span class="material-symbols-outlined rep-kpi-icon">cancelled</span>
+      </div>
+      <div class="rep-kpi-value rep-kpi-value--sm">
+        <span class="rep-kpi-num">{{ noConcretadas?.canceladas || 0 }}</span>
+        <span class="rep-kpi-num-sep">/</span>
+        <span class="rep-kpi-num">{{ noConcretadas?.noShow || 0 }}</span>
+      </div>
+      <div class="rep-kpi-trend" style="color:var(--clr-error)">
+        <span>Canceladas / No Show</span>
+      </div>
+      <div class="rep-kpi-footer">
+        <span style="color:var(--clr-error);font-weight:600">Perdido: S/ {{ noConcretadas?.totalAdelantoPerdido || '0.00' }}</span>
+      </div>
+    </div>
   </div>
 
-  <!-- Bottom section: 2 cols -->
-  <div class="rep-bottom-grid">
+  <!-- Charts Section -->
+  <div class="rep-charts-grid">
+    <!-- Bar Chart - Occupancy Trend -->
+    <div class="rep-chart-card rep-chart-card--wide">
+      <div class="rep-chart-header">
+        <h3 class="rep-chart-title">Tendencia de Ocupación</h3>
+        <div class="rep-chart-legend">
+          <span class="rep-chart-legend-dot rep-chart-legend-dot--today"></span>
+          <span class="rep-chart-legend-label">Hoy</span>
+        </div>
+      </div>
+      <div class="rep-chart-body">
+        <div class="rep-bars-container">
+          <div class="rep-bar-group">
+            <div class="rep-bar" style="height: 40%"></div>
+            <span class="rep-bar-label">Lu</span>
+          </div>
+          <div class="rep-bar-group">
+            <div class="rep-bar" style="height: 55%"></div>
+            <span class="rep-bar-label">Ma</span>
+          </div>
+          <div class="rep-bar-group">
+            <div class="rep-bar" style="height: 70%"></div>
+            <span class="rep-bar-label">Mi</span>
+          </div>
+          <div class="rep-bar-group">
+            <div class="rep-bar rep-bar--today" [style.height.%]="ocupacion?.porcentajeOcupacion || 0" title="Hoy: {{ ocupacion?.porcentajeOcupacion || 0 }}%">
+              <div class="rep-bar-tooltip">Hoy: {{ ocupacion?.porcentajeOcupacion || 0 }}%</div>
+            </div>
+            <span class="rep-bar-label">Ju</span>
+          </div>
+          <div class="rep-bar-group">
+            <div class="rep-bar" style="height: 60%"></div>
+            <span class="rep-bar-label">Vi</span>
+          </div>
+          <div class="rep-bar-group">
+            <div class="rep-bar" style="height: 45%"></div>
+            <span class="rep-bar-label">Sá</span>
+          </div>
+          <div class="rep-bar-group">
+            <div class="rep-bar" style="height: 50%"></div>
+            <span class="rep-bar-label">Do</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Source of Bookings -->
+    <div class="rep-chart-card">
+      <div class="rep-chart-header">
+        <h3 class="rep-chart-title">Origen de Ingresos</h3>
+      </div>
+      <div class="rep-source-list">
+        <div class="rep-source-item">
+          <div class="rep-source-head">
+            <span>Yape</span>
+            <span class="rep-source-pct">
+              {{ ((ingresosMetodo?.yape || 0) / ((ingresosMetodo?.yape || 0) + (ingresosMetodo?.efectivo || 0) || 1) * 100) | number:'1.0-0' }}%
+            </span>
+          </div>
+          <div class="rep-source-bar">
+            <div class="rep-source-fill rep-source-fill--yape" [style.width.%]="(ingresosMetodo?.yape || 0) / ((ingresosMetodo?.yape || 0) + (ingresosMetodo?.efectivo || 0) || 1) * 100"></div>
+          </div>
+        </div>
+        <div class="rep-source-item">
+          <div class="rep-source-head">
+            <span>Efectivo</span>
+            <span class="rep-source-pct">
+              {{ ((ingresosMetodo?.efectivo || 0) / ((ingresosMetodo?.yape || 0) + (ingresosMetodo?.efectivo || 0) || 1) * 100) | number:'1.0-0' }}%
+            </span>
+          </div>
+          <div class="rep-source-bar">
+            <div class="rep-source-fill rep-source-fill--efectivo" [style.width.%]="(ingresosMetodo?.efectivo || 0) / ((ingresosMetodo?.yape || 0) + (ingresosMetodo?.efectivo || 0) || 1) * 100"></div>
+          </div>
+        </div>
+        <div class="rep-source-item">
+          <div class="rep-source-head">
+            <span>Adelantos</span>
+            <span class="rep-source-pct">
+              {{ ((ingresos?.totalAdelantos || 0) / (ingresos?.total || 1) * 100) | number:'1.0-0' }}%
+            </span>
+          </div>
+          <div class="rep-source-bar">
+            <div class="rep-source-fill rep-source-fill--adelantos" [style.width.%]="(ingresos?.totalAdelantos || 0) / (ingresos?.total || 1) * 100"></div>
+          </div>
+        </div>
+        <div class="rep-source-item">
+          <div class="rep-source-head">
+            <span>Extensiones</span>
+            <span class="rep-source-pct">
+              {{ ((ingresos?.totalExtensiones || 0) / (ingresos?.total || 1) * 100) | number:'1.0-0' }}%
+            </span>
+          </div>
+          <div class="rep-source-bar">
+            <div class="rep-source-fill rep-source-fill--ext" [style.width.%]="(ingresos?.totalExtensiones || 0) / (ingresos?.total || 1) * 100"></div>
+          </div>
+        </div>
+      </div>
+      <p class="rep-source-footnote">* Basado en datos del período seleccionado</p>
+    </div>
+  </div>
+
+  <!-- Revenue Breakdown Table -->
+  <div class="rep-table-card">
+    <div class="rep-table-card-header">
+      <h3 class="rep-table-title">Desglose de Ingresos Mensuales</h3>
+      <div class="rep-table-header-summary">
+        <span class="rep-table-total-label">Total Ingresos:</span>
+        <span class="rep-table-total-value">S/ {{ ingresos?.total || '0.00' }}</span>
+      </div>
+    </div>
+    <div class="rep-table-wrapper">
+      <table class="rep-table">
+        <thead>
+          <tr>
+            <th>Métrica</th>
+            <th>Adelantos</th>
+            <th>Saldos</th>
+            <th>Extensiones</th>
+            <th>Total</th>
+            <th>Ocupación</th>
+            <th>ADR</th>
+            <th>RevPAR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="rep-table-label">Valores del Período</td>
+            <td class="rep-table-number">S/ {{ ingresos?.totalAdelantos || '0.00' }}</td>
+            <td class="rep-table-number">S/ {{ ingresos?.totalSaldos || '0.00' }}</td>
+            <td class="rep-table-number">S/ {{ ingresos?.totalExtensiones || '0.00' }}</td>
+            <td class="rep-table-number rep-table-number--bold">S/ {{ ingresos?.total || '0.00' }}</td>
+            <td class="rep-table-number">{{ ocupacion?.porcentajeOcupacion || 0 }}%</td>
+            <td class="rep-table-number">S/ {{ (ingresos?.total / (ocupacion?.ocupadas || 1)) | number:'1.2-2' }}</td>
+            <td class="rep-table-number">S/ {{ (ingresos?.total / (ocupacion?.totalHabitaciones || 1)) | number:'1.2-2' }}</td>
+          </tr>
+          <tr class="rep-table-row-alt">
+            <td class="rep-table-label">Distribución %</td>
+            <td class="rep-table-number">{{ ((ingresos?.totalAdelantos || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%</td>
+            <td class="rep-table-number">{{ ((ingresos?.totalSaldos || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%</td>
+            <td class="rep-table-number">{{ ((ingresos?.totalExtensiones || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%</td>
+            <td class="rep-table-number rep-table-number--bold">100%</td>
+            <td class="rep-table-number">—</td>
+            <td class="rep-table-number">—</td>
+            <td class="rep-table-number">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Legacy Sections (preserved with all bindings) -->
+  <div class="rep-legacy-grid">
 
     <!-- Historial de Incidencias -->
     <div class="hs-card" style="overflow:hidden">
@@ -200,60 +366,3 @@
   </div>
 
 </div>
-
-<style>
-.rep-page {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  background: var(--clr-background);
-  min-height: calc(100vh - 64px);
-}
-.rep-page__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.rep-kpi-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 16px;
-}
-@media (max-width: 900px) {
-  .rep-kpi-grid { grid-template-columns: 1fr 1fr; }
-  .rep-kpi-grid > :first-child { grid-column: span 2; }
-}
-@media (max-width: 600px) {
-  .rep-kpi-grid { grid-template-columns: 1fr; }
-  .rep-kpi-grid > :first-child { grid-column: span 1; }
-}
-
-.rep-date-field {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
-}
-.rep-date-field .material-symbols-outlined {
-  font-size: 18px;
-  color: var(--clr-outline);
-  flex-shrink: 0;
-}
-.rep-date-field .hs-input {
-  padding: 6px 10px;
-  font-size: 13px;
-}
-
-.rep-bottom-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-@media (max-width: 900px) {
-  .rep-bottom-grid { grid-template-columns: 1fr; }
-}
-</style>

@@ -1,42 +1,74 @@
-<div style="position:fixed;top:0;right:0;width:400px;height:100%;background:white;box-shadow:-4px 0 24px rgba(0,0,0,0.12);z-index:50;overflow-y:auto;display:flex;flex-direction:column">
-  <div style="background:linear-gradient(135deg,#1a365d,#1e40af);color:white;padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
-    <div style="display:flex;align-items:center;gap:0.5rem">
-      <i class="pi pi-dollar" style="font-size:1.1rem"></i>
-      <span style="font-weight:700;font-size:0.95rem">REGISTRAR PAGO</span>
+<div class="hs-slide-panel">
+  <div class="hs-slide-panel__header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="material-symbols-outlined">payments</span>
+      <span style="font-weight:700;font-size:16px">REGISTRAR PAGO</span>
     </div>
-    <i class="pi pi-times" style="cursor:pointer;font-size:1rem;opacity:0.7" (click)="cerrar()"></i>
+    <button class="hs-topbar__icon-btn" (click)="cerrar()">
+      <span class="material-symbols-outlined">close</span>
+    </button>
   </div>
-  <p-toast position="top-center"></p-toast>
-  <div style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;flex:1">
-    <div>
-      <label style="font-size:0.7rem;color:#64748b;font-weight:600;display:block;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.5px">TIPO DE PAGO</label>
-      <p-select [(ngModel)]="tipo" [options]="tipos" optionLabel="label" optionValue="value" styleClass="w-full" [style]="{'border-radius':'8px'}"></p-select>
+  <p-toast position="top-center" />
+
+  <div class="hs-slide-panel__body">
+    <div class="hs-field">
+      <label class="hs-label">TIPO DE PAGO</label>
+      <select class="hs-input" [(ngModel)]="tipo">
+        <option [ngValue]="null" disabled>Seleccionar tipo</option>
+        @for (t of tipos; track t) {
+          <option [ngValue]="t.value || t">{{ t.label || t }}</option>
+        }
+      </select>
     </div>
-    <div>
-      <label style="font-size:0.7rem;color:#64748b;font-weight:600;display:block;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.5px">MONTO</label>
-      <p-inputNumber [(ngModel)]="monto" [min]="0.01" placeholder="S/ 0.00" styleClass="w-full" inputStyleClass="w-full" [style]="{'border-radius':'8px'}"></p-inputNumber>
+
+    <div class="hs-field">
+      <label class="hs-label">MONTO</label>
+      <input class="hs-input" type="number" [(ngModel)]="monto" min="0.01" step="0.01" placeholder="S/ 0.00" />
     </div>
-    <div>
-      <label style="font-size:0.7rem;color:#64748b;font-weight:600;display:block;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.5px">M&eacute;TODO</label>
-      <p-select [(ngModel)]="metodo" [options]="metodos" optionLabel="label" optionValue="value" styleClass="w-full" [style]="{'border-radius':'8px'}"></p-select>
-    </div>
-    <div>
-      <label style="font-size:0.7rem;color:#64748b;font-weight:600;display:block;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.5px">REFERENCIA</label>
-      <input pInputText [(ngModel)]="referencia" placeholder="Referencia (opcional)" style="width:100%;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.8rem" />
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
-      <div>
-        <label style="font-size:0.7rem;color:#64748b;font-weight:600;display:block;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.5px">RESERVA ID</label>
-        <input pInputText [(ngModel)]="reservaId" placeholder="Opcional" style="width:100%;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.8rem" type="number" />
+
+    <div class="hs-field">
+      <label class="hs-label">MÉTODO</label>
+      <div style="display:flex;gap:12px;align-items:center;padding-top:4px">
+        <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer">
+          <input type="radio" name="metodo" [(ngModel)]="metodo" value="YAPE" /> YAPE
+        </label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer">
+          <input type="radio" name="metodo" [(ngModel)]="metodo" value="EFECTIVO" /> EFECTIVO
+        </label>
       </div>
-      <div>
-        <label style="font-size:0.7rem;color:#64748b;font-weight:600;display:block;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.5px">HOSPEDAJE ID</label>
-        <input pInputText [(ngModel)]="hospedajeId" placeholder="Opcional" style="width:100%;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.8rem" type="number" />
+    </div>
+
+    <div class="hs-field">
+      <label class="hs-label">REFERENCIA</label>
+      <input class="hs-input" type="text" [(ngModel)]="referencia" placeholder="Referencia (opcional)" />
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="hs-field">
+        <label class="hs-label">RESERVA ID</label>
+        <input class="hs-input" type="number" [(ngModel)]="reservaId" placeholder="Opcional" />
+      </div>
+      <div class="hs-field">
+        <label class="hs-label">HOSPEDAJE ID</label>
+        <input class="hs-input" type="number" [(ngModel)]="hospedajeId" placeholder="Opcional" />
       </div>
     </div>
-    <div style="display:flex;gap:0.5rem;margin-top:auto;padding-top:0.75rem;border-top:1px solid #f1f5f9">
-      <button pButton label="CANCELAR" styleClass="p-button-outlined p-button-secondary p-button-sm" (click)="cerrar()" [style]="{'flex':1,'border-radius':'8px'}"></button>
-      <button pButton label="REGISTRAR PAGO" styleClass="p-button-sm" [disabled]="!puedeGuardar() || loading" [loading]="loading" (click)="guardar()" [style]="{'flex':1,'border-radius':'8px','background':'linear-gradient(135deg,#1a365d,#2563eb)','border':'none'}"></button>
-    </div>
+  </div>
+
+  <div class="hs-slide-panel__footer">
+    <button class="hs-btn hs-btn-outline" style="flex:1" (click)="cerrar()">
+      Cancelar
+    </button>
+    <button class="hs-btn hs-btn-primary" style="flex:1"
+      [disabled]="!puedeGuardar() || loading" (click)="guardar()">
+      @if (loading) {
+        <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+      }
+      REGISTRAR PAGO
+    </button>
   </div>
 </div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>

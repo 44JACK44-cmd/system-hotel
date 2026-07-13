@@ -25,7 +25,8 @@ export class Login implements OnInit, OnDestroy {
   showPassword = false;
 
   /** Reactive signal — updated every second */
-  fechaHoraActual = signal<string>('');
+  fechaActual = signal<string>('');
+  horaActual = signal<string>('');
   private intervalId: any;
 
   loginForm = this.fb.group({
@@ -44,13 +45,16 @@ export class Login implements OnInit, OnDestroy {
 
   private actualizarFechaHora(): void {
     const ahora = new Date();
-    const fecha = ahora.toLocaleDateString('es-PE', {
-      weekday: 'short', day: '2-digit', month: 'short', year: 'numeric'
-    });
-    const hora = ahora.toLocaleTimeString('es-PE', {
-      hour: '2-digit', minute: '2-digit', hour12: true
-    });
-    this.fechaHoraActual.set(`${fecha}  •  ${hora}`);
+    const dias = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const meses = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const fecha = `${dias[ahora.getDay()]}, ${meses[ahora.getMonth()]} ${ahora.getDate()}, ${ahora.getFullYear()}`;
+    const horas = ahora.getHours();
+    const minutos = ahora.getMinutes();
+    const ampm = horas >= 12 ? 'PM' : 'AM';
+    const h12 = horas % 12 || 12;
+    const mStr = minutos < 10 ? '0' + minutos : '' + minutos;
+    this.fechaActual.set(fecha);
+    this.horaActual.set(`${h12}:${mStr} ${ampm}`);
   }
 
   onSubmit(): void {

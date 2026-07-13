@@ -25,12 +25,7 @@
         <span class="hs-topbar__user-name">{{ nombreUsuario }}</span>
         <span class="hs-topbar__user-role">{{ rolLabel }}</span>
       </div>
-      <div class="hs-topbar__avatar" [title]="nombreUsuario">
-        {{ iniciales }}
-      </div>
-      <button class="hs-topbar__icon-btn" (click)="logout()" title="Cerrar sesión" aria-label="Cerrar sesión">
-        <span class="material-symbols-outlined">logout</span>
-      </button>
+      <div class="hs-topbar__avatar" [title]="nombreUsuario">{{ iniciales }}</div>
     </div>
   </div>
 </header>

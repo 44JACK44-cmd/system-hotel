@@ -1,28 +1,56 @@
-<div style="position:fixed;top:0;right:0;width:400px;height:100%;background:white;box-shadow:-4px 0 24px rgba(0,0,0,0.12);z-index:50;overflow-y:auto;display:flex;flex-direction:column">
-  <div style="background:linear-gradient(135deg,#1a365d,#1e40af);color:white;padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
-    <div style="display:flex;align-items:center;gap:0.5rem">
-      <i class="pi pi-wrench" style="font-size:1.1rem"></i>
-      <span style="font-weight:700;font-size:0.95rem">NUEVA INCIDENCIA</span>
+<div class="hs-slide-panel">
+  <div class="hs-slide-panel__header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="material-symbols-outlined">build</span>
+      <span style="font-weight:700;font-size:16px">NUEVA INCIDENCIA</span>
     </div>
-    <i class="pi pi-times" style="cursor:pointer;font-size:1rem;opacity:0.7" (click)="cerrar()"></i>
+    <button class="hs-topbar__icon-btn" (click)="cerrar()">
+      <span class="material-symbols-outlined">close</span>
+    </button>
   </div>
-  <p-toast position="top-center"></p-toast>
-  <div style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;flex:1">
-    <div>
-      <label style="font-size:0.7rem;color:#64748b;font-weight:600;display:block;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.5px">HABITACI&Oacute;N</label>
-      <p-select [(ngModel)]="habitacionId" [options]="habitaciones" optionLabel="label" optionValue="id" placeholder="Seleccionar habitación" styleClass="w-full" [style]="{'border-radius':'8px'}"></p-select>
+  <p-toast position="top-center" />
+
+  <div class="hs-slide-panel__body">
+    <div class="hs-field">
+      <label class="hs-label">HABITACIÓN</label>
+      <select class="hs-input" [(ngModel)]="habitacionId">
+        <option [ngValue]="null" disabled>Seleccionar habitación</option>
+        @for (h of habitaciones; track h) {
+          <option [ngValue]="h.id || h.value || h">{{ h.label || h }}</option>
+        }
+      </select>
     </div>
-    <div>
-      <label style="font-size:0.7rem;color:#64748b;font-weight:600;display:block;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.5px">TIPO</label>
-      <p-select [(ngModel)]="tipo" [options]="tipos" optionLabel="label" optionValue="value" styleClass="w-full" [style]="{'border-radius':'8px'}"></p-select>
+
+    <div class="hs-field">
+      <label class="hs-label">TIPO</label>
+      <select class="hs-input" [(ngModel)]="tipo">
+        <option [ngValue]="null" disabled>Seleccionar tipo</option>
+        @for (t of tipos; track t) {
+          <option [ngValue]="t.value || t">{{ t.label || t }}</option>
+        }
+      </select>
     </div>
-    <div>
-      <label style="font-size:0.7rem;color:#64748b;font-weight:600;display:block;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.5px">MOTIVO</label>
-      <textarea pInputTextarea [(ngModel)]="motivo" rows="3" placeholder="Describa el motivo..." style="width:100%;border-radius:8px;padding:0.5rem;font-size:0.8rem"></textarea>
+
+    <div class="hs-field">
+      <label class="hs-label">MOTIVO</label>
+      <textarea class="hs-input" [(ngModel)]="motivo" rows="3" placeholder="Describa el motivo..."></textarea>
     </div>
-    <div style="display:flex;gap:0.5rem;margin-top:auto;padding-top:0.75rem;border-top:1px solid #f1f5f9">
-      <button pButton label="CANCELAR" styleClass="p-button-outlined p-button-secondary p-button-sm" (click)="cerrar()" [style]="{'flex':1,'border-radius':'8px'}"></button>
-      <button pButton label="REGISTRAR" styleClass="p-button-sm" [disabled]="!puedeGuardar() || loading" [loading]="loading" (click)="guardar()" [style]="{'flex':1,'border-radius':'8px','background':'linear-gradient(135deg,#1a365d,#2563eb)','border':'none'}"></button>
-    </div>
+  </div>
+
+  <div class="hs-slide-panel__footer">
+    <button class="hs-btn hs-btn-outline" style="flex:1" (click)="cerrar()">
+      Cancelar
+    </button>
+    <button class="hs-btn hs-btn-primary" style="flex:1"
+      [disabled]="!puedeGuardar() || loading" (click)="guardar()">
+      @if (loading) {
+        <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+      }
+      REGISTRAR
+    </button>
   </div>
 </div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>

@@ -1,7 +1,4 @@
-<!-- DASHBOARD RECEPCIONISTA — Stitch design -->
 <div class="dash-page">
-
-  <!-- Quick Actions -->
   <div class="dash-quick-actions">
     <button class="hs-quick-btn" (click)="showNuevaReserva = true" title="Nueva Reserva">
       <span class="material-symbols-outlined">calendar_month</span>
@@ -25,7 +22,6 @@
     </button>
   </div>
 
-  <!-- Room Map -->
   <section class="dash-section">
     <div class="dash-section__header">
       <h2 class="dash-section__title">
@@ -52,7 +48,6 @@
       </div>
     </div>
 
-    <!-- Floor rows -->
     <div class="dash-floors">
       @for (piso of pisos; track piso.numero) {
         <div class="dash-floor">
@@ -95,10 +90,7 @@
     </div>
   </section>
 
-  <!-- Bottom: Reservas + Hospedajes -->
   <div class="dash-bottom-grid">
-
-    <!-- Reservas del día -->
     <div class="hs-card">
       <div class="hs-card-header">
         <h3 class="text-title-sm" style="color:var(--clr-primary);display:flex;align-items:center;gap:6px">
@@ -138,7 +130,6 @@
       </div>
     </div>
 
-    <!-- Hospedajes activos -->
     <div class="hs-card">
       <div class="hs-card-header">
         <h3 class="text-title-sm" style="color:var(--clr-primary);display:flex;align-items:center;gap:6px">
@@ -182,10 +173,8 @@
       </div>
     </div>
   </div>
-
 </div>
 
-<!-- Modales (lógica existente conservada) -->
 @if (showNuevaReserva) {
   <app-nueva-reserva [visible]="showNuevaReserva"
     (close)="showNuevaReserva = false; cargarDatos()"></app-nueva-reserva>

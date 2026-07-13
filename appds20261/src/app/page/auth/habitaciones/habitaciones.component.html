@@ -1,30 +1,24 @@
-<!-- GESTIÓN DE HABITACIONES — Stitch design -->
 <p-toast />
 <p-confirmDialog />
 
 <div class="hab-page">
-
-  <!-- Page header -->
   <div class="hab-page__header">
     <div>
-      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Gestión de Habitaciones</h1>
-      <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
-        Supervise y actualice el inventario en tiempo real.
-      </p>
+      <h1 class="hab-page__title">Gesti&oacute;n de Habitaciones</h1>
+      <p class="hab-page__subtitle">Supervise y actualice el inventario de habitaciones en tiempo real.</p>
     </div>
     @if (isAdmin) {
-      <button class="hs-btn hs-btn-primary" (click)="showDialog()">
+      <button class="hab-btn-primary" (click)="showDialog()">
         <span class="material-symbols-outlined">add</span>
-        Agregar Habitación
+        Agregar Habitaci&oacute;n
       </button>
     }
   </div>
 
-  <!-- Filter bar -->
-  <div class="hs-card" style="padding:16px">
-    <div class="hab-filters">
+  <div class="hab-filter-card">
+    <div class="hab-filter-grid">
       <div class="hs-field">
-        <label class="hs-label">Piso</label>
+        <label class="hs-label">PISO</label>
         <select class="hs-select" [(ngModel)]="filterPiso" (change)="applyFilter()">
           <option value="">Todos los pisos</option>
           @for (p of pisos; track p) {
@@ -33,58 +27,53 @@
         </select>
       </div>
       <div class="hs-field">
-        <label class="hs-label">Estado</label>
+        <label class="hs-label">ESTADO</label>
         <select class="hs-select" [(ngModel)]="filterEstado" (change)="applyFilter()">
           <option value="">Todos los estados</option>
           <option value="DISPONIBLE">Disponible</option>
           <option value="OCUPADA">Ocupada</option>
-          <option value="LIMPIEZA">Limpieza</option>
+          <option value="LIMPIEZA">Sucia</option>
           <option value="MANTENIMIENTO">Mantenimiento</option>
         </select>
       </div>
-      <div class="hs-field" style="flex:2">
-        <label class="hs-label">Búsqueda Rápida</label>
+      <div class="hs-field hab-search-field">
+        <label class="hs-label">B&Uacute;SQUEDA R&Aacute;PIDA</label>
         <div class="hs-input-icon">
           <span class="material-symbols-outlined">search</span>
-          <input class="hs-input" type="text" placeholder="Buscar por número o tipo..."
+          <input class="hs-input" type="text" placeholder="Buscar por n&uacute;mero o tipo..."
             [(ngModel)]="filterSearch" (input)="applyFilter()" />
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Data Table -->
-  <div class="hs-card" style="overflow:hidden">
-    <table class="hs-table">
+  <div class="hab-table-card">
+    <table class="hab-table">
       <thead>
         <tr>
-          <th>NÚMERO</th>
+          <th>N&Uacute;MERO</th>
           <th>TIPO</th>
           <th>PISO</th>
           <th>PRECIO BASE</th>
           <th>ESTADO</th>
-          <th style="text-align:right">ACCIONES</th>
+          <th class="hab-th-actions">ACCIONES</th>
         </tr>
       </thead>
       <tbody>
         @for (h of filteredHabitaciones; track h.id) {
-          <tr>
-            <td>
-              <span class="text-data-tabular" style="font-weight:800;color:var(--clr-primary)">{{ h.numero }}</span>
-            </td>
-            <td class="text-body-md">{{ h.tipo }}</td>
-            <td class="text-body-md">{{ h.piso }}</td>
-            <td class="text-data-tabular">S/ {{ h.precioNoche }}</td>
+          <tr class="hab-table-row">
+            <td class="hab-td-num">{{ h.numero }}</td>
+            <td>{{ h.tipo }}</td>
+            <td>{{ h.piso }}</td>
+            <td class="hab-td-price">S/ {{ h.precioNoche }}</td>
             <td>
               <span class="badge" [ngClass]="getEstadoClass(h.estado)">
-                @if (h.estado === 'OCUPADA') {
-                  <span class="pulse-dot" style="background:var(--clr-status-occupied)"></span>
-                }
-                {{ h.estado }}
+                <span class="badge-dot"></span>
+                {{ h.estado === 'LIMPIEZA' ? 'SUCIA' : h.estado }}
               </span>
             </td>
-            <td style="text-align:right">
-              <div style="display:flex;gap:4px;justify-content:flex-end">
+            <td class="hab-td-actions">
+              <div class="hab-action-group">
                 @if (isAdmin) {
                   <button class="hab-action-btn hab-action-btn--edit"
                     (click)="editHabitacion(h)" title="Editar">
@@ -106,43 +95,56 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="6" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
-              No hay habitaciones que coincidan con los filtros.
-            </td>
+            <td colspan="6" class="hab-empty">No hay habitaciones que coincidan con los filtros.</td>
           </tr>
         }
       </tbody>
     </table>
 
-    <!-- Pagination info -->
-    <div style="padding:12px 16px;background:var(--clr-surface-container-low);border-top:1px solid var(--clr-outline-variant);font-size:12px;color:var(--clr-on-surface-variant)">
-      Mostrando {{ filteredHabitaciones.length }} de {{ habitaciones.length }} habitaciones
+    <div class="hab-pagination">
+      <span class="hab-pagination-info">Mostrando {{ filteredHabitaciones.length }} de {{ habitaciones.length }} habitaciones</span>
+      <div class="hab-pagination-buttons">
+        <button class="hab-page-arrow" disabled>
+          <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <button class="hab-page-num active">1</button>
+        <button class="hab-page-num">2</button>
+        <button class="hab-page-num">3</button>
+        <button class="hab-page-arrow">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
     </div>
   </div>
-
 </div>
 
-<!-- ============ SLIDE PANEL: Crear / Editar ============ -->
 @if (dialogVisible) {
-  <div class="hs-overlay" (click)="dialogVisible = false"></div>
-  <div class="hs-slide-panel">
-
-    <div class="hs-slide-panel__header">
-      <div style="display:flex;align-items:center;gap:10px">
+  <div class="hab-overlay" (click)="dialogVisible = false"></div>
+  <div class="hab-slide-panel">
+    <div class="hab-slide-header">
+      <div class="hab-slide-header-left">
         <span class="material-symbols-outlined">{{ editing ? 'edit' : 'add' }}</span>
-        <span style="font-weight:700;font-size:16px">{{ editing ? 'Editar Habitación' : 'Nueva Habitación' }}</span>
+        <span class="hab-slide-title">{{ editing ? 'Editar Habitaci&oacute;n' : 'Nueva Habitaci&oacute;n' }}</span>
       </div>
-      <button class="hs-topbar__icon-btn" (click)="dialogVisible = false">
+      <button class="hab-slide-close" (click)="dialogVisible = false">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
 
-    <div class="hs-slide-panel__body">
-      <form [formGroup]="habForm" style="display:flex;flex-direction:column;gap:16px">
+    <div class="hab-slide-body">
+      <div class="hab-room-image">
+        <div class="hab-room-img-placeholder">
+          <span class="material-symbols-outlined" style="font-size:48px;line-height:1;color:var(--clr-outline)">image</span>
+        </div>
+        <button class="hab-img-btn" type="button">
+          <span class="material-symbols-outlined">photo_camera</span>
+        </button>
+      </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <form [formGroup]="habForm" class="hab-form">
+        <div class="hab-form-row">
           <div class="hs-field">
-            <label class="hs-label">Número de Habitación</label>
+            <label class="hs-label">N&uacute;mero de Habitaci&oacute;n</label>
             <input class="hs-input" type="text" formControlName="numero" placeholder="Ej: 101" />
           </div>
           <div class="hs-field">
@@ -156,7 +158,7 @@
         </div>
 
         <div class="hs-field">
-          <label class="hs-label">Tipo de Habitación</label>
+          <label class="hs-label">Tipo de Habitaci&oacute;n</label>
           <select class="hs-select" formControlName="tipo">
             @for (t of tipos; track t.value) {
               <option [value]="t.value">{{ t.label }}</option>
@@ -173,10 +175,41 @@
           </div>
         </div>
 
+        <div class="hs-field">
+          <label class="hs-label">Estado Actual</label>
+          <div class="hab-radio-group">
+            <label class="hab-radio-option">
+              <input type="radio" name="slideStatus" value="DISPONIBLE" checked />
+              <span>Disponible</span>
+            </label>
+            <label class="hab-radio-option">
+              <input type="radio" name="slideStatus" value="OCUPADA" />
+              <span>Ocupada</span>
+            </label>
+            <label class="hab-radio-option">
+              <input type="radio" name="slideStatus" value="LIMPIEZA" />
+              <span>Sucia</span>
+            </label>
+            <label class="hab-radio-option">
+              <input type="radio" name="slideStatus" value="MANTENIMIENTO" />
+              <span>Mantenimiento</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="hs-field">
+          <label class="hs-label">Amenidades</label>
+          <div class="hab-chips">
+            <span class="hab-chip"><span class="material-symbols-outlined" style="font-size:16px">wifi</span> WiFi</span>
+            <span class="hab-chip"><span class="material-symbols-outlined" style="font-size:16px">ac_unit</span> Aire Acond.</span>
+            <span class="hab-chip"><span class="material-symbols-outlined" style="font-size:16px">tv</span> Smart TV</span>
+            <button class="hab-chip-add" type="button">+ Agregar</button>
+          </div>
+        </div>
       </form>
     </div>
 
-    <div class="hs-slide-panel__footer">
+    <div class="hab-slide-footer">
       <button class="hs-btn hs-btn-outline" style="flex:1" (click)="dialogVisible = false">
         Cancelar
       </button>
@@ -185,56 +218,52 @@
         @if (loading) {
           <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
         }
-        {{ editing ? 'Guardar Cambios' : 'Crear Habitación' }}
+        {{ editing ? 'Guardar Cambios' : 'Crear Habitaci&oacute;n' }}
       </button>
     </div>
-
   </div>
 }
 
-<!-- ============ SLIDE PANEL: Cambiar Estado ============ -->
 @if (estadoDialogVisible) {
   <div class="hs-overlay" (click)="estadoDialogVisible = false"></div>
   <div class="hs-slide-panel">
-
-  <div class="hs-slide-panel__header">
-    <div style="display:flex;align-items:center;gap:10px">
-      <span class="material-symbols-outlined">swap_horiz</span>
-      <span style="font-weight:700;font-size:16px">Cambiar Estado — Hab. {{ selectedHabitacion?.numero }}</span>
-    </div>
-    <button class="hs-topbar__icon-btn" (click)="estadoDialogVisible = false">
-      <span class="material-symbols-outlined">close</span>
-    </button>
-  </div>
-
-  <div class="hs-slide-panel__body">
-    <p class="text-body-md" style="color:var(--clr-on-surface-variant)">
-      Estado actual:
-      <span class="badge" [ngClass]="getEstadoClass(selectedHabitacion?.estado)">{{ selectedHabitacion?.estado }}</span>
-    </p>
-    <div class="hab-status-grid">
-      <button class="hab-status-btn hab-status-btn--available" (click)="cambiarEstado('DISPONIBLE')">
-        <span class="material-symbols-outlined filled-icon">check_circle</span>
-        DISPONIBLE
-      </button>
-      <button class="hab-status-btn hab-status-btn--occupied" (click)="cambiarEstado('OCUPADA')">
-        <span class="material-symbols-outlined">person</span>
-        OCUPADA
-      </button>
-      <button class="hab-status-btn hab-status-btn--dirty" (click)="cambiarEstado('LIMPIEZA')">
-        <span class="material-symbols-outlined">cleaning_services</span>
-        LIMPIEZA
-      </button>
-      <button class="hab-status-btn hab-status-btn--maintenance" (click)="cambiarEstado('MANTENIMIENTO')">
-        <span class="material-symbols-outlined">engineering</span>
-        MANTENIMIENTO
+    <div class="hs-slide-panel__header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="material-symbols-outlined">swap_horiz</span>
+        <span style="font-weight:700;font-size:16px">Cambiar Estado &mdash; Hab. {{ selectedHabitacion?.numero }}</span>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="estadoDialogVisible = false">
+        <span class="material-symbols-outlined">close</span>
       </button>
     </div>
-  </div>
 
-</div>
+    <div class="hs-slide-panel__body">
+      <p class="text-body-md" style="color:var(--clr-on-surface-variant)">
+        Estado actual:
+        <span class="badge" [ngClass]="getEstadoClass(selectedHabitacion?.estado)">{{ selectedHabitacion?.estado === 'LIMPIEZA' ? 'SUCIA' : selectedHabitacion?.estado }}</span>
+      </p>
+      <div class="hab-status-grid">
+        <button class="hab-status-btn hab-status-btn--available" (click)="cambiarEstado('DISPONIBLE')">
+          <span class="material-symbols-outlined filled-icon">check_circle</span>
+          DISPONIBLE
+        </button>
+        <button class="hab-status-btn hab-status-btn--occupied" (click)="cambiarEstado('OCUPADA')">
+          <span class="material-symbols-outlined">person</span>
+          OCUPADA
+        </button>
+        <button class="hab-status-btn hab-status-btn--dirty" (click)="cambiarEstado('LIMPIEZA')">
+          <span class="material-symbols-outlined">cleaning_services</span>
+          LIMPIEZA
+        </button>
+        <button class="hab-status-btn hab-status-btn--maintenance" (click)="cambiarEstado('MANTENIMIENTO')">
+          <span class="material-symbols-outlined">engineering</span>
+          MANTENIMIENTO
+        </button>
+      </div>
+    </div>
+  </div>
 }
 
 <style>
-@keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>

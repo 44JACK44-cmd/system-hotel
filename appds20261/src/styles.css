@@ -7,7 +7,6 @@
 
 /* ---------- CSS Custom Properties (Stitch tokens) ---------- */
 :root {
-  /* Brand */
   --clr-primary:                  #002046;
   --clr-primary-container:        #1b365d;
   --clr-on-primary:               #ffffff;
@@ -36,7 +35,6 @@
   --clr-on-tertiary-fixed:        #191c1e;
   --clr-on-tertiary-fixed-variant:#444749;
 
-  /* Surfaces */
   --clr-background:               #f1f5f9;
   --clr-on-background:            #1a1b1e;
   --clr-surface:                  #faf9fd;
@@ -54,23 +52,19 @@
   --clr-inverse-on-surface:       #f1f0f4;
   --clr-surface-tint:             #465f88;
 
-  /* Outlines */
   --clr-outline:                  #74777f;
   --clr-outline-variant:          #c4c6cf;
 
-  /* Semantic — status */
   --clr-status-available:         #43a047;
   --clr-status-occupied:          #d32f2f;
   --clr-status-dirty:             #fbc02d;
   --clr-status-maintenance:       #6b7280;
 
-  /* Error */
   --clr-error:                    #ba1a1a;
   --clr-on-error:                 #ffffff;
   --clr-error-container:          #ffdad6;
   --clr-on-error-container:       #93000a;
 
-  /* Spacing (4px baseline) */
   --sp-xs:   4px;
   --sp-sm:   8px;
   --sp-md:   16px;
@@ -80,7 +74,6 @@
   --sp-margin-mobile:  12px;
   --sp-margin-desktop: 24px;
 
-  /* Border radius */
   --radius-sm:  2px;
   --radius-md:  4px;
   --radius-lg:  8px;
@@ -88,7 +81,6 @@
   --radius-full: 9999px;
 }
 
-/* ---------- Base reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {
@@ -103,7 +95,6 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ---------- Material Symbols ---------- */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   vertical-align: middle;
@@ -112,7 +103,6 @@ html, body {
 }
 .filled-icon { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
 
-/* ---------- Typography scale ---------- */
 .text-display-lg  { font-size: 30px; font-weight: 700; line-height: 38px; letter-spacing: -0.02em; }
 .text-headline-md { font-size: 20px; font-weight: 600; line-height: 28px; }
 .text-title-sm    { font-size: 16px; font-weight: 600; line-height: 24px; }
@@ -120,7 +110,6 @@ html, body {
 .text-label-caps  { font-size: 12px; font-weight: 700; line-height: 16px; letter-spacing: 0.05em; text-transform: uppercase; }
 .text-data-tabular{ font-size: 13px; font-weight: 500; line-height: 18px; font-variant-numeric: tabular-nums; }
 
-/* ---------- App layout shell ---------- */
 app-root { display: block; height: 100vh; overflow: hidden; }
 
 .hs-shell {
@@ -142,7 +131,6 @@ app-root { display: block; height: 100vh; overflow: hidden; }
   background-color: var(--clr-background);
 }
 
-/* ---------- Scrollbar ---------- */
 .hs-main::-webkit-scrollbar,
 .hs-scroll::-webkit-scrollbar { width: 4px; }
 .hs-main::-webkit-scrollbar-track,
@@ -150,7 +138,6 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 .hs-main::-webkit-scrollbar-thumb,
 .hs-scroll::-webkit-scrollbar-thumb { background: var(--clr-outline-variant); border-radius: 2px; }
 
-/* ---------- Status badges ---------- */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -175,7 +162,6 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 .badge-error      { background: #fee2e2; color: #991b1b; }
 .badge-info       { background: #dbeafe; color: #1e40af; }
 
-/* ---------- HS Cards ---------- */
 .hs-card {
   background: var(--clr-surface-container-lowest);
   border: 1px solid var(--clr-outline-variant);
@@ -194,7 +180,6 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 
 .hs-card-body { padding: var(--sp-lg); }
 
-/* ---------- HS Tables ---------- */
 .hs-table { width: 100%; border-collapse: collapse; text-align: left; }
 .hs-table thead tr { background-color: var(--clr-surface-container-low); }
 .hs-table th {
@@ -210,7 +195,6 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 .hs-table tbody tr:hover { background-color: rgba(244,243,247,0.5); transition: background 0.15s; }
 .hs-table tbody tr.selected { background-color: rgba(213,227,255,0.3); outline: 1px solid var(--clr-secondary) inset; }
 
-/* ---------- HS Buttons ---------- */
 .hs-btn {
   display: inline-flex;
   align-items: center;
@@ -228,16 +212,10 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 }
 .hs-btn:active { transform: scale(0.97); }
 
-.hs-btn-primary {
-  background: var(--clr-primary);
-  color: var(--clr-on-primary);
-}
+.hs-btn-primary { background: var(--clr-primary); color: var(--clr-on-primary); }
 .hs-btn-primary:hover { filter: brightness(1.15); }
 
-.hs-btn-secondary {
-  background: var(--clr-secondary);
-  color: var(--clr-on-secondary);
-}
+.hs-btn-secondary { background: var(--clr-secondary); color: var(--clr-on-secondary); }
 .hs-btn-secondary:hover { filter: brightness(1.1); }
 
 .hs-btn-outline {
@@ -247,16 +225,12 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 }
 .hs-btn-outline:hover { background: var(--clr-surface-container-low); }
 
-.hs-btn-danger {
-  background: var(--clr-error);
-  color: var(--clr-on-error);
-}
+.hs-btn-danger { background: var(--clr-error); color: var(--clr-on-error); }
 .hs-btn-danger:hover { filter: brightness(1.1); }
 
 .hs-btn-sm { padding: 5px 12px; font-size: 12px; }
 .hs-btn-lg { padding: 12px 28px; font-size: 14px; }
 
-/* ---------- HS Form fields ---------- */
 .hs-field { display: flex; flex-direction: column; gap: 4px; }
 
 .hs-label {
@@ -296,7 +270,6 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 }
 .hs-input-icon .hs-input { padding-left: 36px; }
 
-/* ---------- HS Room Cards (dashboard map) ---------- */
 .hs-room-card {
   background: var(--clr-surface-container-lowest);
   border: 1px solid var(--clr-outline-variant);
@@ -306,7 +279,7 @@ app-root { display: block; height: 100vh; overflow: hidden; }
   cursor: pointer;
   transition: box-shadow 0.15s, transform 0.1s;
 }
-.hs-room-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.hs-room-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-1px); }
 .hs-room-card:active { transform: scale(0.98); }
 
 .hs-room-card.available { border-left: 4px solid var(--clr-status-available); }
@@ -328,7 +301,12 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 
 .hs-room-card__body { padding: 10px; }
 
-/* ---------- Quick action buttons ---------- */
+/* Table row hover */
+.hs-table tbody tr { transition: background 0.15s; }
+.hs-table tbody tr:hover { background: rgba(239,237,241,0.6); }
+.hs-table tbody tr:nth-child(even) { background: rgba(248,250,252,0.5); }
+.hs-table tbody tr:nth-child(even):hover { background: rgba(239,237,241,0.6); }
+
 .hs-quick-btn {
   display: flex;
   flex-direction: column;
@@ -343,11 +321,12 @@ app-root { display: block; height: 100vh; overflow: hidden; }
   gap: 6px;
   transition: all 0.15s;
 }
-.hs-quick-btn:hover { background: var(--clr-primary); }
-.hs-quick-btn .material-symbols-outlined { font-size: 28px; }
+.hs-quick-btn { box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.hs-quick-btn:hover { background: var(--clr-primary); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.hs-quick-btn .material-symbols-outlined { font-size: 28px; transition: transform 0.2s; }
+.hs-quick-btn:hover .material-symbols-outlined { transform: scale(1.1); }
 .hs-quick-btn span.label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
 
-/* ---------- KPI Bento Card ---------- */
 .hs-kpi {
   background: var(--clr-surface-container-lowest);
   border: 1px solid var(--clr-outline-variant);
@@ -381,7 +360,6 @@ app-root { display: block; height: 100vh; overflow: hidden; }
   color: var(--clr-on-surface-variant);
 }
 
-/* ---------- Slide panel overlay ---------- */
 .hs-overlay {
   position: fixed;
   inset: 0;
@@ -433,7 +411,6 @@ app-root { display: block; height: 100vh; overflow: hidden; }
   flex-shrink: 0;
 }
 
-/* ---------- PrimeNG overrides for Stitch look ---------- */
 .p-datatable .p-datatable-thead > tr > th {
   background: var(--clr-surface-container-low) !important;
   color: var(--clr-on-surface-variant) !important;
@@ -452,42 +429,26 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 .p-datatable .p-datatable-tbody > tr:hover {
   background: rgba(244,243,247,0.6) !important;
 }
-.p-button {
-  border-radius: var(--radius-lg) !important;
-  font-weight: 600 !important;
-  font-family: 'Inter', sans-serif !important;
-}
-.p-inputtext {
-  border-radius: var(--radius-lg) !important;
-  font-family: 'Inter', sans-serif !important;
-  font-size: 14px !important;
-}
-.p-dialog .p-dialog-header {
-  background: var(--clr-primary) !important;
-  color: white !important;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
-}
+.p-button { border-radius: var(--radius-lg) !important; font-weight: 600 !important; font-family: 'Inter', sans-serif !important; }
+.p-inputtext { border-radius: var(--radius-lg) !important; font-family: 'Inter', sans-serif !important; font-size: 14px !important; }
+.p-dialog .p-dialog-header { background: var(--clr-primary) !important; color: white !important; border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important; }
 .p-dialog .p-dialog-header .p-dialog-title { color: white !important; font-weight: 700 !important; }
 .p-dialog .p-dialog-header-icon { color: rgba(255,255,255,0.7) !important; }
 .p-dialog .p-dialog-header-icon:hover { color: white !important; background: rgba(255,255,255,0.1) !important; }
 
-/* ---------- Sidebar nav active state ---------- */
 .sidebar-nav-active {
   background-color: var(--clr-secondary-container) !important;
   color: var(--clr-on-secondary-container) !important;
   font-weight: 700 !important;
 }
 
-/* ---------- Utility helpers ---------- */
 .truncate-1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pulse-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse-anim 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+.pulse-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse-anim 2s cubic-bezier(0.4,0,0.6,1) infinite; display: inline-block; }
 @keyframes pulse-anim { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* ---------- Progress bar ---------- */
 .hs-progress { height: 6px; border-radius: var(--radius-full); background: var(--clr-surface-container-highest); overflow: hidden; }
 .hs-progress__fill { height: 100%; border-radius: var(--radius-full); background: var(--clr-secondary); transition: width 0.4s ease; }
 
-/* ---------- Toggle switch ---------- */
 .hs-toggle { position: relative; display: inline-block; width: 40px; height: 22px; }
 .hs-toggle input { opacity: 0; width: 0; height: 0; }
 .hs-toggle__slider {
@@ -512,7 +473,6 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 .hs-toggle input:checked + .hs-toggle__slider { background-color: var(--clr-secondary); }
 .hs-toggle input:checked + .hs-toggle__slider::before { transform: translateX(18px); }
 
-/* ---------- Mobile bottom nav ---------- */
 .hs-bottom-nav {
   display: none;
   background: var(--clr-primary);
@@ -546,7 +506,6 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 .hs-bottom-nav__item .material-symbols-outlined { font-size: 22px; }
 .hs-bottom-nav__item span.nav-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
 
-/* ---------- Voucher / PDF print utility ---------- */
 @media print {
   .no-print { display: none !important; }
   .hs-voucher { font-family: 'Inter', monospace; font-size: 12px; }

@@ -1,78 +1,193 @@
-<!-- PAGOS — Hospitality Precision design -->
 <div class="pag-page">
 
-  <!-- Page header -->
   <div class="pag-page__header">
     <div>
-      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Pagos y Caja</h1>
+      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Gesti&oacute;n de Caja Diaria</h1>
       <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
-        Historial de transacciones y registro de pagos.
+        Control de ingresos, gastos y cierre de turno para la sucursal Abancay.
       </p>
     </div>
-    <button class="hs-btn hs-btn-primary" (click)="showDialog()">
-      <span class="material-symbols-outlined">payments</span>
-      Nuevo Pago
-    </button>
+    <div class="flex" style="gap:12px;align-items:center">
+      <button class="hs-btn hs-btn-outline" (click)="showDialog()">
+        <span class="material-symbols-outlined">add_circle</span>
+        Nuevo Pago
+      </button>
+      <button class="hs-btn hs-btn-primary" type="button">
+        <span class="material-symbols-outlined">lock</span>
+        Realizar Cierre de Caja
+      </button>
+    </div>
   </div>
 
   <p-toast />
 
-  <!-- Search -->
-  <div class="hs-card" style="padding:16px">
-    <div class="hs-field">
-      <label class="hs-label">Búsqueda</label>
-      <div class="hs-input-icon">
-        <span class="material-symbols-outlined">search</span>
-        <input class="hs-input" type="text" placeholder="Buscar por ID, tipo, método o referencia..."
-          [(ngModel)]="searchTerm" (input)="filter()" />
+  <div class="pag-kpi-grid">
+    <div class="hs-kpi">
+      <div class="pag-kpi-top">
+        <span class="material-symbols-outlined pag-kpi-icon pag-kpi-icon--secondary">payments</span>
+        <span class="hs-kpi__label">EFECTIVO</span>
+      </div>
+      <div>
+        <p class="hs-kpi__value">S/ 1,420.50</p>
+        <p class="pag-kpi-trend">
+          <span class="material-symbols-outlined" style="font-size:14px">trending_up</span> +12% vs ayer
+        </p>
+      </div>
+    </div>
+    <div class="hs-kpi">
+      <div class="pag-kpi-top">
+        <span class="material-symbols-outlined pag-kpi-icon pag-kpi-icon--primary">credit_card</span>
+        <span class="hs-kpi__label">TARJETAS</span>
+      </div>
+      <div>
+        <p class="hs-kpi__value">S/ 840.00</p>
+        <p class="pag-kpi-sub">VISA / Mastercard</p>
+      </div>
+    </div>
+    <div class="hs-kpi">
+      <div class="pag-kpi-top">
+        <span class="material-symbols-outlined pag-kpi-icon pag-kpi-icon--tertiary">qr_code_2</span>
+        <span class="hs-kpi__label">YAPE / PLIN</span>
+      </div>
+      <div>
+        <p class="hs-kpi__value">S/ 315.00</p>
+        <p class="pag-kpi-sub">Billeteras digitales</p>
+      </div>
+    </div>
+    <div class="hs-kpi">
+      <div class="pag-kpi-top">
+        <span class="material-symbols-outlined pag-kpi-icon pag-kpi-icon--error">shopping_cart_checkout</span>
+        <span class="hs-kpi__label">GASTOS</span>
+      </div>
+      <div>
+        <p class="hs-kpi__value" style="color:var(--clr-error)">- S/ 120.00</p>
+        <p class="pag-kpi-sub" style="color:var(--clr-error);font-weight:500">Salidas registradas</p>
       </div>
     </div>
   </div>
 
-  <!-- Data Table -->
-  <div class="hs-card" style="overflow:hidden">
-    <table class="hs-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Tipo</th>
-          <th>Monto</th>
-          <th>Método</th>
-          <th>Referencia</th>
-          <th>Fecha</th>
-          <th>Usuario</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (p of filteredPagos; track p.id) {
-          <tr>
-            <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">#{{ p.id }}</td>
-            <td>
-              <span class="badge" [ngClass]="getPagoBadge(p.tipo)">{{ p.tipo }}</span>
-            </td>
-            <td class="text-data-tabular" style="font-weight:600">S/ {{ p.monto }}</td>
-            <td class="text-body-md">{{ p.metodo }}</td>
-            <td class="text-data-tabular" style="color:var(--clr-on-surface-variant)">{{ p.referencia || '-' }}</td>
-            <td class="text-data-tabular">{{ p.fechaPago | date:'dd/MM/yy HH:mm' }}</td>
-            <td class="text-body-md" style="color:var(--clr-on-surface-variant)">{{ p.usuarioNombre }}</td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="7" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
-              No hay pagos registrados.
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-    <div style="padding:12px 16px;background:var(--clr-surface-container-low);border-top:1px solid var(--clr-outline-variant);font-size:12px;color:var(--clr-on-surface-variant)">
-      Mostrando {{ filteredPagos.length }} de {{ pagos.length }} pago(s)
+  <div class="pag-main-grid">
+    <div class="hs-card" style="overflow:hidden;display:flex;flex-direction:column;height:500px">
+      <div class="pag-table-header">
+        <h3 class="text-title-sm" style="color:var(--clr-primary);margin:0">Historial de Transacciones</h3>
+        <div class="hs-field" style="max-width:260px;margin:0">
+          <div class="hs-input-icon" style="margin:0">
+            <span class="material-symbols-outlined">search</span>
+            <input class="hs-input" type="text" placeholder="Buscar por ID, tipo, m&eacute;todo o referencia..."
+              [(ngModel)]="searchTerm" (input)="filter()" />
+          </div>
+        </div>
+      </div>
+      <div class="pag-table-scroll">
+        <table class="hs-table">
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Concepto</th>
+              <th>M&eacute;todo</th>
+              <th style="text-align:right">Monto</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of filteredPagos; track p.id) {
+              <tr>
+                <td class="text-data-tabular">{{ p.fechaPago | date:'HH:mm' }}</td>
+                <td>
+                  <p class="text-body-md" style="font-weight:700;color:var(--clr-primary);margin:0">#{{ p.id }} {{ p.tipo }}</p>
+                  <p class="text-xs" style="color:var(--clr-on-surface-variant);margin:2px 0 0">{{ p.referencia || 'Sin referencia' }}</p>
+                </td>
+                <td>
+                  <span class="pag-metodo-badge">
+                    <span class="material-symbols-outlined" style="font-size:16px">payments</span>
+                    {{ p.metodo }}
+                  </span>
+                </td>
+                <td class="text-data-tabular" style="text-align:right;font-weight:700;color:var(--clr-primary)">S/ {{ p.monto }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getPagoBadge(p.tipo)">
+                    @switch (p.tipo) {
+                      @case ('ADELANTO') { Adelanto }
+                      @case ('SALDO') { Saldo }
+                      @case ('EXTENSION') { Extensi&oacute;n }
+                      @default { {{ p.tipo }} }
+                    }
+                  </span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+                  No hay pagos registrados.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pag-table-footer">
+        Mostrando {{ filteredPagos.length }} de {{ pagos.length }} pago(s)
+      </div>
+    </div>
+
+    <div class="pag-sidebar">
+      <div class="hs-card" style="padding:24px">
+        <h3 class="text-title-sm" style="color:var(--clr-primary);margin:0 0 16px;display:flex;align-items:center;gap:8px">
+          <span class="material-symbols-outlined" style="color:var(--clr-error)">receipt_long</span>
+          Registro Manual de Gasto
+        </h3>
+        <div class="pag-form-stack">
+          <div class="hs-field">
+            <label class="hs-label">CONCEPTO DEL GASTO</label>
+            <input class="hs-input" type="text" placeholder="Ej: &Uacute;tiles de limpieza" />
+          </div>
+          <div class="hs-field">
+            <label class="hs-label">CATEGOR&Iacute;A</label>
+            <select class="hs-select">
+              <option>Mantenimiento</option>
+              <option>Servicios P&uacute;blicos</option>
+              <option>Insumos</option>
+              <option>Otros</option>
+            </select>
+          </div>
+          <div class="hs-field">
+            <label class="hs-label">MONTO (S/)</label>
+            <input class="hs-input" type="number" placeholder="0.00" step="0.01" />
+          </div>
+          <button class="hs-btn hs-btn-danger" style="width:100%;justify-content:center;padding:12px" type="button">
+            Registrar Salida de Dinero
+          </button>
+        </div>
+      </div>
+
+      <div class="pag-balance-card">
+        <div class="pag-balance-content">
+          <h3 class="pag-balance-label">BALANCE DEL TURNO</h3>
+          <div class="pag-balance-amount-row">
+            <span class="pag-balance-amount">S/ 2,455.50</span>
+            <span class="pag-balance-neto">Neto</span>
+          </div>
+          <div class="pag-balance-divider"></div>
+          <div class="pag-balance-rows">
+            <div>
+              <p class="pag-balance-stat-label">INGRESOS</p>
+              <p class="pag-balance-stat-value">S/ 2,575.50</p>
+            </div>
+            <div>
+              <p class="pag-balance-stat-label">EGRESOS</p>
+              <p class="pag-balance-stat-value">S/ 120.00</p>
+            </div>
+          </div>
+        </div>
+        <div class="pag-balance-icon-bg">
+          <span class="material-symbols-outlined">account_balance_wallet</span>
+        </div>
+      </div>
     </div>
   </div>
 
 </div>
 
-<!-- ============ SLIDE PANEL: Nuevo Pago ============ -->
 @if (dialogVisible) {
   <div class="hs-overlay" (click)="dialogVisible = false"></div>
   <div class="hs-slide-panel">
@@ -110,7 +225,7 @@
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="hs-field">
-            <label class="hs-label">Método</label>
+            <label class="hs-label">M&eacute;todo</label>
             <select class="hs-select" formControlName="metodo">
               @for (m of metodos; track m.value) {
                 <option [value]="m.value">{{ m.label }}</option>
@@ -135,7 +250,7 @@
         </div>
 
         <div class="hs-field">
-          <label class="hs-label">Observación</label>
+          <label class="hs-label">Observaci&oacute;n</label>
           <textarea class="hs-textarea" formControlName="observacion" rows="2" placeholder="Opcional"></textarea>
         </div>
 
@@ -159,5 +274,5 @@
 }
 
 <style>
-@keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>

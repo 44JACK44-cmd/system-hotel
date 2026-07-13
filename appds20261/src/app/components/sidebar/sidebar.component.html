@@ -9,34 +9,40 @@
     </div>
   </div>
 
-  <div class="hs-sidebar__quick">
-    <button class="hs-sidebar__quick-btn" (click)="goTo(quickCheckInRoute)">
-      <span class="material-symbols-outlined">add_circle</span>
-      Quick Check-in
-    </button>
-  </div>
+  <div class="hs-sidebar__body">
+    <div class="hs-sidebar__section-label">MAIN OPERATIONS</div>
 
-  <nav class="hs-sidebar__nav hs-scroll" role="navigation" aria-label="Navegación principal">
-    @for (item of filteredMenu; track item.route) {
-      <a [routerLink]="item.route"
-         class="hs-sidebar__nav-item"
-         [class.sidebar-nav-active]="isActive(item.route)"
-         (click)="handleNavClick(item.route)">
-        <span class="material-symbols-outlined">{{ item.icon }}</span>
-        <span class="hs-sidebar__nav-label text-label-caps">{{ item.label }}</span>
-      </a>
-    }
-  </nav>
+    <nav class="hs-sidebar__nav hs-scroll" role="navigation" aria-label="Navegación principal">
+      @for (item of filteredMenu; track item.route) {
+        <a [routerLink]="item.route"
+           class="hs-sidebar__nav-item"
+           [class.sidebar-nav-active]="isActive(item.route)"
+           (click)="handleNavClick(item.route)">
+          <span class="material-symbols-outlined">{{ item.icon }}</span>
+          <span class="hs-sidebar__nav-label">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="hs-sidebar__section-label">ACTIONS</div>
+
+    <div class="hs-sidebar__quick">
+      <button class="hs-sidebar__quick-btn" (click)="goTo(quickCheckInRoute)">
+        <span class="material-symbols-outlined">add_circle</span>
+        Quick Check-in
+      </button>
+    </div>
+  </div>
 
   <div class="hs-sidebar__footer">
     <a class="hs-sidebar__nav-item hs-sidebar__nav-item--sm" href="#">
       <span class="material-symbols-outlined">help</span>
-      <span class="hs-sidebar__nav-label text-label-caps">Ayuda</span>
+      <span class="hs-sidebar__nav-label">Help Center</span>
     </a>
     <a class="hs-sidebar__nav-item hs-sidebar__nav-item--sm hs-sidebar__nav-item--danger"
        (click)="logout()" style="cursor:pointer">
       <span class="material-symbols-outlined">logout</span>
-      <span class="hs-sidebar__nav-label text-label-caps">Cerrar Sesión</span>
+      <span class="hs-sidebar__nav-label">Logout</span>
     </a>
   </div>
 </aside>
