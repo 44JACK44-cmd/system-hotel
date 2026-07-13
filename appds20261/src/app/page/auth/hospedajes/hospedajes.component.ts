@@ -36,6 +36,23 @@ export class HospedajesComponent implements OnInit {
 
   metodos = [{ label: 'Efectivo', value: 'EFECTIVO' }, { label: 'Yape', value: 'YAPE' }];
 
+  generarBoleto(hospedajeId: number): void {
+    this.hospedajeService.generarBoleto(hospedajeId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `boleto_hospedaje_${hospedajeId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Boleto generado correctamente' });
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al generar boleto' });
+      }
+    });
+  }
+
   onTabChange(tab: any): void {
     if (tab === 'activos') this.loadActivos();
     if (tab === 'checkout') this.loadActivos();

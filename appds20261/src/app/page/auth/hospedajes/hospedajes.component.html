@@ -46,6 +46,7 @@
             <th>Total Pagado</th>
             <th>Deuda</th>
             <th>Estado</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -62,10 +63,14 @@
               <td>
                 <span class="badge badge-active">Activo</span>
               </td>
+              <td>
+                <button pButton pRipple icon="pi pi-file-pdf" class="p-button-rounded p-button-success p-button-sm" 
+                  (click)="generarBoleto(h.id)" title="Generar Boleto"></button>
+              </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+              <td colspan="8" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
                 No hay hospedajes activos.
               </td>
             </tr>
