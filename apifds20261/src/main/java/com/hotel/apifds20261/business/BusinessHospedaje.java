@@ -69,6 +69,9 @@ public class BusinessHospedaje {
         }
 
         EntityHabitacion habitacion = reserva.getHabitacion();
+        if (!habitacion.getActivo()) {
+            throw new BusinessException("La habitacion no esta activa");
+        }
         if (habitacion.getEstado() != EstadoHabitacion.DISPONIBLE) {
             throw new BusinessException("La habitacion no esta disponible");
         }
@@ -197,32 +200,70 @@ public class BusinessHospedaje {
             throw new BusinessException("El hospedaje ya esta finalizado");
         }
 
+        EntityUsuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
+        if (usuario == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado");
+        }
+
         hospedaje.setFechaSalidaReal(request.getFechaSalidaReal());
         hospedaje.setEstado(EstadoHospedaje.FINALIZADO);
+
+        BigDecimal cargoExtension = BigDecimal.ZERO;
 
         if (request.getFechaSalidaReal().isAfter(hospedaje.getFechaSalidaProgramada())) {
             long nochesExtra = calcularNochesExtra(request.getFechaSalidaReal(), hospedaje.getFechaSalidaProgramada());
             BigDecimal precioNoche = hospedaje.getHabitacion().getPrecioNoche();
-            BigDecimal cargoExtension = precioNoche.multiply(BigDecimal.valueOf(nochesExtra));
+            cargoExtension = precioNoche.multiply(BigDecimal.valueOf(nochesExtra));
             hospedaje.setDeudaPendiente(hospedaje.getDeudaPendiente().add(cargoExtension));
 
-            if (request.getMontoExtension() != null && request.getMontoExtension().compareTo(BigDecimal.ZERO) > 0) {
-                EntityUsuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
-                if (usuario == null) {
-                    throw new ResourceNotFoundException("Usuario no encontrado");
+            if (request.getMontoExtension() != null) {
+                if (request.getMontoExtension().compareTo(BigDecimal.ZERO) < 0) {
+                    throw new BusinessException("El monto de extension no puede ser negativo");
                 }
+                if (request.getMontoExtension().compareTo(cargoExtension) > 0) {
+                    throw new BusinessException("El monto de extension no puede exceder el cargo por extension");
+                }
+                if (request.getMontoExtension().compareTo(BigDecimal.ZERO) > 0) {
+                    if (request.getMetodoExtension() == null || request.getMetodoExtension().isBlank()) {
+                        throw new BusinessException("Debe indicar el metodo de pago para la extension");
+                    }
+                    EntityPago pagoExtension = new EntityPago();
+                    pagoExtension.setHospedaje(hospedaje);
+                    pagoExtension.setUsuario(usuario);
+                    pagoExtension.setMonto(request.getMontoExtension());
+                    pagoExtension.setMetodo(MetodoPago.valueOf(request.getMetodoExtension()));
+                    pagoExtension.setReferencia(request.getReferenciaExtension());
+                    pagoExtension.setTipo(TipoPago.EXTENSION);
+                    pagoExtension.setFechaPago(LocalDateTime.now());
+                    pagoRepository.save(pagoExtension);
+                    hospedaje.setTotalPagado(hospedaje.getTotalPagado().add(request.getMontoExtension()));
+                    hospedaje.setDeudaPendiente(hospedaje.getDeudaPendiente().subtract(request.getMontoExtension()));
+                }
+            }
+        }
 
-                EntityPago pagoExtension = new EntityPago();
-                pagoExtension.setHospedaje(hospedaje);
-                pagoExtension.setUsuario(usuario);
-                pagoExtension.setMonto(request.getMontoExtension());
-                pagoExtension.setMetodo(MetodoPago.valueOf(request.getMetodoExtension()));
-                pagoExtension.setReferencia(request.getReferenciaExtension());
-                pagoExtension.setTipo(TipoPago.EXTENSION);
-                pagoExtension.setFechaPago(LocalDateTime.now());
-                pagoRepository.save(pagoExtension);
-                hospedaje.setTotalPagado(hospedaje.getTotalPagado().add(request.getMontoExtension()));
-                hospedaje.setDeudaPendiente(hospedaje.getDeudaPendiente().subtract(request.getMontoExtension()));
+        if (request.getMontoPago() != null) {
+            if (request.getMontoPago().compareTo(BigDecimal.ZERO) < 0) {
+                throw new BusinessException("El monto de pago no puede ser negativo");
+            }
+            if (request.getMontoPago().compareTo(hospedaje.getDeudaPendiente()) > 0) {
+                throw new BusinessException("El monto de pago no puede exceder la deuda pendiente");
+            }
+            if (request.getMontoPago().compareTo(BigDecimal.ZERO) > 0) {
+                if (request.getMetodoPago() == null || request.getMetodoPago().isBlank()) {
+                    throw new BusinessException("Debe indicar el metodo de pago para el saldo");
+                }
+                EntityPago pagoSalida = new EntityPago();
+                pagoSalida.setHospedaje(hospedaje);
+                pagoSalida.setUsuario(usuario);
+                pagoSalida.setMonto(request.getMontoPago());
+                pagoSalida.setMetodo(MetodoPago.valueOf(request.getMetodoPago()));
+                pagoSalida.setReferencia(request.getReferencia());
+                pagoSalida.setTipo(TipoPago.SALDO);
+                pagoSalida.setFechaPago(LocalDateTime.now());
+                pagoRepository.save(pagoSalida);
+                hospedaje.setTotalPagado(hospedaje.getTotalPagado().add(request.getMontoPago()));
+                hospedaje.setDeudaPendiente(hospedaje.getDeudaPendiente().subtract(request.getMontoPago()));
             }
         }
 
@@ -231,6 +272,92 @@ public class BusinessHospedaje {
         EntityHabitacion habitacion = hospedaje.getHabitacion();
         habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
         habitacionRepository.save(habitacion);
+
+        return toResponse(hospedaje);
+    }
+
+    @Transactional
+    public HospedajeResponse extenderEstadia(Long hospedajeId, LocalDateTime nuevaFechaSalida, Long usuarioId) {
+        EntityHospedaje hospedaje = buscarOExcepcion(hospedajeId);
+
+        if (hospedaje.getEstado() != EstadoHospedaje.ACTIVO) {
+            throw new BusinessException("No se puede extender un hospedaje finalizado");
+        }
+
+        EntityUsuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
+        if (usuario == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado");
+        }
+
+        if (!nuevaFechaSalida.isAfter(hospedaje.getFechaIngreso())) {
+            throw new BusinessException("La nueva fecha de salida debe ser posterior al ingreso");
+        }
+
+        if (nuevaFechaSalida.isBefore(hospedaje.getFechaSalidaProgramada())) {
+            throw new BusinessException("La nueva fecha de salida debe ser posterior o igual a la fecha programada actual");
+        }
+
+        long nochesOriginales = ChronoUnit.DAYS.between(
+                hospedaje.getFechaIngreso().toLocalDate(),
+                hospedaje.getFechaSalidaProgramada().toLocalDate());
+
+        long nochesNuevas = ChronoUnit.DAYS.between(
+                hospedaje.getFechaIngreso().toLocalDate(),
+                nuevaFechaSalida.toLocalDate());
+
+        long nochesExtra = nochesNuevas - nochesOriginales;
+        if (nochesExtra <= 0) {
+            throw new BusinessException("La extension debe agregar al menos una noche adicional");
+        }
+
+        BigDecimal precioNoche = hospedaje.getHabitacion().getPrecioNoche();
+        BigDecimal cargoExtension = precioNoche.multiply(BigDecimal.valueOf(nochesExtra));
+
+        hospedaje.setFechaSalidaProgramada(nuevaFechaSalida);
+        hospedaje.setDeudaPendiente(hospedaje.getDeudaPendiente().add(cargoExtension));
+        hospedaje = hospedajeRepository.save(hospedaje);
+
+        return toResponse(hospedaje);
+    }
+
+    @Transactional
+    public HospedajeResponse cambiarHabitacion(Long hospedajeId, Long nuevaHabitacionId, Long usuarioId) {
+        EntityHospedaje hospedaje = buscarOExcepcion(hospedajeId);
+
+        if (hospedaje.getEstado() != EstadoHospedaje.ACTIVO) {
+            throw new BusinessException("No se puede cambiar de habitacion en un hospedaje finalizado");
+        }
+
+        EntityUsuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
+        if (usuario == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado");
+        }
+
+        EntityHabitacion nuevaHabitacion = habitacionRepository.findById(nuevaHabitacionId).orElse(null);
+        if (nuevaHabitacion == null) {
+            throw new ResourceNotFoundException("Habitacion no encontrada");
+        }
+
+        if (hospedaje.getHabitacion().getId().equals(nuevaHabitacion.getId())) {
+            throw new BusinessException("El hospedaje ya esta asignado a esa habitacion");
+        }
+
+        if (!nuevaHabitacion.getActivo()) {
+            throw new BusinessException("La habitacion no esta activa");
+        }
+        if (nuevaHabitacion.getEstado() != EstadoHabitacion.DISPONIBLE) {
+            throw new BusinessException("La habitacion no esta disponible");
+        }
+
+        EntityHabitacion habitacionAnterior = hospedaje.getHabitacion();
+        habitacionAnterior.setEstado(EstadoHabitacion.DISPONIBLE);
+        habitacionRepository.save(habitacionAnterior);
+
+        nuevaHabitacion.setEstado(EstadoHabitacion.OCUPADA);
+        habitacionRepository.save(nuevaHabitacion);
+
+        hospedaje.setHabitacion(nuevaHabitacion);
+        hospedaje = hospedajeRepository.save(hospedaje);
 
         return toResponse(hospedaje);
     }

@@ -46,11 +46,17 @@ export class ReservaService {
     );
   }
 
+  actualizar(id: number, data: any): Observable<GenericResponse<ReservaResponse>> {
+    return this.http.put<any>(`${this.API}/update/${id}`, data).pipe(
+      map(r => toGenericResponse<ReservaResponse>(r, raw => raw?.listReserva?.[0]))
+    );
+  }
+
   verificarDisponibilidad(habitacionId: number, fechaEntrada: string, fechaSalida: string): Observable<GenericResponse<boolean>> {
     return this.http.get<any>(
       `${this.API}/checkavailability?habitacionId=${habitacionId}&fechaEntrada=${fechaEntrada}&fechaSalida=${fechaSalida}`
     ).pipe(
-      map(r => toGenericResponse<boolean>(r, 'listReserva'))
+      map(r => toGenericResponse<boolean>(r, raw => raw?.disponible))
     );
   }
 }

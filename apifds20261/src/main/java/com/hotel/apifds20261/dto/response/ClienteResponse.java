@@ -12,4 +12,8 @@ public class ClienteResponse {
     private String documento;
     private String email;
     private LocalDateTime createdAt;
+    private String estado;
+    private Integer totalEstancias;
+    private LocalDateTime ultimaEstancia;
+    private String lealtad;
 }

@@ -45,4 +45,16 @@ export class HospedajeService {
       map(r => toGenericResponse<HospedajeResponse>(r, raw => raw?.listHospedaje?.[0]))
     );
   }
+
+  extenderEstadia(id: number, data: any): Observable<GenericResponse<HospedajeResponse>> {
+    return this.http.put<any>(`${this.API}/extend/${id}`, data).pipe(
+      map(r => toGenericResponse<HospedajeResponse>(r, raw => raw?.listHospedaje?.[0]))
+    );
+  }
+
+  cambiarHabitacion(id: number, data: any): Observable<GenericResponse<HospedajeResponse>> {
+    return this.http.put<any>(`${this.API}/change-room/${id}`, data).pipe(
+      map(r => toGenericResponse<HospedajeResponse>(r, raw => raw?.listHospedaje?.[0]))
+    );
+  }
 }

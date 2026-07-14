@@ -24,6 +24,6 @@ public interface RepositoryReserva extends JpaRepository<EntityReserva, Long> {
            "AND r.fechaEntrada < :fechaSalida AND r.fechaSalida > :fechaEntrada")
     List<EntityReserva> findSolapadas(Long habitacionId, LocalDate fechaEntrada, LocalDate fechaSalida);
 
-    @Query("SELECT r FROM EntityReserva r WHERE r.estado = 'CONFIRMADA' AND r.fechaEntrada <= :hoy")
+    @Query("SELECT r FROM EntityReserva r WHERE r.estado = 'CONFIRMADA' AND r.fechaEntrada < :hoy")
     List<EntityReserva> findConfirmadasVencidas(LocalDate hoy);
 }

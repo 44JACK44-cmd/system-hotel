@@ -44,7 +44,7 @@
   display: flex;
   align-items: flex-end;
   gap: 4px;
-  height: 60px;
+  height: 96px;
 }
 .admin-mini-chart__bar {
   flex: 1;
@@ -57,7 +57,7 @@
 .admin-mini-chart__labels {
   display: flex;
   justify-content: space-between;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--clr-on-surface-variant);
@@ -119,7 +119,7 @@
 }
 .admin-nav-item:hover { background: var(--clr-secondary-fixed); }
 .admin-nav-item .material-symbols-outlined { font-size: 24px; }
-.admin-nav-item .text-label-caps { font-size: 10px; }
+.admin-nav-item .text-label-caps { font-size: 12px; }
 
 /* Right column */
 .admin-right-col {
@@ -175,12 +175,13 @@
   font-family: 'Inter', sans-serif;
 }
 .admin-add-staff:hover { background: var(--clr-surface-container-low); }
+.admin-card-header button.text-secondary:hover { text-decoration: underline; }
 
 /* Donut */
 .admin-donut-wrap {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: 96px;
+  height: 96px;
   margin: 0 auto;
 }
 .admin-donut-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
@@ -190,7 +191,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--clr-primary);
 }
@@ -250,7 +251,7 @@
 .admin-report-btn:hover { background: var(--clr-secondary-fixed); }
 .admin-report-btn .material-symbols-outlined { font-size: 24px; }
 .admin-report-btn span:last-child {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;

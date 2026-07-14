@@ -14,8 +14,12 @@ import com.hotel.apifds20261.repository.RepositoryReserva;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import com.hotel.apifds20261.staticdata.*;
 
 @Service
 @RequiredArgsConstructor
@@ -108,6 +112,35 @@ public class BusinessCliente {
         r.setDocumento(c.getDocumento());
         r.setEmail(c.getEmail());
         r.setCreatedAt(c.getCreatedAt());
+
+        // Estado derivado de datos reales
+        List<EntityHospedaje> hospedajes = hospedajeRepository.findByClienteIdOrderByFechaIngresoDesc(c.getId());
+        boolean activo = hospedajes.stream().anyMatch(h -> h.getEstado() == EstadoHospedaje.ACTIVO);
+        if (activo) {
+            r.setEstado("Hospedado");
+        } else {
+            List<EntityReserva> reservas = reservaRepository.findByClienteIdOrderByFechaReservaDesc(c.getId());
+            boolean tieneReserva = reservas.stream().anyMatch(res ->
+                res.getEstado() == EstadoReserva.CONFIRMADA && !res.getFechaEntrada().isBefore(LocalDate.now()));
+            r.setEstado(tieneReserva ? "Reserva" : "Registrado");
+        }
+
+        // Total estancias completadas
+        long total = hospedajes.stream().filter(h -> h.getEstado() == EstadoHospedaje.FINALIZADO).count();
+        r.setTotalEstancias((int) total);
+
+        // Última estancia
+        hospedajes.stream()
+            .filter(h -> h.getEstado() == EstadoHospedaje.FINALIZADO && h.getFechaSalidaReal() != null)
+            .max(Comparator.comparing(EntityHospedaje::getFechaSalidaReal))
+            .ifPresent(h -> r.setUltimaEstancia(h.getFechaSalidaReal()));
+
+        // Lealtad
+        if (total == 0) r.setLealtad("Nuevo");
+        else if (total <= 2) r.setLealtad("Regular");
+        else if (total <= 5) r.setLealtad("Frecuente");
+        else r.setLealtad("VIP");
+
         return r;
     }
 

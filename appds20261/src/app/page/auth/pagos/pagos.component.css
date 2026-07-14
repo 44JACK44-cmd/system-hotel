@@ -115,6 +115,8 @@
   text-transform: uppercase;
   color: var(--clr-secondary);
 }
+.pag-metodo-badge--card { color: var(--clr-primary); }
+.pag-metodo-badge--yape { color: var(--clr-tertiary); }
 
 /* Balance Card */
 .pag-balance-card {

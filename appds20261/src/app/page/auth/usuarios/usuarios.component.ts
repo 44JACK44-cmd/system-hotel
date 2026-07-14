@@ -25,6 +25,9 @@ export class UsuariosComponent implements OnInit {
   dialogVisible = false;
   editing = false;
   editingId: number | null = null;
+  activeTab: 'personal' | 'historial' = 'personal';
+
+  switchTab(tab: 'personal' | 'historial'): void { this.activeTab = tab; }
 
   roles = [
     { label: 'Administrador', value: 'ADMIN' },

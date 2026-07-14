@@ -56,7 +56,7 @@
             <div class="admin-mini-chart__bar" style="height:60%"></div>
             <div class="admin-mini-chart__bar" style="height:45%"></div>
             <div class="admin-mini-chart__bar" style="height:70%"></div>
-            <div class="admin-mini-chart__bar" style="height:55%"></div>
+            <div class="admin-mini-chart__bar" style="height:30%"></div>
             <div class="admin-mini-chart__bar admin-mini-chart__bar--current" style="height:85%"></div>
             <div class="admin-mini-chart__bar admin-mini-chart__bar--current" style="height:95%"></div>
             <div class="admin-mini-chart__bar admin-mini-chart__bar--current" style="height:100%"></div>
@@ -73,15 +73,15 @@
       <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px;flex:1">
         <div class="admin-pending-item">
           <span class="pulse-dot" style="background:var(--clr-error)"></span>
-          <span style="color:white;font-size:13px">{{ ocupacion?.ocupadas || 0 }} Habitaciones Ocupadas</span>
+          <span style="color:white;font-size:14px">{{ ocupacion?.ocupadas || 0 }} Habitaciones Ocupadas</span>
         </div>
         <div class="admin-pending-item">
           <span class="pulse-dot" style="background:var(--clr-secondary-container)"></span>
-          <span style="color:white;font-size:13px">Adelantos: S/ {{ ingresos?.totalAdelantos || '0.00' }}</span>
+          <span style="color:white;font-size:14px">Adelantos: S/ {{ ingresos?.totalAdelantos || '0.00' }}</span>
         </div>
         <div class="admin-pending-item">
           <span class="pulse-dot" style="background:var(--clr-secondary-container)"></span>
-          <span style="color:white;font-size:13px">Saldos: S/ {{ ingresos?.totalSaldos || '0.00' }}</span>
+          <span style="color:white;font-size:14px">Saldos: S/ {{ ingresos?.totalSaldos || '0.00' }}</span>
         </div>
       </div>
       <a [routerLink]="'/admin/reportes'" class="admin-pending-link">View Details</a>
@@ -108,7 +108,7 @@
       <div class="hs-card">
         <div class="hs-card-header" style="justify-content:space-between">
           <h3 class="text-title-sm" style="color:var(--clr-primary)">User Access</h3>
-          <span class="text-secondary" style="font-size:11px;font-weight:700;cursor:default">Manage All</span>
+          <button class="text-secondary" style="font-size:11px;font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit;padding:0;text-decoration:none">Manage All</button>
         </div>
         <div class="hs-card-body" style="display:flex;flex-direction:column;gap:12px">
           <div class="admin-user-row">

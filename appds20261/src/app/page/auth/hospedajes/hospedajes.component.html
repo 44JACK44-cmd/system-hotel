@@ -1,21 +1,17 @@
-<!-- HOSPEDAJES — Hospitality Precision design -->
 <div class="hos-page">
-
-  <!-- Page header -->
   <div class="hos-page__header">
     <div>
-      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Hospedajes Activos</h1>
+      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Hospedajes</h1>
       <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
-        Gestión de huéspedes internos, check-in y check-out.
+        Gestión de hospedajes activos, check-in, check-out, consumos, extensiones y cambios de habitación.
       </p>
     </div>
   </div>
 
   <p-toast />
 
-  <!-- Tabs -->
   <div class="hos-tabs">
-    <button class="hos-tab" [class.hos-tab--active]="activeTab === 'activos'" (click)="activeTab='activos';onTabChange('activos')">
+    <button class="hos-tab" [class.hos-tab--active]="activeTab === 'activos'" (click)="activeTab='activos';loadActivos()">
       <span class="material-symbols-outlined">hotel</span>
       Hospedajes Activos
     </button>
@@ -27,239 +23,250 @@
       <span class="material-symbols-outlined">add_box</span>
       Check-In Directo
     </button>
-    <button class="hos-tab" [class.hos-tab--active]="activeTab === 'checkout'" (click)="activeTab='checkout'">
-      <span class="material-symbols-outlined">logout</span>
-      Check-Out
-    </button>
   </div>
 
-  <!-- === TAB: Hospedajes Activos === -->
   @if (activeTab === 'activos') {
-    <!-- KPI Stats Bar -->
-    <div class="hos-kpi-grid">
-      <div class="hs-kpi hos-kpi-item">
-        <div>
-          <p class="hs-kpi__label">Active Guests</p>
-          <p class="hs-kpi__value">{{ hospedajes.length }}</p>
-        </div>
-        <div class="hs-kpi__icon hos-kpi-icon--guests">
-          <span class="material-symbols-outlined">bed</span>
-        </div>
-      </div>
-      <div class="hs-kpi hos-kpi-item">
-        <div>
-          <p class="hs-kpi__label">Scheduled Check-outs</p>
-          <p class="hs-kpi__value hos-kpi-value--secondary">{{ hospedajes.length > 3 ? hospedajes.length - 2 : 0 }}</p>
-        </div>
-        <div class="hs-kpi__icon hos-kpi-icon--checkout">
-          <span class="material-symbols-outlined">event_upcoming</span>
-        </div>
-      </div>
-      <div class="hs-kpi hos-kpi-item">
-        <div>
-          <p class="hs-kpi__label">Dirty Rooms</p>
-          <p class="hs-kpi__value hos-kpi-value--error">—</p>
-        </div>
-        <div class="hs-kpi__icon hos-kpi-icon--dirty">
-          <span class="material-symbols-outlined">cleaning_services</span>
-        </div>
-      </div>
-      <div class="hs-kpi hos-kpi-item">
-        <div>
-          <p class="hs-kpi__label">Check-ins Today</p>
-          <p class="hs-kpi__value hos-kpi-value--primary-container">—</p>
-        </div>
-        <div class="hs-kpi__icon hos-kpi-icon--checkin">
-          <span class="material-symbols-outlined">key</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Toolbar / Search -->
     <div class="hos-toolbar">
       <div class="hos-search">
         <span class="material-symbols-outlined">search</span>
-        <input class="hos-search-input" type="text" placeholder="Search guests or rooms..." />
+        <input class="hos-search-input" type="text" [(ngModel)]="filterText" placeholder="Buscar por huésped o habitación..." />
       </div>
-      <div class="hos-toolbar-actions">
-        <button class="hs-btn hs-btn-outline hs-btn-sm">
-          <span class="material-symbols-outlined" style="font-size:16px">filter_list</span>
-          Filter
-        </button>
-        <button class="hs-btn hs-btn-outline hs-btn-sm">
-          <span class="material-symbols-outlined" style="font-size:16px">download</span>
-          Export
+      <div style="display:flex;gap:8px">
+        <button class="hs-btn hs-btn-outline hs-btn-sm" (click)="loadActivos()">
+          <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
+          Actualizar
         </button>
       </div>
     </div>
 
-    <!-- Table Card -->
-    <div class="hs-card" style="overflow:hidden">
-      <div class="hs-card-header">
-        <div>
-          <h2 class="text-headline-md" style="color:var(--clr-primary);margin:0">Active Guests List</h2>
-          <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:2px 0 0">Real-time occupancy management and billing</p>
+    <div class="hos-layout">
+      <div class="hos-main-table">
+        <div class="hs-card" style="overflow:hidden">
+          <div style="overflow-x:auto">
+            <table class="hs-table">
+              <thead>
+                <tr>
+                  <th>Huésped</th>
+                  <th>Hab.</th>
+                  <th>Ingreso</th>
+                  <th>Salida Prog.</th>
+                  <th>Deuda</th>
+                  <th class="hos-th-actions">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (h of filteredHospedajes; track h.id) {
+                  <tr class="hos-row" [class.hos-row--selected]="selectedHospedajeId === h.id" (click)="selectHospedaje(h.id)">
+                    <td>
+                      <div class="hos-guest-cell">
+                        <div class="hos-avatar">{{ (h.clienteNombre || '??').substring(0, 2).toUpperCase() }}</div>
+                        <div>
+                          <p class="text-title-sm" style="margin:0;color:var(--clr-on-surface)">{{ h.clienteNombre }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="hos-room-badge">{{ h.habitacionNumero }}</span></td>
+                    <td class="text-data-tabular">{{ formatFechaCorta(h.fechaIngreso) }}</td>
+                    <td class="text-data-tabular" style="font-weight:600">{{ formatFechaCorta(h.fechaSalidaProgramada) }}</td>
+                    <td>
+                      <span class="hos-balance" [class.hos-balance--debt]="h.deudaPendiente > 0" [class.hos-balance--zero]="h.deudaPendiente === 0">
+                        {{ h.deudaPendiente > 0 ? '-S/ ' : 'S/ ' }}{{ (h.deudaPendiente || 0).toFixed(2) }}
+                      </span>
+                    </td>
+                    <td class="hos-td-actions">
+                      <div class="hos-quick-actions">
+                        <button class="hos-action-btn" title="Seleccionar" (click)="selectHospedaje(h.id); $event.stopPropagation()">
+                          <span class="material-symbols-outlined">visibility</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+                      @if (loading) { Cargando... } @else { No hay hospedajes activos. }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="hos-table-footer">
+            <span class="text-body-md" style="color:var(--clr-on-surface-variant)">{{ filteredHospedajes.length }} hospedaje(s) activo(s)</span>
+          </div>
         </div>
       </div>
-      <div style="overflow-x:auto">
-        <table class="hs-table">
-          <thead>
-            <tr>
-              <th>Guest Name</th>
-              <th>Room</th>
-              <th>Check-In</th>
-              <th>Scheduled Out</th>
-              <th>Balance</th>
-              <th class="hos-th-actions">Quick Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (h of hospedajes; track h.id) {
-              <tr class="hos-row">
-                <td>
-                  <div class="hos-guest-cell">
-                    <div class="hos-avatar">{{ (h.clienteNombre || '??').substring(0, 2).toUpperCase() }}</div>
-                    <div>
-                      <p class="text-title-sm" style="margin:0;color:var(--clr-on-surface)">{{ h.clienteNombre }}</p>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <span class="hos-room-badge">{{ h.habitacionNumero }}</span>
-                </td>
-                <td class="text-data-tabular">{{ h.fechaIngreso | date:'MMM dd, yyyy' }}</td>
-                <td class="text-data-tabular" style="font-weight:600">{{ h.fechaSalidaProgramada | date:'MMM dd, yyyy' }}</td>
-                <td>
-                  <span class="hos-balance" [class.hos-balance--debt]="h.deudaPendiente > 0" [class.hos-balance--zero]="h.deudaPendiente === 0">
-                    {{ h.deudaPendiente > 0 ? '-S/ ' : 'S/ ' }}{{ (h.deudaPendiente || 0) | number:'1.2-2' }}
-                  </span>
-                </td>
-                <td class="hos-td-actions">
-                  <div class="hos-quick-actions">
-                    <button class="hos-action-btn" title="Cargar Consumo">
-                      <span class="material-symbols-outlined">add_shopping_cart</span>
-                    </button>
-                    <button class="hos-action-btn" title="Ver Factura">
-                      <span class="material-symbols-outlined">description</span>
-                    </button>
-                    <button class="hos-action-btn" title="Check-out Anticipado">
-                      <span class="material-symbols-outlined">exit_to_app</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="6" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
-                  No hay hospedajes activos.
-                </td>
-              </tr>
+
+      @if (detailHospedaje) {
+        <div class="hos-detail-panel">
+          <div class="hos-detail-panel__header">
+            <span style="font-weight:700;font-size:14px">Detalle del Hospedaje</span>
+            <button class="hos-action-btn" (click)="clearSelection()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="hos-detail-box">
+            <div class="hos-detail-row">
+              <span class="hos-detail-label">Huésped</span>
+              <span class="hos-detail-value">{{ detailHospedaje.clienteNombre }}</span>
+            </div>
+            <div class="hos-detail-row">
+              <span class="hos-detail-label">Habitación</span>
+              <span class="hos-detail-value">{{ detailHospedaje.habitacionNumero }} ({{ detailHospedaje.habitacionTipo }})</span>
+            </div>
+            <div class="hos-detail-row">
+              <span class="hos-detail-label">Ingreso</span>
+              <span class="hos-detail-value">{{ formatFecha(detailHospedaje.fechaIngreso) }}</span>
+            </div>
+            <div class="hos-detail-row">
+              <span class="hos-detail-label">Salida Prog.</span>
+              <span class="hos-detail-value">{{ formatFecha(detailHospedaje.fechaSalidaProgramada) }}</span>
+            </div>
+            <div class="hos-detail-row">
+              <span class="hos-detail-label">Total Pagado</span>
+              <span class="hos-detail-value">S/ {{ (detailHospedaje.totalPagado || 0).toFixed(2) }}</span>
+            </div>
+            <div class="hos-detail-row">
+              <span class="hos-detail-label">Deuda Pendiente</span>
+              <span class="hos-detail-value" style="font-weight:700;color:var(--clr-error)">S/ {{ (detailHospedaje.deudaPendiente || 0).toFixed(2) }}</span>
+            </div>
+            <div class="hos-detail-row">
+              <span class="hos-detail-label">Estado</span>
+              <span class="hos-detail-value" style="color:var(--clr-secondary)">{{ detailHospedaje.estado }}</span>
+            </div>
+          </div>
+
+          <div class="hos-section">
+            <p class="hos-section-title">Consumos</p>
+            <div class="hos-consumo-form">
+              <input class="hs-input" type="text" [(ngModel)]="consumoDescripcion" placeholder="Descripción (ej: Minibar, llamada...)" style="grid-column:1/-1" />
+              <input class="hs-input" type="number" [(ngModel)]="consumoCantidad" min="1" placeholder="Cant." />
+              <div class="hs-input-icon">
+                <span class="material-symbols-outlined" style="position:absolute;left:10px;top:8px;font-size:16px;color:var(--clr-outline)">payments</span>
+                <input class="hs-input" type="number" [(ngModel)]="consumoPrecio" min="0.01" step="0.01" placeholder="Precio" style="padding-left:30px" />
+              </div>
+              <button class="hs-btn hs-btn-primary hs-btn-sm" (click)="registrarConsumo()" [disabled]="loading">
+                <span class="material-symbols-outlined" style="font-size:16px">add</span>
+                Agregar
+              </button>
+            </div>
+            @if (loadingConsumos) {
+              <p class="text-body-md" style="color:var(--clr-on-surface-variant);padding:8px 0">Cargando consumos...</p>
             }
-          </tbody>
-        </table>
-      </div>
-      <div class="hos-table-footer">
-        <span class="text-body-md" style="color:var(--clr-on-surface-variant)">Showing {{ hospedajes.length }} active {{ hospedajes.length === 1 ? 'guest' : 'guests' }}</span>
-      </div>
-    </div>
+            @if (!loadingConsumos && consumos.length === 0) {
+              <p class="text-body-md" style="color:var(--clr-on-surface-variant);padding:8px 0;font-style:italic">Sin consumos registrados.</p>
+            }
+            @if (consumos.length > 0) {
+              <div style="max-height:200px;overflow-y:auto">
+                <table class="hs-table" style="font-size:12px">
+                  <thead>
+                    <tr>
+                      <th>Descripción</th>
+                      <th style="text-align:center">Cant.</th>
+                      <th style="text-align:right">P/U</th>
+                      <th style="text-align:right">Subtotal</th>
+                      <th style="text-align:center">Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (c of consumos; track c.id) {
+                      <tr>
+                        <td>{{ c.descripcion }}</td>
+                        <td style="text-align:center">{{ c.cantidad }}</td>
+                        <td style="text-align:right">S/ {{ (c.precioUnitario || 0).toFixed(2) }}</td>
+                        <td style="text-align:right;font-weight:600">S/ {{ (c.subtotal || 0).toFixed(2) }}</td>
+                        <td style="text-align:center;font-size:11px">{{ formatFechaCorta(c.fechaRegistro) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
 
-    <!-- Bottom Cards: Housekeeping + Next Check-In -->
-    <div class="hos-bottom-grid">
-      <div class="hos-housekeeping-card">
-        <div class="hos-housekeeping-header">
-          <span class="material-symbols-outlined" style="color:var(--clr-error)">cleaning_services</span>
-          <h4 class="text-title-sm" style="margin:0;font-weight:700">Pending Housekeeping Tasks</h4>
-        </div>
-        <div class="hos-housekeeping-body">
-          <div class="hos-task-item">
-            <div class="hos-task-indicator hos-task--urgent"></div>
-            <span class="text-body-md">Room 405 (Suite) - Deep Cleaning Requested</span>
-            <span class="hos-task-time">15 min ago</span>
+          <div class="hos-section">
+            <p class="hos-section-title">Extender Estadía</p>
+            <div style="display:flex;gap:8px">
+              <input class="hs-input" type="datetime-local" [(ngModel)]="extensionFecha" style="flex:1" />
+              <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="extenderEstadia()" [disabled]="loadingExtension">
+                @if (loadingExtension) {
+                  <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;font-size:16px">sync</span>
+                } @else { Extender }
+              </button>
+            </div>
           </div>
-          <div class="hos-task-item">
-            <div class="hos-task-indicator hos-task--normal"></div>
-            <span class="text-body-md">Room 201 (Std) - Towel Replacement</span>
-            <span class="hos-task-time">45 min ago</span>
+
+          <div class="hos-section" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--clr-outline-variant)">
+            <button class="hs-btn hs-btn-secondary" style="width:100%;justify-content:center" (click)="showCheckout()">
+              <span class="material-symbols-outlined" style="font-size:18px">logout</span>
+              Realizar Check-Out
+            </button>
+          </div>
+
+          <div class="hos-section">
+            <p class="hos-section-title">Cambiar Habitación</p>
+            <div style="display:flex;gap:8px">
+              <select class="hs-select" [(ngModel)]="nuevaHabitacionId" style="flex:1">
+                <option [ngValue]="null">Seleccionar habitación disponible</option>
+                @for (h of habitacionesDisponibles; track h.id) {
+                  <option [ngValue]="h.id">{{ h.label }}</option>
+                }
+              </select>
+              <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="cambiarHabitacion()" [disabled]="loadingCambio">
+                @if (loadingCambio) {
+                  <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;font-size:16px">sync</span>
+                } @else { Cambiar }
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="hos-next-checkin-card">
-        <div class="hos-next-checkin-top">
-          <span class="hos-next-badge">Next Check-In</span>
-          <span class="material-symbols-outlined" style="opacity:0.5">flight_land</span>
-        </div>
-        <div>
-          <h3 class="text-display-lg" style="margin:8px 0 4px;line-height:1.1">—</h3>
-          <p class="text-body-md" style="opacity:0.7;font-style:italic;margin:0">Awaiting arrival</p>
-        </div>
-        <div class="hos-next-checkin-footer">
-          <div>
-            <p class="hs-kpi__label" style="opacity:0.6;color:inherit">Assigned</p>
-            <p class="text-title-sm" style="margin:0;font-weight:700">—</p>
-          </div>
-          <button class="hos-next-checkin-btn">
-            <span class="material-symbols-outlined">arrow_forward</span>
-          </button>
-        </div>
-      </div>
+      }
     </div>
   }
 
-  <!-- === TAB: Check-In (Reserva) === -->
   @if (activeTab === 'checkin') {
     <div class="hos-form-card">
       <div class="hos-form-card__header">
         <span class="material-symbols-outlined">key</span>
         Check-In desde Reserva
       </div>
-      <form [formGroup]="checkInForm" style="display:flex;flex-direction:column;gap:14px">
+      <div class="hs-field">
+        <label class="hs-label">ID de Reserva</label>
+        <input class="hs-input" type="number" [(ngModel)]="checkInReservaId" placeholder="Ej: 123" />
+      </div>
+      <div class="hs-field">
+        <label class="hs-label">Monto Saldo (opcional)</label>
+        <input class="hs-input" type="number" [(ngModel)]="checkInMontoSaldo" step="0.01" min="0" />
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="hs-field">
-          <label class="hs-label">ID de Reserva</label>
-          <input class="hs-input" type="number" formControlName="reservaId" placeholder="Ej: 123" />
+          <label class="hs-label">Método</label>
+          <select class="hs-select" [(ngModel)]="checkInMetodo">
+            <option value="EFECTIVO">Efectivo</option>
+            <option value="YAPE">Yape</option>
+          </select>
         </div>
-        <div class="hs-field">
-          <label class="hs-label">Monto Saldo (opcional)</label>
-          <div class="hs-input-icon">
-            <span class="material-symbols-outlined">payments</span>
-            <input class="hs-input" type="number" formControlName="montoSaldo" step="0.01" min="0" />
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="hs-field">
-            <label class="hs-label">Método</label>
-            <select class="hs-select" formControlName="metodoSaldo">
-              <option value="EFECTIVO">Efectivo</option>
-              <option value="YAPE">Yape</option>
-            </select>
-          </div>
-          <div class="hs-field">
-            <label class="hs-label">Referencia</label>
-            <input class="hs-input" type="text" formControlName="referencia" placeholder="Opcional" />
-          </div>
-        </div>
-        <button class="hs-btn hs-btn-primary" style="align-self:flex-start"
-          [disabled]="checkInForm.invalid || loading" (click)="doCheckIn()">
-          @if (loading) {
-            <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
-          }
-          Realizar Check-In
-        </button>
-      </form>
+      </div>
+      <button class="hs-btn hs-btn-primary" style="align-self:flex-start" [disabled]="loadingCheckIn" (click)="doCheckIn()">
+        @if (loadingCheckIn) {
+          <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+        }
+        Realizar Check-In
+      </button>
     </div>
   }
 
-  <!-- === TAB: Check-In Directo === -->
   @if (activeTab === 'directo') {
     <div class="hos-form-card">
-    <div class="hos-form-card__header">
-      <span class="material-symbols-outlined">add_box</span>
-      Check-In Directo (sin reserva)
-    </div>
-    <form [formGroup]="directoForm" style="display:flex;flex-direction:column;gap:14px">
+      <div class="hos-form-card__header">
+        <span class="material-symbols-outlined">add_box</span>
+        Check-In Directo (sin reserva)
+      </div>
       <div class="hs-field">
         <label class="hs-label">Cliente</label>
-        <select class="hs-select" formControlName="clienteId">
-          <option [ngValue]="null" disabled>Seleccionar cliente</option>
+        <select class="hs-select" [(ngModel)]="directoClienteId">
+          <option [ngValue]="null">Seleccionar cliente</option>
           @for (c of clientes; track c.id) {
             <option [ngValue]="c.id">{{ c.nombreCompleto }}</option>
           }
@@ -267,8 +274,8 @@
       </div>
       <div class="hs-field">
         <label class="hs-label">Habitación</label>
-        <select class="hs-select" formControlName="habitacionId">
-          <option [ngValue]="null" disabled>Seleccionar habitación</option>
+        <select class="hs-select" [(ngModel)]="directoHabitacionId">
+          <option [ngValue]="null">Seleccionar habitación</option>
           @for (h of habitacionesDisponibles; track h.id) {
             <option [ngValue]="h.id">{{ h.label }}</option>
           }
@@ -277,151 +284,40 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="hs-field">
           <label class="hs-label">Noches</label>
-          <input class="hs-input" type="number" formControlName="noches" min="1" />
+          <input class="hs-input" type="number" [(ngModel)]="directoNoches" min="1" />
         </div>
         <div class="hs-field">
           <label class="hs-label">Monto Pagado</label>
-          <div class="hs-input-icon">
-            <span class="material-symbols-outlined">payments</span>
-            <input class="hs-input" type="number" formControlName="montoPago" step="0.01" min="0" />
-          </div>
+          <input class="hs-input" type="number" [(ngModel)]="directoMontoPago" step="0.01" min="0" />
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="hs-field">
           <label class="hs-label">Método</label>
-          <select class="hs-select" formControlName="metodo">
+          <select class="hs-select" [(ngModel)]="directoMetodo">
             <option value="EFECTIVO">Efectivo</option>
             <option value="YAPE">Yape</option>
           </select>
         </div>
-        <div class="hs-field">
-          <label class="hs-label">Referencia</label>
-          <input class="hs-input" type="text" formControlName="referencia" placeholder="Opcional" />
-        </div>
       </div>
-      <button class="hs-btn hs-btn-primary" style="align-self:flex-start"
-        [disabled]="directoForm.invalid || loading" (click)="doCheckInDirecto()">
-        @if (loading) {
+      <button class="hs-btn hs-btn-primary" style="align-self:flex-start" [disabled]="loadingDirecto" (click)="doCheckInDirecto()">
+        @if (loadingDirecto) {
           <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
         }
         Realizar Check-In Directo
       </button>
-    </form>
     </div>
   }
-
-  <!-- === TAB: Check-Out === -->
-  @if (activeTab === 'checkout') {
-    <div class="hos-form-card">
-    <div class="hos-form-card__header">
-      <span class="material-symbols-outlined">logout</span>
-      Check-Out
-    </div>
-    <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="hs-field">
-        <label class="hs-label">Seleccionar Hospedaje</label>
-        <select class="hs-select" [(ngModel)]="selectedHospedajeId" (change)="loadHospedajeDetail()">
-          <option [ngValue]="null" disabled>Seleccionar huésped</option>
-          @for (h of hospedajes; track h.id) {
-            <option [ngValue]="h.id">{{ h.clienteNombre }} — Hab. {{ h.habitacionNumero }}</option>
-          }
-        </select>
-      </div>
-
-      @if (detailHospedaje) {
-        <div class="hos-detail-box">
-          <div class="hos-detail-row">
-            <span class="hos-detail-label">Cliente</span>
-            <span class="hos-detail-value">{{ detailHospedaje.clienteNombre }}</span>
-          </div>
-          <div class="hos-detail-row">
-            <span class="hos-detail-label">Habitación</span>
-            <span class="hos-detail-value">{{ detailHospedaje.habitacionNumero }}</span>
-          </div>
-          <div class="hos-detail-row">
-            <span class="hos-detail-label">Ingreso</span>
-            <span class="hos-detail-value">{{ detailHospedaje.fechaIngreso | date:'dd/MM/yyyy HH:mm' }}</span>
-          </div>
-          <div class="hos-detail-row">
-            <span class="hos-detail-label">Salida Prog.</span>
-            <span class="hos-detail-value">{{ detailHospedaje.fechaSalidaProgramada | date:'dd/MM/yyyy HH:mm' }}</span>
-          </div>
-          <div class="hos-detail-row">
-            <span class="hos-detail-label">Deuda Pendiente</span>
-            <span class="hos-detail-value" style="font-weight:700;color:var(--clr-error)">S/ {{ detailHospedaje.deudaPendiente }}</span>
-          </div>
-        </div>
-
-        <form [formGroup]="checkOutForm" style="display:flex;flex-direction:column;gap:14px">
-          <div class="hs-field">
-            <label class="hs-label">Fecha/Hora Salida Real</label>
-            <div style="display:flex;gap:8px">
-              <input class="hs-input" type="datetime-local" formControlName="fechaSalidaReal" style="flex:1" />
-              <button class="hs-btn hs-btn-outline" type="button" (click)="setCurrentDateTime()" title="Usar fecha actual">
-                <span class="material-symbols-outlined">schedule</span>
-              </button>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div class="hs-field">
-              <label class="hs-label">Monto Extensión</label>
-              <input class="hs-input" type="number" formControlName="montoExtension" step="0.01" min="0" />
-            </div>
-            <div class="hs-field">
-              <label class="hs-label">Método</label>
-              <select class="hs-select" formControlName="metodoExtension">
-                <option value="EFECTIVO">Efectivo</option>
-                <option value="YAPE">Yape</option>
-              </select>
-            </div>
-          </div>
-          <div class="hs-field">
-            <label class="hs-label">Referencia</label>
-            <input class="hs-input" type="text" formControlName="referenciaExtension" placeholder="Opcional" />
-          </div>
-          <button class="hs-btn hs-btn-danger" style="align-self:flex-start"
-            [disabled]="checkOutForm.invalid || loading" (click)="doCheckOut()">
-            @if (loading) {
-              <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
-            }
-            Finalizar Check-Out
-          </button>
-        </form>
-      }
-    </div>
-    </div>
-  }
-
 </div>
+
+@if (showCheckoutPanel && selectedHospedajeId) {
+  <div class="hos-overlay" (click)="closeCheckout()">
+    <div class="hos-overlay-content" (click)="$event.stopPropagation()">
+      <app-checkout [visible]="showCheckoutPanel" [hospedajeId]="selectedHospedajeId" (close)="closeCheckout()" />
+    </div>
+  </div>
+}
 
 <style>
 @keyframes spin { to { transform: rotate(360deg); } }
-
-.hos-detail-box {
-  background: var(--clr-surface-container-low);
-  border: 1px solid var(--clr-outline-variant);
-  border-radius: var(--radius-lg);
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.hos-detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.hos-detail-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--clr-on-surface-variant);
-}
-.hos-detail-value {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--clr-on-surface);
-}
 </style>

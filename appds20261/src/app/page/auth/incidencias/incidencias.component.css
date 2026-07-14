@@ -133,6 +133,7 @@
 .report-textarea { resize: none; }
 .report-textarea::placeholder { color: var(--clr-outline); }
 .upload-zone:hover .upload-zone__icon { transform: scale(1.1); }
+.progress-fill { transition: width .5s ease; }
 @media (max-width: 767px) {
   .inc-page { padding: var(--sp-margin-mobile); }
   .room-section__controls { flex-direction: column; }

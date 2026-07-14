@@ -109,22 +109,20 @@
       </div>
     </div>
 
-    <!-- No Concretadas -->
+    <!-- Reservas Hoy -->
     <div class="rep-kpi-card">
       <div class="rep-kpi-top">
-        <span class="rep-kpi-label">No Concretadas</span>
-        <span class="material-symbols-outlined rep-kpi-icon">cancelled</span>
+        <span class="rep-kpi-label">Reservas Hoy</span>
+        <span class="material-symbols-outlined rep-kpi-icon">event_available</span>
       </div>
-      <div class="rep-kpi-value rep-kpi-value--sm">
-        <span class="rep-kpi-num">{{ noConcretadas?.canceladas || 0 }}</span>
-        <span class="rep-kpi-num-sep">/</span>
-        <span class="rep-kpi-num">{{ noConcretadas?.noShow || 0 }}</span>
+      <div class="rep-kpi-value" style="font-size:30px;font-weight:700;color:#002046">
+        {{ noConcretadas?.canceladas || 0 }}
       </div>
-      <div class="rep-kpi-trend" style="color:var(--clr-error)">
-        <span>Canceladas / No Show</span>
+      <div class="rep-kpi-trend" style="color:var(--clr-on-surface-variant)">
+        <span>No concretadas del per&iacute;odo</span>
       </div>
-      <div class="rep-kpi-footer">
-        <span style="color:var(--clr-error);font-weight:600">Perdido: S/ {{ noConcretadas?.totalAdelantoPerdido || '0.00' }}</span>
+      <div class="rep-kpi-footer" style="font-size:11px;color:var(--clr-error)">
+        <span>Canceladas: {{ noConcretadas?.canceladas || 0 }} · No Show: {{ noConcretadas?.noShow || 0 }}</span>
       </div>
     </div>
   </div>
@@ -143,43 +141,23 @@
       <div class="rep-chart-body">
         <div class="rep-bars-container">
           <div class="rep-bar-group">
-            <div class="rep-bar" style="height: 40%"></div>
-            <span class="rep-bar-label">Lu</span>
-          </div>
-          <div class="rep-bar-group">
-            <div class="rep-bar" style="height: 55%"></div>
-            <span class="rep-bar-label">Ma</span>
-          </div>
-          <div class="rep-bar-group">
-            <div class="rep-bar" style="height: 70%"></div>
-            <span class="rep-bar-label">Mi</span>
-          </div>
-          <div class="rep-bar-group">
             <div class="rep-bar rep-bar--today" [style.height.%]="ocupacion?.porcentajeOcupacion || 0" title="Hoy: {{ ocupacion?.porcentajeOcupacion || 0 }}%">
               <div class="rep-bar-tooltip">Hoy: {{ ocupacion?.porcentajeOcupacion || 0 }}%</div>
             </div>
-            <span class="rep-bar-label">Ju</span>
+            <span class="rep-bar-label">Hoy</span>
           </div>
           <div class="rep-bar-group">
-            <div class="rep-bar" style="height: 60%"></div>
-            <span class="rep-bar-label">Vi</span>
-          </div>
-          <div class="rep-bar-group">
-            <div class="rep-bar" style="height: 45%"></div>
-            <span class="rep-bar-label">Sá</span>
-          </div>
-          <div class="rep-bar-group">
-            <div class="rep-bar" style="height: 50%"></div>
-            <span class="rep-bar-label">Do</span>
+            <div class="rep-bar" style="height: 100%"></div>
+            <span class="rep-bar-label">100%</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Source of Bookings -->
+    <!-- Origen de Reservas -->
     <div class="rep-chart-card">
       <div class="rep-chart-header">
-        <h3 class="rep-chart-title">Origen de Ingresos</h3>
+        <h3 class="rep-chart-title">Distribuci&oacute;n por M&eacute;todo de Pago</h3>
       </div>
       <div class="rep-source-list">
         <div class="rep-source-item">
@@ -232,53 +210,63 @@
   </div>
 
   <!-- Revenue Breakdown Table -->
-  <div class="rep-table-card">
-    <div class="rep-table-card-header">
-      <h3 class="rep-table-title">Desglose de Ingresos Mensuales</h3>
-      <div class="rep-table-header-summary">
-        <span class="rep-table-total-label">Total Ingresos:</span>
-        <span class="rep-table-total-value">S/ {{ ingresos?.total || '0.00' }}</span>
+    <div class="rep-table-card">
+      <div class="rep-table-card-header">
+        <h3 class="rep-table-title">Desglose de Ingresos Mensuales</h3>
+        <div class="rep-table-header-summary">
+          <span class="rep-table-total-label">Total Ingresos:</span>
+          <span class="rep-table-total-value">S/ {{ ingresos?.total || '0.00' }}</span>
+        </div>
+      </div>
+      <div class="rep-table-wrapper">
+        <table class="rep-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Hab. Vendidas</th>
+              <th>Ocupación %</th>
+              <th>ADR</th>
+              <th>RevPAR</th>
+              <th>Ingreso Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="rep-table-label">Período Actual</td>
+              <td class="rep-table-number">{{ ocupacion?.ocupadas || 0 }} / {{ ocupacion?.totalHabitaciones || 0 }}</td>
+              <td class="rep-table-number">{{ ocupacion?.porcentajeOcupacion || 0 }}%</td>
+              <td class="rep-table-number">S/ {{ (ingresos?.total / (ocupacion?.ocupadas || 1)) | number:'1.2-2' }}</td>
+              <td class="rep-table-number">S/ {{ (ingresos?.total / (ocupacion?.totalHabitaciones || 1)) | number:'1.2-2' }}</td>
+              <td class="rep-table-number rep-table-number--bold">S/ {{ ingresos?.total || '0.00' }}</td>
+            </tr>
+            <tr class="rep-table-row-alt">
+              <td class="rep-table-label">Adelantos ({{ ((ingresos?.totalAdelantos || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%)</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">S/ {{ ingresos?.totalAdelantos || '0.00' }}</td>
+            </tr>
+            <tr>
+              <td class="rep-table-label">Saldos ({{ ((ingresos?.totalSaldos || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%)</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">S/ {{ ingresos?.totalSaldos || '0.00' }}</td>
+            </tr>
+            <tr class="rep-table-row-alt">
+              <td class="rep-table-label">Extensiones ({{ ((ingresos?.totalExtensiones || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%)</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">—</td>
+              <td class="rep-table-number">S/ {{ ingresos?.totalExtensiones || '0.00' }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-    <div class="rep-table-wrapper">
-      <table class="rep-table">
-        <thead>
-          <tr>
-            <th>Métrica</th>
-            <th>Adelantos</th>
-            <th>Saldos</th>
-            <th>Extensiones</th>
-            <th>Total</th>
-            <th>Ocupación</th>
-            <th>ADR</th>
-            <th>RevPAR</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="rep-table-label">Valores del Período</td>
-            <td class="rep-table-number">S/ {{ ingresos?.totalAdelantos || '0.00' }}</td>
-            <td class="rep-table-number">S/ {{ ingresos?.totalSaldos || '0.00' }}</td>
-            <td class="rep-table-number">S/ {{ ingresos?.totalExtensiones || '0.00' }}</td>
-            <td class="rep-table-number rep-table-number--bold">S/ {{ ingresos?.total || '0.00' }}</td>
-            <td class="rep-table-number">{{ ocupacion?.porcentajeOcupacion || 0 }}%</td>
-            <td class="rep-table-number">S/ {{ (ingresos?.total / (ocupacion?.ocupadas || 1)) | number:'1.2-2' }}</td>
-            <td class="rep-table-number">S/ {{ (ingresos?.total / (ocupacion?.totalHabitaciones || 1)) | number:'1.2-2' }}</td>
-          </tr>
-          <tr class="rep-table-row-alt">
-            <td class="rep-table-label">Distribución %</td>
-            <td class="rep-table-number">{{ ((ingresos?.totalAdelantos || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%</td>
-            <td class="rep-table-number">{{ ((ingresos?.totalSaldos || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%</td>
-            <td class="rep-table-number">{{ ((ingresos?.totalExtensiones || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%</td>
-            <td class="rep-table-number rep-table-number--bold">100%</td>
-            <td class="rep-table-number">—</td>
-            <td class="rep-table-number">—</td>
-            <td class="rep-table-number">—</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 
   <!-- Legacy Sections (preserved with all bindings) -->
   <div class="rep-legacy-grid">

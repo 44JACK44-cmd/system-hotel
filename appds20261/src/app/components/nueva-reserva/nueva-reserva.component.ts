@@ -33,6 +33,11 @@ export class NuevaReservaComponent implements OnInit {
   searchTerm = '';
   clientes: any[] = [];
   selectedCliente: any = null;
+
+  onSearchTermChange(): void {
+    this.clientes = [];
+    this.selectedCliente = null;
+  }
   loading = false;
   habitaciones: any[] = [];
   precioNoche = 0;
@@ -111,6 +116,24 @@ export class NuevaReservaComponent implements OnInit {
       return;
     }
 
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    if (this.reservaData.fechaEntrada) {
+      const fechaEntrada = new Date(this.reservaData.fechaEntrada + 'T00:00:00');
+      if (fechaEntrada < hoy) {
+        this.messageService.add({ severity: 'error', summary: 'Fecha inválida', detail: 'La fecha de entrada no puede ser anterior a hoy' });
+        return;
+      }
+    }
+    if (this.reservaData.fechaEntrada && this.reservaData.fechaSalida) {
+      const entrada = new Date(this.reservaData.fechaEntrada + 'T00:00:00');
+      const salida = new Date(this.reservaData.fechaSalida + 'T00:00:00');
+      if (salida <= entrada) {
+        this.messageService.add({ severity: 'error', summary: 'Fechas inválidas', detail: 'La fecha de salida debe ser posterior a la fecha de entrada' });
+        return;
+      }
+    }
+
     this.loading = true;
     const doCreate = (clienteId: number) => {
       const payload: any = {
@@ -142,17 +165,8 @@ export class NuevaReservaComponent implements OnInit {
           });
         },
         error: () => {
-          this.reservaService.crear(payload).subscribe({
-            next: () => {
-              this.loading = false;
-              this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Reserva creada correctamente' });
-              setTimeout(() => this.cerrar(), 1000);
-            },
-            error: (err) => {
-              this.loading = false;
-              this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al crear reserva' });
-            }
-          });
+          this.loading = false;
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al verificar disponibilidad. Intente nuevamente.' });
         }
       });
     };

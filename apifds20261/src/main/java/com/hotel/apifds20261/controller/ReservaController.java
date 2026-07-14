@@ -2,6 +2,7 @@ package com.hotel.apifds20261.controller;
 
 import com.hotel.apifds20261.business.BusinessReserva;
 import com.hotel.apifds20261.dto.request.RequestReservaInsert;
+import com.hotel.apifds20261.dto.request.RequestReservaUpdate;
 import com.hotel.apifds20261.dto.response.ReservaResponse;
 import com.hotel.apifds20261.dto.response.ResponseReserva;
 import com.hotel.apifds20261.security.JwtService;
@@ -70,21 +71,63 @@ public class ReservaController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("update/{id}")
+    public ResponseEntity<ResponseReserva> actionUpdate(
+            @PathVariable Long id,
+            @Valid @RequestBody RequestReservaUpdate request,
+            @RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            ResponseReserva response = new ResponseReserva();
+            response.listMessage.add("Token no proporcionado o formato invalido");
+            return ResponseEntity.status(401).body(response);
+        }
+        String token = authHeader.substring(7);
+        if (!jwtService.isTokenValid(token)) {
+            ResponseReserva response = new ResponseReserva();
+            response.listMessage.add("Token invalido o expirado");
+            return ResponseEntity.status(401).body(response);
+        }
+        Long usuarioId = jwtService.getUserIdFromToken(token);
+        ReservaResponse item = reservaBusiness.actualizar(id, request, usuarioId);
+        ResponseReserva response = new ResponseReserva();
+        response.success();
+        response.getListReserva().add(item);
+        response.listMessage.add("Reserva actualizada exitosamente");
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("cancel/{id}")
     public ResponseEntity<ResponseReserva> actionCancel(
             @PathVariable Long id,
             @RequestHeader("Authorization") String authHeader) {
-        String rol = jwtService.getRolFromToken(authHeader.substring(7));
-        if (!"ADMIN".equals(rol)) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                ResponseReserva response = new ResponseReserva();
+                response.listMessage.add("Token no proporcionado o formato invalido");
+                return ResponseEntity.status(401).body(response);
+            }
+            String token = authHeader.substring(7);
+            if (!jwtService.isTokenValid(token)) {
+                ResponseReserva response = new ResponseReserva();
+                response.listMessage.add("Token invalido o expirado");
+                return ResponseEntity.status(401).body(response);
+            }
+            String rol = jwtService.getRolFromToken(token);
+            if (!"ADMIN".equals(rol)) {
+                ResponseReserva response = new ResponseReserva();
+                response.listMessage.add("Solo el administrador puede cancelar reservas");
+                return ResponseEntity.status(403).body(response);
+            }
+            reservaBusiness.cancelar(id);
             ResponseReserva response = new ResponseReserva();
-            response.listMessage.add("Solo el administrador puede cancelar reservas");
-            return ResponseEntity.status(403).body(response);
+            response.success();
+            response.listMessage.add("Reserva cancelada exitosamente");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ResponseReserva response = new ResponseReserva();
+            response.listMessage.add("Error al procesar la solicitud");
+            return ResponseEntity.status(500).body(response);
         }
-        reservaBusiness.cancelar(id);
-        ResponseReserva response = new ResponseReserva();
-        response.success();
-        response.listMessage.add("Reserva cancelada exitosamente");
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("checkavailability")
@@ -96,7 +139,7 @@ public class ReservaController {
                 habitacionId, LocalDate.parse(fechaEntrada), LocalDate.parse(fechaSalida));
         ResponseReserva response = new ResponseReserva();
         response.success();
-        response.listMessage.add(String.valueOf(disponible));
+        response.setDisponible(disponible);
         return ResponseEntity.ok(response);
     }
 }

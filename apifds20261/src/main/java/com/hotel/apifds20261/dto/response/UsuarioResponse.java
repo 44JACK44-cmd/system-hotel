@@ -12,4 +12,5 @@ public class UsuarioResponse {
     private String rol;
     private boolean activo;
     private LocalDateTime createdAt;
+    private LocalDateTime ultimoAcceso;
 }

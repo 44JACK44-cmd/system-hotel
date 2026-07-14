@@ -17,7 +17,7 @@
         <div class="hs-field">
           <label class="hs-label">CLIENTE</label>
           <div class="nr-search-row">
-            <input class="hs-input" type="text" [(ngModel)]="searchTerm" placeholder="Buscar cliente..." (keyup.enter)="buscarCliente()" />
+            <input class="hs-input" type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()" placeholder="Buscar cliente..." (keyup.enter)="buscarCliente()" />
             <button class="hs-btn hs-btn-secondary nr-search-btn" (click)="buscarCliente()">
               <span class="material-symbols-outlined">search</span>
             </button>
@@ -116,10 +116,10 @@
   </div>
 
   <div class="hs-slide-panel__footer">
-    <button class="hs-btn hs-btn-outline" style="flex:1" (click)="cerrar()">
+    <button style="flex:1;padding:12px 20px;background:transparent;color:var(--clr-secondary);border:2px solid var(--clr-secondary);border-radius:var(--radius-lg);font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s" (click)="cerrar()">
       Cancelar
     </button>
-    <button class="hs-btn hs-btn-primary" style="flex:1"
+    <button class="hs-btn hs-btn-secondary" style="flex:1"
       [disabled]="!puedeGuardar() || loading" (click)="guardar()">
       @if (loading) {
         <span class="material-symbols-outlined nr-spin">sync</span>

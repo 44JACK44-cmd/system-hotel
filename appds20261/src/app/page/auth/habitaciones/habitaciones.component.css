@@ -1,4 +1,4 @@
-.hab-page{padding:24px;display:flex;flex-direction:column;gap:20px;background:var(--clr-background);min-height:calc(100vh - 64px)}
+.hab-page{padding:24px;display:flex;flex-direction:column;gap:20px;background:#faf9fd;min-height:calc(100vh - 64px)}
 .hab-page__header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
 .hab-page__title{font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--clr-primary);margin:0}
 .hab-page__subtitle{font-size:14px;color:var(--clr-on-surface-variant);margin:4px 0 0}
@@ -6,7 +6,8 @@
 .hab-btn-primary:hover{box-shadow:0 8px 15px rgba(0,0,0,.15);transform:translateY(-1px)}
 .hab-filter-card,.hab-table-card{background:#fff;border:1px solid var(--clr-outline-variant);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .hab-filter-card{padding:16px}
-.hab-filter-grid{display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:flex-end}
+.hab-filter-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:flex-end}
+.hab-search-field{grid-column:span 2}
 @media(max-width:768px){.hab-filter-grid{grid-template-columns:1fr}}
 .hab-table-card{overflow:hidden}
 .hab-table{width:100%;border-collapse:collapse;text-align:left}
@@ -55,7 +56,7 @@
 .hab-radio-option input[type=radio]{accent-color:var(--clr-secondary);width:16px;height:16px;margin:0}
 .hab-radio-option:has(input:checked){border-color:var(--clr-secondary);background:rgba(5,93,182,.04)}
 .hab-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.hab-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;background:var(--clr-secondary-fixed);color:var(--clr-on-secondary-fixed);border-radius:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.hab-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;background:var(--clr-secondary-fixed);color:var(--clr-on-secondary-fixed);border-radius:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .hab-chip-add{display:inline-flex;align-items:center;padding:4px 12px;border:1px dashed var(--clr-outline);border-radius:8px;background:transparent;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-outline);cursor:pointer}
 .hab-chip-add:hover{border-color:var(--clr-secondary);color:var(--clr-secondary)}
 .hab-slide-footer{display:flex;gap:12px;padding:20px 24px;border-top:1px solid var(--clr-outline-variant);background:var(--clr-surface-container-low)}

@@ -95,8 +95,8 @@ export class CheckInComponent {
     }
     if (this.montoSaldo > 0) {
       const saldoReal = (this.reservaEncontrada.montoTotal || 0) - (this.reservaEncontrada.montoAdelanto || 0);
-      if (this.montoSaldo !== saldoReal) {
-        this.messageService.add({ severity: 'warn', summary: 'Monto inválido', detail: 'El monto debe ser S/ ' + saldoReal.toFixed(2) });
+      if (this.montoSaldo > saldoReal) {
+        this.messageService.add({ severity: 'warn', summary: 'Monto inválido', detail: 'El monto no puede exceder el saldo pendiente (S/ ' + saldoReal.toFixed(2) + ')' });
         return;
       }
     }

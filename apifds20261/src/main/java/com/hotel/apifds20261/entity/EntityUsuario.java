@@ -33,4 +33,7 @@ public class EntityUsuario {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "ultimo_acceso")
+    private LocalDateTime ultimoAcceso;
 }

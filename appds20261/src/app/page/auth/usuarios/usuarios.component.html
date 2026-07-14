@@ -15,18 +15,7 @@
   <p-toast />
   <p-confirmDialog />
 
-  <!-- Tabs -->
-  <div class="usr-tabs">
-    <button class="usr-tab usr-tab--active">
-      <span class="material-symbols-outlined">group</span>
-      Lista de Personal
-    </button>
-    <button class="usr-tab">
-      <span class="material-symbols-outlined">history</span>
-      Historial de Accesos
-    </button>
-  </div>
-
+  @if (activeTab === 'personal') {
   <!-- Statistics Bento Grid -->
   <div class="usr-stats">
     <div class="usr-stat-card">
@@ -73,7 +62,7 @@
       </thead>
       <tbody>
         @for (u of usuarios; track u.id) {
-          <tr>
+          <tr [style.opacity]="!u.activo ? '0.75' : '1'">
             <td>
               <div style="display:flex;align-items:center;gap:10px">
                 <div class="usr-avatar"
@@ -88,10 +77,14 @@
               </div>
             </td>
             <td>
-              <span class="badge" [ngClass]="u.rol === 'ADMIN' ? 'badge-info' : 'badge-confirmed'">{{ u.rol === 'ADMIN' ? 'Administrador' : 'Recepcionista' }}</span>
+              <span class="badge" [style.background]="u.rol === 'ADMIN' ? 'var(--clr-primary-container)' : 'var(--clr-secondary-fixed)'" [style.color]="u.rol === 'ADMIN' ? 'var(--clr-on-primary-container)' : 'var(--clr-on-secondary-fixed)'">{{ u.rol === 'ADMIN' ? 'Administrador' : 'Recepcionista' }}</span>
             </td>
             <td class="text-data-tabular" style="color:var(--clr-on-surface-variant)">
-              {{ u.ultimoAcceso || u.ultimo_acceso || u.createdAt || '&mdash;' }}
+              @if (u.ultimoAcceso) {
+                {{ u.ultimoAcceso | date:'dd/MM/yy HH:mm' }}
+              } @else {
+                &mdash;
+              }
             </td>
             <td>
               <div style="display:flex;align-items:center;gap:8px">
@@ -105,10 +98,10 @@
               </div>
             </td>
             <td style="text-align:right;white-space:nowrap">
-              <button class="usr-action-btn" (click)="editUser(u)" title="Editar">
+              <button class="hs-icon-btn" (click)="editUser(u)" title="Editar">
                 <span class="material-symbols-outlined">edit</span>
               </button>
-              <button class="usr-action-btn" title="M&aacute;s">
+              <button class="hs-icon-btn" title="M&aacute;s">
                 <span class="material-symbols-outlined">more_vert</span>
               </button>
             </td>
@@ -124,55 +117,9 @@
     </table>
   </div>
 
-  <!-- Historial de Accesos -->
-  <div class="hs-card" style="overflow:hidden">
-    <div class="hs-card-header">
-      <h3 class="text-title-sm" style="color:var(--clr-primary);margin:0">Logs de Seguridad Recientes</h3>
-      <div style="display:flex;gap:8px">
-        <input class="hs-input" style="width:auto;padding:6px 12px;font-size:13px" placeholder="Buscar por usuario..." />
-        <button class="hs-btn hs-btn-outline hs-btn-sm">
-          <span class="material-symbols-outlined" style="font-size:16px">filter_list</span>
-          Filtrar
-        </button>
-      </div>
-    </div>
-    <div style="overflow-x:auto">
-      <table class="hs-table">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Evento</th>
-            <th>Fecha y Hora</th>
-            <th>Direcci&oacute;n IP</th>
-            <th>Dispositivo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="font-weight:600;color:var(--clr-primary)">Ricardo D&iacute;az</td>
-            <td><span class="usr-log-event usr-log-event--success"><span class="material-symbols-outlined">login</span> Inicio de sesi&oacute;n</span></td>
-            <td class="text-data-tabular">24/05/2025 - 08:45:12</td>
-            <td class="text-data-tabular" style="color:var(--clr-on-surface-variant)">192.168.1.45</td>
-            <td style="font-size:12px;color:var(--clr-on-surface-variant)">Windows 11 / Chrome 124</td>
-          </tr>
-          <tr>
-            <td style="font-weight:600;color:var(--clr-primary)">Maria Lopez</td>
-            <td><span class="usr-log-event usr-log-event--warning"><span class="material-symbols-outlined">logout</span> Cierre de sesi&oacute;n</span></td>
-            <td class="text-data-tabular">23/05/2025 - 23:20:05</td>
-            <td class="text-data-tabular" style="color:var(--clr-on-surface-variant)">192.168.1.12</td>
-            <td style="font-size:12px;color:var(--clr-on-surface-variant)">iPad Pro / Safari Mobile</td>
-          </tr>
-          <tr>
-            <td style="font-weight:600;color:var(--clr-primary)">Ricardo D&iacute;az</td>
-            <td><span class="usr-log-event usr-log-event--danger"><span class="material-symbols-outlined">warning</span> Cambio de Contrase&ntilde;a</span></td>
-            <td class="text-data-tabular">23/05/2025 - 09:12:33</td>
-            <td class="text-data-tabular" style="color:var(--clr-on-surface-variant)">192.168.1.45</td>
-            <td style="font-size:12px;color:var(--clr-on-surface-variant)">Windows 11 / Chrome 124</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  }
+
+
 
   @if (dialogVisible) {
     <div class="hs-overlay" (click)="dialogVisible = false"></div>

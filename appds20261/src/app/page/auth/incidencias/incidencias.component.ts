@@ -28,6 +28,26 @@ export class IncidenciasComponent implements OnInit {
     return this.incidencias.filter(i => i.estado === 'ACTIVA');
   }
 
+  get habitacionesLimpias(): any[] {
+    return this.habitaciones.filter(h => h.estado === 'DISPONIBLE');
+  }
+
+  get habitacionesSucias(): any[] {
+    return this.habitaciones.filter(h => h.estado === 'OCUPADA');
+  }
+
+  get habitacionesEnProgreso(): any[] {
+    return this.incidenciasActivas;
+  }
+
+  get habitacionesMantenimiento(): any[] {
+    return this.habitaciones.filter(h => h.estado !== 'DISPONIBLE' && h.estado !== 'OCUPADA');
+  }
+
+  getActiveIncidentForRoom(hab: any): any {
+    return this.incidenciasActivas.find(i => String(i.habitacionNumero) === String(hab.numero)) || null;
+  }
+
   tipos = [
     { label: 'Limpieza', value: 'LIMPIEZA' },
     { label: 'Mantenimiento', value: 'MANTENIMIENTO' }

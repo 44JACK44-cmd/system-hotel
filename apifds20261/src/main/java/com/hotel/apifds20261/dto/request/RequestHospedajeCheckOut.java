@@ -16,5 +16,9 @@ public class RequestHospedajeCheckOut {
     private BigDecimal montoExtension;
     private String metodoExtension;
     private String referenciaExtension;
+
+    private BigDecimal montoPago;
+    private String metodoPago;
+    private String referencia;
 }
 

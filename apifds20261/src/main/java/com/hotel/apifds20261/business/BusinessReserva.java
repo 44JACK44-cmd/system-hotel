@@ -1,6 +1,7 @@
 package com.hotel.apifds20261.business;
 
 import com.hotel.apifds20261.dto.request.RequestReservaInsert;
+import com.hotel.apifds20261.dto.request.RequestReservaUpdate;
 import com.hotel.apifds20261.dto.response.ReservaResponse;
 import com.hotel.apifds20261.entity.*;
 import com.hotel.apifds20261.staticdata.*;
@@ -75,35 +76,7 @@ public class BusinessReserva {
             throw new ResourceNotFoundException("Usuario no encontrado");
         }
 
-        if (!habitacion.getActivo()) {
-            throw new BusinessException("La habitacion no esta activa");
-        }
-        if (request.getFechaSalida().isBefore(request.getFechaEntrada()) ||
-                request.getFechaSalida().isEqual(request.getFechaEntrada())) {
-            throw new BusinessException("La fecha de salida debe ser posterior a la fecha de entrada");
-        }
-        if (request.getFechaEntrada().isBefore(LocalDate.now())) {
-            throw new BusinessException("No se puede reservar con fecha de entrada en el pasado");
-        }
-
-        if (habitacion.getEstado() == EstadoHabitacion.LIMPIEZA ||
-                habitacion.getEstado() == EstadoHabitacion.MANTENIMIENTO) {
-            throw new BusinessException("La habitacion esta en " + habitacion.getEstado().name().toLowerCase() +
-                    " y no puede reservarse");
-        }
-        if (habitacion.getEstado() == EstadoHabitacion.OCUPADA) {
-            EntityHospedaje hospedajeActivo = hospedajeRepository.findActivoByHabitacionId(habitacion.getId());
-            if (hospedajeActivo != null && hospedajeActivo.getFechaSalidaProgramada().toLocalDate().isAfter(request.getFechaEntrada())) {
-                throw new BusinessException("La habitacion estara ocupada hasta el " +
-                        hospedajeActivo.getFechaSalidaProgramada().toLocalDate() + " y no puede reservarse para esas fechas");
-            }
-        }
-
-        List<EntityReserva> solapadas = reservaRepository.findSolapadas(
-                request.getHabitacionId(), request.getFechaEntrada(), request.getFechaSalida());
-        if (!solapadas.isEmpty()) {
-            throw new BusinessException("La habitacion ya tiene una reserva confirmada en esas fechas");
-        }
+        validarDisponibilidad(habitacion, request.getFechaEntrada(), request.getFechaSalida());
 
         long noches = ChronoUnit.DAYS.between(request.getFechaEntrada(), request.getFechaSalida());
         BigDecimal montoTotal = habitacion.getPrecioNoche().multiply(BigDecimal.valueOf(noches));
@@ -145,8 +118,8 @@ public class BusinessReserva {
     @Transactional
     public void cancelar(Long id) {
         EntityReserva reserva = buscarOExcepcion(id);
-        if (reserva.getEstado() == EstadoReserva.REALIZADA) {
-            throw new BusinessException("No se puede cancelar una reserva ya realizada");
+        if (reserva.getEstado() != EstadoReserva.CONFIRMADA) {
+            throw new BusinessException("Solo se pueden cancelar reservas confirmadas");
         }
         reserva.setEstado(EstadoReserva.CANCELADA);
         reservaRepository.save(reserva);
@@ -162,8 +135,82 @@ public class BusinessReserva {
     }
 
     public boolean verificarDisponibilidad(Long habitacionId, LocalDate fechaEntrada, LocalDate fechaSalida) {
-        List<EntityReserva> solapadas = reservaRepository.findSolapadas(habitacionId, fechaEntrada, fechaSalida);
-        return solapadas.isEmpty();
+        EntityHabitacion habitacion = habitacionRepository.findById(habitacionId).orElse(null);
+        if (habitacion == null) return false;
+        try {
+            validarDisponibilidad(habitacion, fechaEntrada, fechaSalida);
+            return true;
+        } catch (BusinessException e) {
+            return false;
+        }
+    }
+
+    @Transactional
+    public ReservaResponse actualizar(Long id, RequestReservaUpdate request, Long usuarioId) {
+        EntityReserva reserva = buscarOExcepcion(id);
+        if (reserva.getEstado() != EstadoReserva.CONFIRMADA) {
+            throw new BusinessException("Solo se pueden modificar reservas confirmadas");
+        }
+
+        EntityHabitacion nuevaHabitacion = habitacionRepository.findById(request.getHabitacionId()).orElse(null);
+        if (nuevaHabitacion == null) {
+            throw new ResourceNotFoundException("Habitacion no encontrada");
+        }
+
+        validarDisponibilidad(nuevaHabitacion, request.getFechaEntrada(), request.getFechaSalida(), id);
+
+        long noches = ChronoUnit.DAYS.between(request.getFechaEntrada(), request.getFechaSalida());
+        BigDecimal nuevoMontoTotal = nuevaHabitacion.getPrecioNoche().multiply(BigDecimal.valueOf(noches));
+
+        if (reserva.getMontoAdelanto().compareTo(nuevoMontoTotal) > 0) {
+            throw new BusinessException("El adelanto ya pagado (S/ " + reserva.getMontoAdelanto() +
+                    ") supera el nuevo monto total (S/ " + nuevoMontoTotal + ")");
+        }
+
+        reserva.setHabitacion(nuevaHabitacion);
+        reserva.setFechaEntrada(request.getFechaEntrada());
+        reserva.setFechaSalida(request.getFechaSalida());
+        reserva.setMontoTotal(nuevoMontoTotal);
+        reserva.setObservacion(request.getObservacion());
+        reserva = reservaRepository.save(reserva);
+
+        return toResponse(reserva);
+    }
+
+    private void validarDisponibilidad(EntityHabitacion habitacion, LocalDate fechaEntrada, LocalDate fechaSalida) {
+        validarDisponibilidad(habitacion, fechaEntrada, fechaSalida, null);
+    }
+
+    private void validarDisponibilidad(EntityHabitacion habitacion, LocalDate fechaEntrada, LocalDate fechaSalida, Long excludeReservaId) {
+        if (!habitacion.getActivo()) {
+            throw new BusinessException("La habitacion no esta activa");
+        }
+        if (fechaSalida.isBefore(fechaEntrada) || fechaSalida.isEqual(fechaEntrada)) {
+            throw new BusinessException("La fecha de salida debe ser posterior a la fecha de entrada");
+        }
+        if (fechaEntrada.isBefore(LocalDate.now())) {
+            throw new BusinessException("No se puede reservar con fecha de entrada en el pasado");
+        }
+        if (habitacion.getEstado() == EstadoHabitacion.LIMPIEZA ||
+                habitacion.getEstado() == EstadoHabitacion.MANTENIMIENTO) {
+            throw new BusinessException("La habitacion esta en " + habitacion.getEstado().name().toLowerCase() +
+                    " y no puede reservarse");
+        }
+        if (habitacion.getEstado() == EstadoHabitacion.OCUPADA) {
+            EntityHospedaje hospedajeActivo = hospedajeRepository.findActivoByHabitacionId(habitacion.getId());
+            if (hospedajeActivo != null && hospedajeActivo.getFechaSalidaProgramada().toLocalDate().isAfter(fechaEntrada)) {
+                throw new BusinessException("La habitacion estara ocupada hasta el " +
+                        hospedajeActivo.getFechaSalidaProgramada().toLocalDate() + " y no puede reservarse para esas fechas");
+            }
+        }
+        List<EntityReserva> solapadas = reservaRepository.findSolapadas(
+                habitacion.getId(), fechaEntrada, fechaSalida);
+        if (excludeReservaId != null) {
+            solapadas.removeIf(r -> r.getId().equals(excludeReservaId));
+        }
+        if (!solapadas.isEmpty()) {
+            throw new BusinessException("La habitacion ya tiene una reserva confirmada en esas fechas");
+        }
     }
 
     private EntityReserva buscarOExcepcion(Long id) {

@@ -5,7 +5,7 @@
   <div class="hab-page__header">
     <div>
       <h1 class="hab-page__title">Gesti&oacute;n de Habitaciones</h1>
-      <p class="hab-page__subtitle">Supervise y actualice el inventario de habitaciones en tiempo real.</p>
+      <p class="hab-page__subtitle">Supervise y actualice el inventario de habitaciones.</p>
     </div>
     @if (isAdmin) {
       <button class="hab-btn-primary" (click)="showDialog()">
@@ -102,18 +102,7 @@
     </table>
 
     <div class="hab-pagination">
-      <span class="hab-pagination-info">Mostrando {{ filteredHabitaciones.length }} de {{ habitaciones.length }} habitaciones</span>
-      <div class="hab-pagination-buttons">
-        <button class="hab-page-arrow" disabled>
-          <span class="material-symbols-outlined">chevron_left</span>
-        </button>
-        <button class="hab-page-num active">1</button>
-        <button class="hab-page-num">2</button>
-        <button class="hab-page-num">3</button>
-        <button class="hab-page-arrow">
-          <span class="material-symbols-outlined">chevron_right</span>
-        </button>
-      </div>
+      <span class="hab-pagination-info">Mostrando {{ filteredHabitaciones.length }} de {{ habitaciones.length }} habitaci&oacute;n(es)</span>
     </div>
   </div>
 </div>
@@ -132,15 +121,6 @@
     </div>
 
     <div class="hab-slide-body">
-      <div class="hab-room-image">
-        <div class="hab-room-img-placeholder">
-          <span class="material-symbols-outlined" style="font-size:48px;line-height:1;color:var(--clr-outline)">image</span>
-        </div>
-        <button class="hab-img-btn" type="button">
-          <span class="material-symbols-outlined">photo_camera</span>
-        </button>
-      </div>
-
       <form [formGroup]="habForm" class="hab-form">
         <div class="hab-form-row">
           <div class="hs-field">
@@ -175,37 +155,6 @@
           </div>
         </div>
 
-        <div class="hs-field">
-          <label class="hs-label">Estado Actual</label>
-          <div class="hab-radio-group">
-            <label class="hab-radio-option">
-              <input type="radio" name="slideStatus" value="DISPONIBLE" checked />
-              <span>Disponible</span>
-            </label>
-            <label class="hab-radio-option">
-              <input type="radio" name="slideStatus" value="OCUPADA" />
-              <span>Ocupada</span>
-            </label>
-            <label class="hab-radio-option">
-              <input type="radio" name="slideStatus" value="LIMPIEZA" />
-              <span>Sucia</span>
-            </label>
-            <label class="hab-radio-option">
-              <input type="radio" name="slideStatus" value="MANTENIMIENTO" />
-              <span>Mantenimiento</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="hs-field">
-          <label class="hs-label">Amenidades</label>
-          <div class="hab-chips">
-            <span class="hab-chip"><span class="material-symbols-outlined" style="font-size:16px">wifi</span> WiFi</span>
-            <span class="hab-chip"><span class="material-symbols-outlined" style="font-size:16px">ac_unit</span> Aire Acond.</span>
-            <span class="hab-chip"><span class="material-symbols-outlined" style="font-size:16px">tv</span> Smart TV</span>
-            <button class="hab-chip-add" type="button">+ Agregar</button>
-          </div>
-        </div>
       </form>
     </div>
 

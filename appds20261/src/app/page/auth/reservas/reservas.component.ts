@@ -27,12 +27,16 @@ export class ReservasComponent implements OnInit {
   private authService = inject(AuthService);
 
   reservas: any[] = [];
+  filteredReservas: any[] = [];
+  searchTerm = '';
   clientes: any[] = [];
   habitaciones: any[] = [];
   newDialogVisible = false;
   detailVisible = false;
   selectedReserva: any = null;
   loading = false;
+  editMode = false;
+  editReservaId: number | null = null;
 
   get isAdmin(): boolean { return this.authService.isAdmin(); }
 
@@ -55,7 +59,23 @@ export class ReservasComponent implements OnInit {
   }
 
   loadReservas(): void {
-    this.reservaService.listarTodas().subscribe(res => this.reservas = res.data || []);
+    this.reservaService.listarTodas().subscribe(res => {
+      this.reservas = res.data || [];
+      this.filteredReservas = [...this.reservas];
+    });
+  }
+
+  filterReservas(): void {
+    const term = this.searchTerm.toLowerCase().trim();
+    if (!term) {
+      this.filteredReservas = [...this.reservas];
+      return;
+    }
+    this.filteredReservas = this.reservas.filter(r =>
+      r.clienteNombre?.toLowerCase().includes(term) ||
+      String(r.habitacionNumero).includes(term) ||
+      r.estado?.toLowerCase().includes(term)
+    );
   }
 
   loadHabitaciones(): void {
@@ -69,8 +89,29 @@ export class ReservasComponent implements OnInit {
     this.clienteService.listarTodos().subscribe(res => this.clientes = res.data || []);
   }
 
+  closeDialog(): void {
+    if (this.loading) return;
+    this.editMode = false;
+    this.editReservaId = null;
+    this.newDialogVisible = false;
+  }
+
   showNewDialog(): void {
+    this.editMode = false;
+    this.editReservaId = null;
     this.reservaForm.reset({ montoAdelanto: 0, metodoAdelanto: 'YAPE' });
+    this.newDialogVisible = true;
+  }
+
+  showEditDialog(r: any): void {
+    this.editMode = true;
+    this.editReservaId = r.id;
+    this.reservaForm.patchValue({
+      habitacionId: r.habitacionId,
+      fechaEntrada: r.fechaEntrada,
+      fechaSalida: r.fechaSalida,
+      observacion: r.observacion || ''
+    });
     this.newDialogVisible = true;
   }
 
@@ -88,20 +129,78 @@ export class ReservasComponent implements OnInit {
   }
 
   saveReserva(): void {
+    if (this.editMode) {
+      const fe = this.reservaForm.get('fechaEntrada')?.value;
+      const fs = this.reservaForm.get('fechaSalida')?.value;
+      const habId = this.reservaForm.get('habitacionId')?.value;
+      if (!habId || !fe || !fs) {
+        this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete habitación, fecha entrada y fecha salida' });
+        return;
+      }
+      this.updateReserva();
+      return;
+    }
     if (this.reservaForm.invalid) return;
     const data = this.reservaForm.value;
-    this.reservaService.crear({
-      clienteId: data.clienteId,
+    this.loading = true;
+    this.reservaService.verificarDisponibilidad(data.habitacionId!, data.fechaEntrada!, data.fechaSalida!).subscribe({
+      next: (disp) => {
+        if (!disp.data) {
+          this.loading = false;
+          this.messageService.add({ severity: 'warn', summary: 'No disponible', detail: 'La habitación no está disponible en esas fechas' });
+          return;
+        }
+        this.reservaService.crear({
+          clienteId: data.clienteId,
+          habitacionId: data.habitacionId,
+          fechaEntrada: data.fechaEntrada,
+          fechaSalida: data.fechaSalida,
+          montoAdelanto: data.montoAdelanto,
+          metodoAdelanto: data.metodoAdelanto,
+          referenciaPago: data.referenciaPago || null,
+          observacion: data.observacion || null
+        }).subscribe({
+          next: () => {
+            this.loading = false;
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Reserva creada' });
+            this.newDialogVisible = false;
+            this.loadReservas();
+          },
+          error: (err) => {
+            this.loading = false;
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al crear reserva' });
+          }
+        });
+      },
+      error: () => {
+        this.loading = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al verificar disponibilidad. Intente nuevamente.' });
+      }
+    });
+  }
+
+  updateReserva(): void {
+    if (!this.editReservaId) return;
+    const data = this.reservaForm.value;
+    this.loading = true;
+    this.reservaService.actualizar(this.editReservaId, {
       habitacionId: data.habitacionId,
       fechaEntrada: data.fechaEntrada,
       fechaSalida: data.fechaSalida,
-      montoAdelanto: data.montoAdelanto,
-      metodoAdelanto: data.metodoAdelanto,
-      referenciaPago: data.referenciaPago || null,
       observacion: data.observacion || null
     }).subscribe({
-      next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Reserva creada' }); this.newDialogVisible = false; this.loadReservas(); },
-      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' })
+      next: () => {
+        this.loading = false;
+        this.editMode = false;
+        this.editReservaId = null;
+        this.newDialogVisible = false;
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Reserva actualizada correctamente' });
+        this.loadReservas();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al actualizar reserva' });
+      }
     });
   }
 

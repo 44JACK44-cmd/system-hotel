@@ -9,6 +9,7 @@ import com.hotel.apifds20261.exception.ResourceNotFoundException;
 import com.hotel.apifds20261.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -58,9 +59,13 @@ public class BusinessPago {
         return list;
     }
 
+    @Transactional
     public PagoResponse registrar(RequestPagoInsert request, Long usuarioId) {
         if (request.getReservaId() == null && request.getHospedajeId() == null) {
             throw new BusinessException("Debe asociar el pago a una reserva o a un hospedaje");
+        }
+        if (request.getMonto().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("El monto debe ser mayor a cero");
         }
 
         EntityUsuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
@@ -90,7 +95,14 @@ public class BusinessPago {
             if (hospedaje == null) {
                 throw new ResourceNotFoundException("Hospedaje no encontrado");
             }
+            if (request.getMonto().compareTo(hospedaje.getDeudaPendiente()) > 0) {
+                throw new BusinessException("El monto no puede exceder la deuda pendiente (S/ " +
+                        hospedaje.getDeudaPendiente() + ")");
+            }
             pago.setHospedaje(hospedaje);
+            hospedaje.setTotalPagado(hospedaje.getTotalPagado().add(request.getMonto()));
+            hospedaje.setDeudaPendiente(hospedaje.getDeudaPendiente().subtract(request.getMonto()));
+            hospedajeRepository.save(hospedaje);
         }
 
         return toResponse(pagoRepository.save(pago));

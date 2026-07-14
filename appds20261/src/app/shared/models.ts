@@ -19,6 +19,7 @@ export interface UsuarioResponse {
   rol: string;
   activo: boolean;
   createdAt: string;
+  ultimoAcceso: string;
 }
 
 export interface HabitacionResponse {
@@ -38,6 +39,10 @@ export interface ClienteResponse {
   documento: string;
   email: string;
   createdAt: string;
+  estado: string;
+  totalEstancias: number;
+  ultimaEstancia: string;
+  lealtad: string;
 }
 
 export interface ReservaResponse {
@@ -148,6 +153,12 @@ export interface ResponseHospedaje {
   listHospedaje: any[];
 }
 
+export interface ResponseConsumo {
+  type: string;
+  listMessage: string[];
+  listConsumo: any[];
+}
+
 export interface ResponsePago {
   type: string;
   listMessage: string[];
@@ -164,6 +175,21 @@ export interface ResponseUsuario {
   type: string;
   listMessage: string[];
   listUsuario: any[];
+}
+
+export interface ParametroResponse {
+  id: number;
+  clave: string;
+  valor: string;
+  descripcion: string;
+  modulo: string;
+  editable: boolean;
+}
+
+export interface ResponseParametro {
+  type: string;
+  listMessage: string[];
+  listParametro: any[];
 }
 
 export interface ResponseReporte {

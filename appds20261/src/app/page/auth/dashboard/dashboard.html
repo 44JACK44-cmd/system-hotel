@@ -72,8 +72,8 @@
                   </span>
                 </div>
                 <div class="hs-room-card__body">
-                  <div class="text-label-caps" style="color:var(--clr-on-surface-variant);opacity:0.7;margin-bottom:2px;font-size:11px">{{ hab.tipo }}</div>
-                  <div class="text-label-caps" [style.color]="getRoomStatusColor(hab.estado)">
+                  <div class="text-label-caps" style="color:var(--clr-on-surface-variant);opacity:0.7;margin-bottom:2px;font-size:12px">{{ hab.tipo }}</div>
+                  <div class="text-title-sm" [style.color]="getRoomStatusColor(hab.estado)">
                     {{ getHuespedNombre(hab) || hab.estado }}
                   </div>
                 </div>

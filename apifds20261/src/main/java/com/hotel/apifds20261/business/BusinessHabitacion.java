@@ -16,6 +16,7 @@ import com.hotel.apifds20261.staticdata.TipoHabitacion;
 import com.hotel.apifds20261.exception.BusinessException;
 import com.hotel.apifds20261.exception.ResourceNotFoundException;
 import com.hotel.apifds20261.repository.RepositoryHabitacion;
+import com.hotel.apifds20261.repository.RepositoryHospedaje;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class BusinessHabitacion {
 
     private final RepositoryHabitacion habitacionRepository;
+    private final RepositoryHospedaje hospedajeRepository;
 
     public List<HabitacionResponse> listarActivas() {
         List<EntityHabitacion> entities = habitacionRepository.findByActivoTrueOrderByPisoAscNumeroAsc();
@@ -96,6 +98,10 @@ public class BusinessHabitacion {
                 (nuevoEstado == EstadoHabitacion.LIMPIEZA || nuevoEstado == EstadoHabitacion.MANTENIMIENTO)) {
             throw new BusinessException("No se puede cambiar a " + nuevoEstado +
                     " una habitacion que esta OCUPADA");
+        }
+        if (nuevoEstado == EstadoHabitacion.DISPONIBLE &&
+                hospedajeRepository.findActivoByHabitacionId(id) != null) {
+            throw new BusinessException("No se puede marcar como DISPONIBLE una habitacion con hospedaje activo");
         }
         h.setEstado(nuevoEstado);
         habitacionRepository.save(h);

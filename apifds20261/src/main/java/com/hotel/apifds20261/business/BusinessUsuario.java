@@ -90,6 +90,7 @@ public class BusinessUsuario {
         r.setRol(u.getRol().name());
         r.setActivo(u.getActivo());
         r.setCreatedAt(u.getCreatedAt());
+        r.setUltimoAcceso(u.getUltimoAcceso());
         return r;
     }
 }

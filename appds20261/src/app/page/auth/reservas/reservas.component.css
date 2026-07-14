@@ -31,6 +31,8 @@
 .res-action-btn--view:hover { background:rgba(5,93,182,0.16); }
 .res-action-btn--cancel { background:rgba(186,26,26,0.08); color:var(--clr-error); }
 .res-action-btn--cancel:hover { background:rgba(186,26,26,0.15); }
+.res-action-btn--edit { background:rgba(255,183,3,0.08); color:#b27c00; }
+.res-action-btn--edit:hover { background:rgba(255,183,3,0.18); }
 
 /* Reuse topbar icon btn */
 .hs-topbar__icon-btn {

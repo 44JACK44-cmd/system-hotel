@@ -4,6 +4,7 @@ import com.hotel.apifds20261.business.BusinessPago;
 import com.hotel.apifds20261.dto.request.RequestPagoInsert;
 import com.hotel.apifds20261.dto.response.PagoResponse;
 import com.hotel.apifds20261.dto.response.ResponsePago;
+import com.hotel.apifds20261.exception.BusinessException;
 import com.hotel.apifds20261.security.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,17 @@ public class PagoController {
 
     private final BusinessPago pagoBusiness;
     private final JwtService jwtService;
+
+    private Long validarToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new BusinessException("Token no proporcionado o formato invalido");
+        }
+        String token = authHeader.substring(7);
+        if (!jwtService.isTokenValid(token)) {
+            throw new BusinessException("Token invalido o expirado");
+        }
+        return jwtService.getUserIdFromToken(token);
+    }
 
     @GetMapping("getall")
     public ResponseEntity<ResponsePago> actionGetAll() {
@@ -60,7 +72,7 @@ public class PagoController {
     public ResponseEntity<ResponsePago> actionInsert(
             @Valid @RequestBody RequestPagoInsert request,
             @RequestHeader("Authorization") String authHeader) {
-        Long usuarioId = jwtService.getUserIdFromToken(authHeader.substring(7));
+        Long usuarioId = validarToken(authHeader);
         PagoResponse item = pagoBusiness.registrar(request, usuarioId);
         ResponsePago response = new ResponsePago();
         response.success();

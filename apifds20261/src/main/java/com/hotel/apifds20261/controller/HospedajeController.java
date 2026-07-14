@@ -4,8 +4,11 @@ import com.hotel.apifds20261.business.BusinessHospedaje;
 import com.hotel.apifds20261.dto.request.RequestHospedajeCheckInDirecto;
 import com.hotel.apifds20261.dto.request.RequestHospedajeCheckIn;
 import com.hotel.apifds20261.dto.request.RequestHospedajeCheckOut;
+import com.hotel.apifds20261.dto.request.RequestHospedajeExtend;
+import com.hotel.apifds20261.dto.request.RequestHospedajeChangeRoom;
 import com.hotel.apifds20261.dto.response.HospedajeResponse;
 import com.hotel.apifds20261.dto.response.ResponseHospedaje;
+import com.hotel.apifds20261.exception.BusinessException;
 import com.hotel.apifds20261.security.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,11 +52,22 @@ public class HospedajeController {
         return ResponseEntity.ok(response);
     }
 
+    private Long validarToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new BusinessException("Token no proporcionado o formato invalido");
+        }
+        String token = authHeader.substring(7);
+        if (!jwtService.isTokenValid(token)) {
+            throw new BusinessException("Token invalido o expirado");
+        }
+        return jwtService.getUserIdFromToken(token);
+    }
+
     @PostMapping("checkin")
     public ResponseEntity<ResponseHospedaje> actionCheckIn(
             @Valid @RequestBody RequestHospedajeCheckIn request,
             @RequestHeader("Authorization") String authHeader) {
-        Long usuarioId = jwtService.getUserIdFromToken(authHeader.substring(7));
+        Long usuarioId = validarToken(authHeader);
         HospedajeResponse item = hospedajeBusiness.checkInDesdeReserva(request, usuarioId);
         ResponseHospedaje response = new ResponseHospedaje();
         response.success();
@@ -66,7 +80,7 @@ public class HospedajeController {
     public ResponseEntity<ResponseHospedaje> actionCheckInDirect(
             @Valid @RequestBody RequestHospedajeCheckInDirecto request,
             @RequestHeader("Authorization") String authHeader) {
-        Long usuarioId = jwtService.getUserIdFromToken(authHeader.substring(7));
+        Long usuarioId = validarToken(authHeader);
         HospedajeResponse item = hospedajeBusiness.checkInDirecto(request, usuarioId);
         ResponseHospedaje response = new ResponseHospedaje();
         response.success();
@@ -80,13 +94,41 @@ public class HospedajeController {
             @PathVariable Long id,
             @Valid @RequestBody RequestHospedajeCheckOut request,
             @RequestHeader("Authorization") String authHeader) {
-        Long usuarioId = jwtService.getUserIdFromToken(authHeader.substring(7));
+        Long usuarioId = validarToken(authHeader);
         request.setHospedajeId(id);
         HospedajeResponse item = hospedajeBusiness.checkOut(request, usuarioId);
         ResponseHospedaje response = new ResponseHospedaje();
         response.success();
         response.getListHospedaje().add(item);
         response.listMessage.add("Check-out realizado exitosamente");
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("extend/{id}")
+    public ResponseEntity<ResponseHospedaje> actionExtend(
+            @PathVariable Long id,
+            @RequestBody RequestHospedajeExtend request,
+            @RequestHeader("Authorization") String authHeader) {
+        Long usuarioId = validarToken(authHeader);
+        HospedajeResponse item = hospedajeBusiness.extenderEstadia(id, request.getNuevaFechaSalida(), usuarioId);
+        ResponseHospedaje response = new ResponseHospedaje();
+        response.success();
+        response.getListHospedaje().add(item);
+        response.listMessage.add("Estadia extendida exitosamente");
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("change-room/{id}")
+    public ResponseEntity<ResponseHospedaje> actionChangeRoom(
+            @PathVariable Long id,
+            @RequestBody RequestHospedajeChangeRoom request,
+            @RequestHeader("Authorization") String authHeader) {
+        Long usuarioId = validarToken(authHeader);
+        HospedajeResponse item = hospedajeBusiness.cambiarHabitacion(id, request.getNuevaHabitacionId(), usuarioId);
+        ResponseHospedaje response = new ResponseHospedaje();
+        response.success();
+        response.getListHospedaje().add(item);
+        response.listMessage.add("Habitacion cambiada exitosamente");
         return ResponseEntity.ok(response);
     }
 }

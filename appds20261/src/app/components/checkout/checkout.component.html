@@ -14,7 +14,7 @@
     <div class="hs-field">
       <label class="hs-label">BUSCAR HOSPEDAJE ACTIVO</label>
       <div style="display:flex;gap:8px">
-        <input class="hs-input" type="text" [(ngModel)]="searchTerm" placeholder="Room number, guest name, or ID..." style="flex:1" (keyup.enter)="buscarHospedaje()" />
+        <input class="hs-input" type="text" [(ngModel)]="searchTerm" placeholder="ID de hospedaje..." style="flex:1" (keyup.enter)="buscarHospedaje()" />
         <button class="hs-btn hs-btn-secondary" (click)="buscarHospedaje()">
           <span class="material-symbols-outlined">search</span>
         </button>
@@ -31,9 +31,9 @@
             <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;font-size:28px">bed</span>
           </div>
           <div>
-            <p class="checkout-guest-name">Room {{ hospedajeEncontrado.habitacionNumero }}</p>
-            <p class="checkout-guest-detail">Guest: <strong>{{ hospedajeEncontrado.clienteNombre }}</strong></p>
-            <p class="checkout-guest-detail">Stay: {{ formatFecha(hospedajeEncontrado.fechaIngreso) }} - {{ formatFecha(hospedajeEncontrado.fechaSalidaProgramada) }}</p>
+            <p class="checkout-guest-name">Hab. {{ hospedajeEncontrado.habitacionNumero }}</p>
+            <p class="checkout-guest-detail">Huésped: <strong>{{ hospedajeEncontrado.clienteNombre }}</strong></p>
+            <p class="checkout-guest-detail">Estadía: {{ formatFecha(hospedajeEncontrado.fechaIngreso) }} - {{ formatFecha(hospedajeEncontrado.fechaSalidaProgramada) }}</p>
           </div>
         </div>
 
@@ -41,109 +41,46 @@
           <div class="checkout-alert checkout-alert--warning">
             <span class="material-symbols-outlined" style="color:#d97706;font-size:18px">warning</span>
             <div>
-              <p class="checkout-alert__title">STATUS: OVERSTAY RISK</p>
-              <p class="checkout-alert__desc">{{ horasExtension }}h extension requested. Scheduled checkout was {{ formatFechaExtendida(fechaActual) }}.</p>
+              <p class="checkout-alert__title">EXTENSIÓN DE ESTADÍA</p>
+              <p class="checkout-alert__desc">{{ nochesExtra }} noche(s) adicional(es). La salida programada era {{ formatFechaDesdeStr(hospedajeEncontrado.fechaSalidaProgramada) }}.</p>
             </div>
           </div>
         }
 
-        @if (esExtension) {
+        @if (esExtension && cargoExtension > 0) {
           <div class="checkout-alert checkout-alert--charge">
             <span class="material-symbols-outlined" style="color:var(--clr-secondary)">payments</span>
             <div>
-              <p class="checkout-alert__title">ADDITIONAL CHARGE</p>
-              <p class="checkout-alert__desc">S/ {{ precioExtension }} additional day fee pending processing.</p>
+              <p class="checkout-alert__title">CARGO ADICIONAL</p>
+              <p class="checkout-alert__desc">S/ {{ cargoExtension.toFixed(2) }} por extensión de estadía.</p>
             </div>
           </div>
         }
       </div>
 
-      <!-- Financial Summary Card -->
       <div class="checkout-financial">
         <div class="checkout-financial__inner">
-          <h3 class="checkout-financial__label">BALANCE SUMMARY</h3>
+          <h3 class="checkout-financial__label">RESUMEN DE SALDOS</h3>
           <div class="checkout-financial__items">
             <div class="checkout-financial__row">
-              <span>Total Lodging Cost</span>
-              <span class="checkout-financial__value">S/ {{ hospedajeEncontrado.habitacionPrecio || '0.00' }}</span>
+              <span>Total pagado</span>
+              <span class="checkout-financial__value">S/ {{ (hospedajeEncontrado.totalPagado || 0).toFixed(2) }}</span>
             </div>
             <div class="checkout-financial__row">
-              <span>Extra Services (Minibar)</span>
-              <span class="checkout-financial__value">S/ 0.00</span>
+              <span>Deuda pendiente</span>
+              <span class="checkout-financial__value">S/ {{ (hospedajeEncontrado.deudaPendiente || 0).toFixed(2) }}</span>
             </div>
-            @if (esExtension) {
+            @if (esExtension && cargoExtension > 0) {
               <div class="checkout-financial__row checkout-financial__row--highlight">
-                <span>Late Checkout Fee</span>
-                <span class="checkout-financial__value">+ S/ {{ precioExtension }}</span>
+                <span>Cargo por extensión ({{ nochesExtra }} noche(s))</span>
+                <span class="checkout-financial__value">+ S/ {{ cargoExtension.toFixed(2) }}</span>
               </div>
             }
-            <div class="checkout-financial__row">
-              <span>Advance Paid</span>
-              <span class="checkout-financial__value checkout-financial__value--negative">- S/ 0.00</span>
-            </div>
           </div>
           <div class="checkout-financial__total">
-            <span class="checkout-financial__total-label">TOTAL TO PAY</span>
-            <span class="checkout-financial__total-amount">S/ {{ montoExtension || '0.00' }}</span>
+            <span class="checkout-financial__total-label">TOTAL A PAGAR</span>
+            <span class="checkout-financial__total-amount">S/ {{ totalDeuda.toFixed(2) }}</span>
           </div>
-        </div>
-      </div>
-    }
-
-    @if (hospedajeEncontrado) {
-      <div class="checkout-table-wrap">
-        <div class="checkout-table-header">
-          <h3 class="checkout-table-title">CONSUMPTION HISTORY</h3>
-        </div>
-        <table class="checkout-table">
-          <thead>
-            <tr>
-              <th>Item/Service</th>
-              <th style="text-align:center">Qty</th>
-              <th style="text-align:right">Price</th>
-              <th style="text-align:right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Minibar - Coca Cola 350ml</td>
-              <td style="text-align:center">3</td>
-              <td style="text-align:right">S/ 15.00</td>
-              <td style="text-align:right">S/ 45.00</td>
-            </tr>
-            <tr>
-              <td>Minibar - Pringles Small</td>
-              <td style="text-align:center">2</td>
-              <td style="text-align:right">S/ 25.00</td>
-              <td style="text-align:right">S/ 50.00</td>
-            </tr>
-            <tr>
-              <td>Room Service - Breakfast Deluxe</td>
-              <td style="text-align:center">1</td>
-              <td style="text-align:right">S/ 50.00</td>
-              <td style="text-align:right">S/ 50.00</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    }
-
-    @if (hospedajeEncontrado) {
-      <div class="checkout-quick-actions">
-        <p class="checkout-quick-actions__label">QUICK ACTIONS</p>
-        <div class="checkout-quick-actions__grid">
-          <button class="checkout-quick-btn">
-            <span class="material-symbols-outlined">print</span>
-            <span>INVOICE</span>
-          </button>
-          <button class="checkout-quick-btn">
-            <span class="material-symbols-outlined">cleaning_services</span>
-            <span>DIRTY ROOM</span>
-          </button>
-          <button class="checkout-quick-btn">
-            <span class="material-symbols-outlined">inventory</span>
-            <span>MINIBAR</span>
-          </button>
         </div>
       </div>
     }
@@ -154,54 +91,63 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div class="checkout-date-badge">
             <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-outline)">event</span>
-            <span>{{ formatFechaExtendida(fechaActual) }}</span>
+            <span>{{ formatFechaCorta(fechaActual) }}</span>
           </div>
           <div class="checkout-date-badge">
             <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-outline)">schedule</span>
-            <span>{{ formatFechaExtendida(fechaActual) }}</span>
+            <span>{{ formatHora(fechaActual) }}</span>
           </div>
         </div>
       </div>
     }
 
-    @if (hospedajeEncontrado && esExtension) {
+    @if (hospedajeEncontrado && totalDeuda > 0) {
       <div class="checkout-payment-section">
-        <label class="hs-label">PAGO DE EXTENSIÓN Y SALDO</label>
+        <label class="hs-label">MONTO A PAGAR</label>
         <div class="checkout-payment-amount">
           <span class="checkout-currency-symbol">S/</span>
-          <input class="hs-input" type="number" [(ngModel)]="montoExtension" min="0" step="0.01" style="flex:1;padding-left:32px" />
+          <input class="hs-input" type="number" [(ngModel)]="montoPago" min="0" [max]="totalDeuda" step="0.01" style="flex:1;padding-left:32px" />
         </div>
+        @if (esExtension && cargoExtension > 0 && montoPago > 0) {
+          <p class="checkout-partial-note">S/ {{ Math.min(cargoExtension, montoPago).toFixed(2) }} para extensión, S/ {{ Math.max(0, montoPago - cargoExtension).toFixed(2) }} para saldo pendiente</p>
+        }
+        @if (montoPago > 0 && montoPago < totalDeuda) {
+          <p class="checkout-partial-note">Pago parcial. Saldo restante: S/ {{ saldoRestante.toFixed(2) }}</p>
+        }
         <div>
           <label class="hs-label" style="margin-top:12px">MÉTODO DE PAGO</label>
           <div class="checkout-payment-methods">
             <label class="checkout-payment-option">
               <input type="radio" name="metodoPago" [(ngModel)]="metodoPago" value="EFECTIVO" class="hidden peer" />
-              <div class="checkout-payment-card">Cash</div>
-            </label>
-            <label class="checkout-payment-option">
-              <input type="radio" name="metodoPago" [(ngModel)]="metodoPago" value="TARJETA" class="hidden peer" />
-              <div class="checkout-payment-card">Card</div>
+              <div class="checkout-payment-card">EFECTIVO</div>
             </label>
             <label class="checkout-payment-option">
               <input type="radio" name="metodoPago" [(ngModel)]="metodoPago" value="YAPE" class="hidden peer" />
-              <div class="checkout-payment-card">YAPE / PLIN</div>
+              <div class="checkout-payment-card">YAPE</div>
             </label>
           </div>
         </div>
       </div>
     }
+
+    @if (hospedajeEncontrado && totalDeuda === 0) {
+      <div class="checkout-no-debt">
+        <span class="material-symbols-outlined" style="color:var(--clr-secondary);font-size:22px">check_circle</span>
+        <span>No hay deuda pendiente. El hospedaje está al día.</span>
+      </div>
+    }
   </div>
 
   <div class="hs-slide-panel__footer">
-    <button class="hs-btn hs-btn-outline" style="flex:1" (click)="cerrar()">
+    <button class="hs-btn hs-btn-outline" style="flex:1" (click)="cerrar()" [disabled]="loading">
       Cancelar
     </button>
-    <button class="hs-btn hs-btn-primary" style="flex:1"
+    <button class="hs-btn hs-btn-secondary" style="flex:1"
       [disabled]="!hospedajeEncontrado || loading" (click)="finalizarCheckOut()">
       @if (loading) {
         <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
       }
-      FINALIZAR ESTANCIA
+      {{ loading ? 'PROCESANDO...' : 'FINALIZAR ESTANCIA' }}
     </button>
   </div>
 </div>

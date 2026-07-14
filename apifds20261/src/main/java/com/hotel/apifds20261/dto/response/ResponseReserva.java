@@ -11,4 +11,5 @@ import lombok.Setter;
 @Getter @Setter
 public class ResponseReserva extends ResponseGeneric {
     private List<ReservaResponse> listReserva = new ArrayList<>();
+    private Boolean disponible;
 }

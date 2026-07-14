@@ -1,5 +1,6 @@
 package com.hotel.apifds20261.business;
 
+import java.time.LocalDateTime;
 import com.hotel.apifds20261.dto.request.RequestAuthLogin;
 import com.hotel.apifds20261.dto.response.LoginResponse;
 import com.hotel.apifds20261.entity.EntityUsuario;
@@ -37,6 +38,9 @@ public class BusinessAuth {
                 usuario.getRol().name(),
                 usuario.getId()
         );
+
+        usuario.setUltimoAcceso(LocalDateTime.now());
+        usuarioRepository.save(usuario);
 
         LoginResponse response = new LoginResponse();
         response.setToken(token);

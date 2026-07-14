@@ -1,10 +1,10 @@
 <div class="login-page">
-  <div class="login-page__blur login-page__blur--tl"></div>
-  <div class="login-page__blur login-page__blur--br"></div>
 
   <p-toast position="top-center" />
 
   <div class="login-card">
+    <div class="login-card__blob login-card__blob--tl"></div>
+    <div class="login-card__blob login-card__blob--br"></div>
     <header class="login-card__topbar">
       <div>
         <div class="login-card__hotel-name">HOTEL SYSTEM</div>
@@ -16,7 +16,7 @@
       </div>
     </header>
 
-    <main class="login-card__body glass-effect">
+    <main class="login-card__body">
       <div class="login-card__brand">
         <div class="login-card__icon-wrap">
           <span class="material-symbols-outlined" style="font-size:44px;font-variation-settings:'wght' 200">vpn_key</span>
@@ -115,22 +115,22 @@
   position: relative;
   overflow: hidden;
 }
-.login-page__blur {
+.login-card__blob {
   position: absolute;
   border-radius: 50%;
   filter: blur(60px);
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
 }
-.login-page__blur--tl {
-  width: 280px; height: 280px;
-  background: rgba(213,227,255,0.35);
-  top: -80px; right: -80px;
+.login-card__blob--tl {
+  width: 128px; height: 128px;
+  background: rgba(0,32,70,0.10);
+  top: -24px; right: -24px;
 }
-.login-page__blur--br {
-  width: 360px; height: 360px;
-  background: rgba(101,161,254,0.12);
-  bottom: -100px; left: -100px;
+.login-card__blob--br {
+  width: 192px; height: 192px;
+  background: rgba(5,93,182,0.10);
+  bottom: -40px; left: -40px;
 }
 
 .login-card {
@@ -182,18 +182,17 @@
 }
 
 .login-card__body {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 28px 28px 24px;
+  background: var(--clr-surface-container-lowest);
+  padding: 32px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 20px;
 }
 
 .login-card__brand { text-align: center; }
 .login-card__icon-wrap {
-  width: 88px; height: 88px;
+  width: 96px; height: 96px;
   border-radius: 50%;
   background: rgba(101,161,254,0.12);
   border: 1px solid rgba(101,161,254,0.25);
@@ -279,7 +278,10 @@
   letter-spacing: 0.08em;
   background: var(--clr-secondary);
   border-radius: var(--radius-lg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
+.login-form__submit:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.login-form__submit:active { transform: scale(0.98); }
 .login-form__submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 .login-form__spinner {
   display: flex;

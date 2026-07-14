@@ -31,11 +31,11 @@
   flex-direction: column;
   border-left: 1px solid rgba(255,255,255,0.2);
   padding-left: 16px;
-  margin-left: 4px;
+  margin-left: 16px;
 }
 @media (min-width: 768px) { .hs-topbar__meta { display: flex; } }
 .hs-topbar__branch {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -50,12 +50,12 @@
 .hs-topbar__right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 24px;
 }
 .hs-topbar__actions {
   display: none;
   align-items: center;
-  gap: 4px;
+  gap: 16px;
 }
 @media (min-width: 768px) { .hs-topbar__actions { display: flex; } }
 
@@ -77,9 +77,9 @@
 .hs-topbar__user {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   border-left: 1px solid rgba(255,255,255,0.2);
-  padding-left: 16px;
+  padding-left: 24px;
   margin-left: 8px;
 }
 .hs-topbar__user-info {
@@ -89,7 +89,7 @@
 }
 @media (min-width: 640px) { .hs-topbar__user-info { display: flex; } }
 .hs-topbar__user-name {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: white;
   line-height: 1.2;

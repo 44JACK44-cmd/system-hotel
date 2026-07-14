@@ -4,18 +4,26 @@
     <div>
       <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Gesti&oacute;n de Caja Diaria</h1>
       <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
-        Control de ingresos, gastos y cierre de turno para la sucursal Abancay.
+        Control de ingresos, egresos y cierre de turno.
       </p>
     </div>
     <div class="flex" style="gap:12px;align-items:center">
+      @if (!cajaActual) {
+        <button class="hs-btn hs-btn-primary" (click)="abrirCaja()">
+          <span class="material-symbols-outlined">lock_open</span>
+          Abrir Caja
+        </button>
+      }
       <button class="hs-btn hs-btn-outline" (click)="showDialog()">
         <span class="material-symbols-outlined">add_circle</span>
         Nuevo Pago
       </button>
-      <button class="hs-btn hs-btn-primary" type="button">
-        <span class="material-symbols-outlined">lock</span>
-        Realizar Cierre de Caja
-      </button>
+      @if (cajaActual) {
+        <button class="hs-btn hs-btn-primary" type="button" (click)="toggleCierreModal()">
+          <span class="material-symbols-outlined">lock</span>
+          Realizar Cierre de Caja
+        </button>
+      }
     </div>
   </div>
 
@@ -28,40 +36,38 @@
         <span class="hs-kpi__label">EFECTIVO</span>
       </div>
       <div>
-        <p class="hs-kpi__value">S/ 1,420.50</p>
-        <p class="pag-kpi-trend">
-          <span class="material-symbols-outlined" style="font-size:14px">trending_up</span> +12% vs ayer
-        </p>
-      </div>
-    </div>
-    <div class="hs-kpi">
-      <div class="pag-kpi-top">
-        <span class="material-symbols-outlined pag-kpi-icon pag-kpi-icon--primary">credit_card</span>
-        <span class="hs-kpi__label">TARJETAS</span>
-      </div>
-      <div>
-        <p class="hs-kpi__value">S/ 840.00</p>
-        <p class="pag-kpi-sub">VISA / Mastercard</p>
+        <p class="hs-kpi__value">S/ {{ totalEfectivo.toFixed(2) }}</p>
+        <p class="pag-kpi-sub">Ingresos del d&iacute;a</p>
       </div>
     </div>
     <div class="hs-kpi">
       <div class="pag-kpi-top">
         <span class="material-symbols-outlined pag-kpi-icon pag-kpi-icon--tertiary">qr_code_2</span>
-        <span class="hs-kpi__label">YAPE / PLIN</span>
+        <span class="hs-kpi__label">YAPE</span>
       </div>
       <div>
-        <p class="hs-kpi__value">S/ 315.00</p>
-        <p class="pag-kpi-sub">Billeteras digitales</p>
+        <p class="hs-kpi__value">S/ {{ totalYape.toFixed(2) }}</p>
+        <p class="pag-kpi-sub">Ingresos del d&iacute;a</p>
       </div>
     </div>
     <div class="hs-kpi">
       <div class="pag-kpi-top">
         <span class="material-symbols-outlined pag-kpi-icon pag-kpi-icon--error">shopping_cart_checkout</span>
-        <span class="hs-kpi__label">GASTOS</span>
+        <span class="hs-kpi__label">EGRESOS</span>
       </div>
       <div>
-        <p class="hs-kpi__value" style="color:var(--clr-error)">- S/ 120.00</p>
-        <p class="pag-kpi-sub" style="color:var(--clr-error);font-weight:500">Salidas registradas</p>
+        <p class="hs-kpi__value" style="color:var(--clr-error)">- S/ {{ totalEgresosMonto.toFixed(2) }}</p>
+        <p class="pag-kpi-sub">Salidas registradas</p>
+      </div>
+    </div>
+    <div class="hs-kpi">
+      <div class="pag-kpi-top">
+        <span class="material-symbols-outlined pag-kpi-icon pag-kpi-icon--primary">account_balance</span>
+        <span class="hs-kpi__label">BALANCE</span>
+      </div>
+      <div>
+        <p class="hs-kpi__value" [style.color]="balanceNeto >= 0 ? 'var(--clr-primary)' : 'var(--clr-error)'">S/ {{ balanceNeto.toFixed(2) }}</p>
+        <p class="pag-kpi-sub">{{ cajaActual ? 'Caja abierta' : 'Sin caja activa' }}</p>
       </div>
     </div>
   </div>
@@ -95,15 +101,19 @@
                 <td class="text-data-tabular">{{ p.fechaPago | date:'HH:mm' }}</td>
                 <td>
                   <p class="text-body-md" style="font-weight:700;color:var(--clr-primary);margin:0">#{{ p.id }} {{ p.tipo }}</p>
-                  <p class="text-xs" style="color:var(--clr-on-surface-variant);margin:2px 0 0">{{ p.referencia || 'Sin referencia' }}</p>
+                  <p class="text-xs" style="color:var(--clr-on-surface-variant);margin:2px 0 0">{{ p.usuarioNombre }}{{ p.referencia ? ' - ' + p.referencia : '' }}</p>
                 </td>
                 <td>
-                  <span class="pag-metodo-badge">
-                    <span class="material-symbols-outlined" style="font-size:16px">payments</span>
+                  <span class="pag-metodo-badge" [class.pag-metodo-badge--yape]="p.metodo === 'YAPE'">
+                    @if (p.metodo === 'YAPE') {
+                      <span class="material-symbols-outlined" style="font-size:16px">qr_code_2</span>
+                    } @else {
+                      <span class="material-symbols-outlined" style="font-size:16px">payments</span>
+                    }
                     {{ p.metodo }}
                   </span>
                 </td>
-                <td class="text-data-tabular" style="text-align:right;font-weight:700;color:var(--clr-primary)">S/ {{ p.monto }}</td>
+                <td class="text-data-tabular" style="text-align:right;font-weight:700;color:var(--clr-primary)">S/ {{ (p.monto || 0).toFixed(2) }}</td>
                 <td>
                   <span class="badge" [ngClass]="getPagoBadge(p.tipo)">
                     @switch (p.tipo) {
@@ -118,7 +128,7 @@
             } @empty {
               <tr>
                 <td colspan="5" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
-                  No hay pagos registrados.
+                  @if (loading) { Cargando... } @else { No hay pagos registrados. }
                 </td>
               </tr>
             }
@@ -139,23 +149,27 @@
         <div class="pag-form-stack">
           <div class="hs-field">
             <label class="hs-label">CONCEPTO DEL GASTO</label>
-            <input class="hs-input" type="text" placeholder="Ej: &Uacute;tiles de limpieza" />
+            <input class="hs-input" type="text" [(ngModel)]="gastoConcepto" placeholder="Ej: Útiles de limpieza" />
           </div>
           <div class="hs-field">
-            <label class="hs-label">CATEGOR&Iacute;A</label>
-            <select class="hs-select">
-              <option>Mantenimiento</option>
-              <option>Servicios P&uacute;blicos</option>
-              <option>Insumos</option>
-              <option>Otros</option>
+            <label class="hs-label">CATEGORÍA</label>
+            <select class="hs-select" [(ngModel)]="gastoCategoria">
+              <option value="Mantenimiento">Mantenimiento</option>
+              <option value="Servicios">Servicios</option>
+              <option value="Insumos">Insumos</option>
+              <option value="Otros">Otros</option>
             </select>
           </div>
           <div class="hs-field">
             <label class="hs-label">MONTO (S/)</label>
-            <input class="hs-input" type="number" placeholder="0.00" step="0.01" />
+            <input class="hs-input" type="number" [(ngModel)]="gastoMonto" placeholder="0.00" step="0.01" min="0.01" />
           </div>
-          <button class="hs-btn hs-btn-danger" style="width:100%;justify-content:center;padding:12px" type="button">
-            Registrar Salida de Dinero
+          <button class="hs-btn hs-btn-danger" style="width:100%;justify-content:center;padding:12px" (click)="registrarGasto()" [disabled]="loadingGasto">
+            @if (loadingGasto) {
+              <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+            } @else {
+              Registrar Salida de Dinero
+            }
           </button>
         </div>
       </div>
@@ -164,18 +178,18 @@
         <div class="pag-balance-content">
           <h3 class="pag-balance-label">BALANCE DEL TURNO</h3>
           <div class="pag-balance-amount-row">
-            <span class="pag-balance-amount">S/ 2,455.50</span>
+            <span class="pag-balance-amount">S/ {{ balanceNeto.toFixed(2) }}</span>
             <span class="pag-balance-neto">Neto</span>
           </div>
           <div class="pag-balance-divider"></div>
           <div class="pag-balance-rows">
             <div>
               <p class="pag-balance-stat-label">INGRESOS</p>
-              <p class="pag-balance-stat-value">S/ 2,575.50</p>
+              <p class="pag-balance-stat-value">S/ {{ totalIngresos.toFixed(2) }}</p>
             </div>
             <div>
               <p class="pag-balance-stat-label">EGRESOS</p>
-              <p class="pag-balance-stat-value">S/ 120.00</p>
+              <p class="pag-balance-stat-value">S/ {{ totalEgresosMonto.toFixed(2) }}</p>
             </div>
           </div>
         </div>
@@ -203,58 +217,57 @@
     </div>
 
     <div class="hs-slide-panel__body">
-      <form [formGroup]="pagoForm" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:16px">
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="hs-field">
             <label class="hs-label">Tipo</label>
-            <select class="hs-select" formControlName="tipo">
-              @for (t of tipos; track t.value) {
-                <option [value]="t.value">{{ t.label }}</option>
-              }
+            <select class="hs-select" [(ngModel)]="pagoTipo">
+              <option value="ADELANTO">Adelanto</option>
+              <option value="SALDO">Saldo</option>
+              <option value="EXTENSION">Extensión</option>
             </select>
           </div>
           <div class="hs-field">
             <label class="hs-label">Monto</label>
             <div class="hs-input-icon">
               <span class="material-symbols-outlined">payments</span>
-              <input class="hs-input" type="number" formControlName="monto" step="0.01" min="0.01" />
+              <input class="hs-input" type="number" [(ngModel)]="pagoMonto" step="0.01" min="0.01" />
             </div>
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="hs-field">
-            <label class="hs-label">M&eacute;todo</label>
-            <select class="hs-select" formControlName="metodo">
-              @for (m of metodos; track m.value) {
-                <option [value]="m.value">{{ m.label }}</option>
-              }
+            <label class="hs-label">Método</label>
+            <select class="hs-select" [(ngModel)]="pagoMetodo">
+              <option value="EFECTIVO">Efectivo</option>
+              <option value="YAPE">Yape</option>
             </select>
           </div>
           <div class="hs-field">
             <label class="hs-label">Referencia</label>
-            <input class="hs-input" type="text" formControlName="referencia" placeholder="Opcional" />
+            <input class="hs-input" type="text" [(ngModel)]="pagoReferencia" placeholder="Opcional" />
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="hs-field">
             <label class="hs-label">Reserva ID</label>
-            <input class="hs-input" type="number" formControlName="reservaId" placeholder="Opcional" />
+            <input class="hs-input" type="number" [(ngModel)]="pagoReservaId" placeholder="Opcional" />
           </div>
           <div class="hs-field">
             <label class="hs-label">Hospedaje ID</label>
-            <input class="hs-input" type="number" formControlName="hospedajeId" placeholder="Opcional" />
+            <input class="hs-input" type="number" [(ngModel)]="pagoHospedajeId" placeholder="Opcional" />
           </div>
         </div>
 
         <div class="hs-field">
-          <label class="hs-label">Observaci&oacute;n</label>
-          <textarea class="hs-textarea" formControlName="observacion" rows="2" placeholder="Opcional"></textarea>
+          <label class="hs-label">Observación</label>
+          <textarea class="hs-textarea" [(ngModel)]="pagoObservacion" rows="2" placeholder="Opcional"></textarea>
         </div>
 
-      </form>
+      </div>
     </div>
 
     <div class="hs-slide-panel__footer">
@@ -262,8 +275,8 @@
         Cancelar
       </button>
       <button class="hs-btn hs-btn-primary" style="flex:1"
-        [disabled]="pagoForm.invalid || loading" (click)="save()">
-        @if (loading) {
+        [disabled]="pagoMonto <= 0 || loadingPago" (click)="savePago()">
+        @if (loadingPago) {
           <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
         }
         Registrar Pago
@@ -273,6 +286,78 @@
   </div>
 }
 
+@if (showCierreModal) {
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div class="absolute inset-0" style="background:rgba(0,32,70,0.25);backdrop-filter:blur(4px)" (click)="toggleCierreModal()"></div>
+    <div class="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden" style="animation:fadeScaleIn 0.2s ease-out">
+      <div class="p-6 border-b border-outline-variant flex justify-between items-center" style="background:var(--clr-surface-container-low)">
+        <div>
+          <h2 class="text-headline-md font-headline-md" style="color:var(--clr-primary);margin:0">Confirmar Cierre de Caja</h2>
+          <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:2px 0 0">Caja del d&iacute;a de hoy</p>
+        </div>
+        <button class="material-symbols-outlined" style="background:none;border:none;cursor:pointer;padding:8px;border-radius:50%;color:var(--clr-on-surface-variant)" (click)="toggleCierreModal()">close</button>
+      </div>
+      <div class="p-6" style="display:flex;flex-direction:column;gap:24px">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl" style="background:var(--clr-surface-container)">
+            <p class="text-label-caps font-label-caps" style="color:var(--clr-on-surface-variant);margin:0 0 4px">MONTO EN SISTEMA (EFECTIVO)</p>
+            <p class="text-headline-md font-black" style="color:var(--clr-primary);margin:0">S/ {{ totalEfectivo.toFixed(2) }}</p>
+          </div>
+          <div class="p-4 rounded-xl border-2" style="background:var(--clr-secondary-fixed);border-color:var(--clr-secondary)">
+            <p class="text-label-caps font-label-caps" style="color:var(--clr-on-secondary-container);margin:0 0 4px">EFECTIVO CONTADO F&Iacute;SICAMENTE</p>
+            <input class="w-full bg-transparent border-none p-0 text-headline-md font-black" style="color:var(--clr-primary);outline:none" type="number" step="0.01" [(ngModel)]="cierreMontoFisico" />
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--clr-outline-variant)">
+            <span class="text-body-md" style="font-weight:500">Total YAPE</span>
+            <span class="text-body-md" style="font-weight:700;color:var(--clr-primary)">S/ {{ totalYape.toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--clr-outline-variant)">
+            <span class="text-body-md" style="font-weight:500">Total Egresos</span>
+            <span class="text-body-md" style="font-weight:700;color:var(--clr-error)">- S/ {{ totalEgresosMonto.toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-body-md" style="font-weight:500">Balance Final</span>
+            <span class="text-body-md" style="font-weight:700" [style.color]="balanceNeto >= 0 ? 'var(--clr-primary)' : 'var(--clr-error)'">S/ {{ balanceNeto.toFixed(2) }}</span>
+          </div>
+          @if (cierreMontoFisico !== null && Math.abs(cierreMontoFisico - totalEfectivo) > 0.01) {
+            <div class="p-4 rounded-lg flex items-center gap-3" style="background:#fef2f2;border:1px solid #fecaca">
+              <span class="material-symbols-outlined" style="color:#dc2626">warning</span>
+              <div>
+                <p class="text-sm" style="font-weight:700;color:#991b1b;margin:0">Diferencia detectada</p>
+                <p class="text-xs" style="color:#b91c1c;margin:2px 0 0">Diferencia: S/ {{ (totalEfectivo - cierreMontoFisico).toFixed(2) }}. Agregue una observaci&oacute;n.</p>
+              </div>
+            </div>
+          } @else {
+            <div class="p-4 rounded-lg flex items-center gap-3" style="background:#f0fdf4;border:1px solid #bbf7d0">
+              <span class="material-symbols-outlined" style="color:#16a34a">check_circle</span>
+              <div>
+                <p class="text-sm" style="font-weight:700;color:#166534;margin:0">Caja cuadrada</p>
+                <p class="text-xs" style="color:#15803d;margin:2px 0 0">El monto f&iacute;sico coincide con el reporte del sistema.</p>
+              </div>
+            </div>
+          }
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label class="block text-label-caps font-label-caps" style="color:var(--clr-on-surface-variant)">OBSERVACIONES DEL CIERRE</label>
+          <textarea class="w-full border rounded-lg text-body-md p-2.5" style="border-color:var(--clr-outline-variant);min-height:80px;font-family:'Inter',sans-serif" [(ngModel)]="cierreObservacion" placeholder="Anotaciones sobre discrepancias o eventos del turno..."></textarea>
+        </div>
+      </div>
+      <div class="p-6 border-t border-outline-variant flex justify-end gap-3" style="background:var(--clr-surface-container-low)">
+        <button class="px-6 py-2.5 text-title-sm font-bold" style="color:var(--clr-on-surface-variant);background:none;border:none;cursor:pointer;border-radius:var(--radius-xl)" (click)="toggleCierreModal()">Cancelar</button>
+        <button class="px-8 py-2.5 font-bold rounded-xl flex items-center gap-2" style="background:var(--clr-primary);color:white;border:none;cursor:pointer" (click)="confirmarCierre()" [disabled]="loading">
+          @if (loading) {
+            <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+          }
+          Finalizar y Cerrar Caja
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
 <style>
   @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeScaleIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
 </style>
