@@ -1,157 +1,175 @@
-<div class="hs-slide-panel">
-  <div class="hs-slide-panel__header">
-    <div style="display:flex;align-items:center;gap:10px">
+<div class="co-slide-panel">
+  <div class="co-header">
+    <div class="co-header-left">
       <span class="material-symbols-outlined">logout</span>
-      <span style="font-weight:700;font-size:16px">CHECK-OUT</span>
+      <h2 class="co-header-title">CHECK-OUT</h2>
     </div>
-    <button class="hs-topbar__icon-btn" (click)="cerrar()">
-      <span class="material-symbols-outlined">close</span>
-    </button>
+    <div class="co-header-right">
+      <button class="co-icon-btn"><span class="material-symbols-outlined">notifications</span></button>
+      <button class="co-icon-btn"><span class="material-symbols-outlined">settings</span></button>
+    </div>
   </div>
+
   <p-toast position="top-center" />
 
-  <div class="hs-slide-panel__body">
-    <div class="hs-field">
-      <label class="hs-label">BUSCAR HOSPEDAJE ACTIVO</label>
-      <div style="display:flex;gap:8px">
-        <input class="hs-input" type="text" [(ngModel)]="searchTerm" placeholder="ID de hospedaje..." style="flex:1" (keyup.enter)="buscarHospedaje()" />
-        <button class="hs-btn hs-btn-secondary" (click)="buscarHospedaje()">
-          <span class="material-symbols-outlined">search</span>
-        </button>
+  <div class="co-body">
+    <!-- Search -->
+    <section class="co-search-section">
+      <label class="co-label">BUSCAR HOSPEDAJE ACTIVO</label>
+      <div class="co-search-row">
+        <div class="co-search-wrap">
+          <input class="co-input" type="text" [(ngModel)]="searchTerm" (keyup.enter)="buscarHospedaje()" placeholder="N&uacute;mero de habitaci&oacute;n, nombre o ID..." />
+          <button class="co-search-btn" (click)="buscarHospedaje()">
+            <span class="material-symbols-outlined">search</span>
+          </button>
+        </div>
       </div>
-    </div>
+    </section>
 
     @if (hospedajeEncontrado) {
-      <div class="checkout-card">
-        <div class="checkout-card__header">
-          <span class="checkout-card__label">DATOS DEL HOSPEDAJE</span>
-        </div>
-        <div class="checkout-guest-info">
-          <div class="checkout-guest-icon">
-            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;font-size:28px">bed</span>
-          </div>
-          <div>
-            <p class="checkout-guest-name">Hab. {{ hospedajeEncontrado.habitacionNumero }}</p>
-            <p class="checkout-guest-detail">Huésped: <strong>{{ hospedajeEncontrado.clienteNombre }}</strong></p>
-            <p class="checkout-guest-detail">Estadía: {{ formatFecha(hospedajeEncontrado.fechaIngreso) }} - {{ formatFecha(hospedajeEncontrado.fechaSalidaProgramada) }}</p>
-          </div>
-        </div>
-
-        @if (esExtension) {
-          <div class="checkout-alert checkout-alert--warning">
-            <span class="material-symbols-outlined" style="color:#d97706;font-size:18px">warning</span>
+      <!-- Detail + Financial Grid -->
+      <div class="co-grid">
+        <!-- Guest & Room Summary -->
+        <div class="co-guest-card">
+          <h3 class="co-section-label" style="color:var(--clr-secondary)">DATOS DEL HOSPEDAJE</h3>
+          <div class="co-guest-row">
+            <div class="co-guest-icon">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;font-size:28px">bed</span>
+            </div>
             <div>
-              <p class="checkout-alert__title">EXTENSIÓN DE ESTADÍA</p>
-              <p class="checkout-alert__desc">{{ nochesExtra }} noche(s) adicional(es). La salida programada era {{ formatFechaDesdeStr(hospedajeEncontrado.fechaSalidaProgramada) }}.</p>
+              <p class="co-room-name">Hab. {{ hospedajeEncontrado.habitacionNumero }} - {{ hospedajeEncontrado.habitacionTipo }}</p>
+              <p class="co-guest-detail">Hu&eacute;sped: <strong>{{ hospedajeEncontrado.clienteNombre }}</strong></p>
+              <p class="co-guest-detail">Estad&iacute;a: {{ formatFecha(hospedajeEncontrado.fechaIngreso) }} - {{ formatFecha(hospedajeEncontrado.fechaSalidaProgramada) }}</p>
             </div>
           </div>
-        }
 
-        @if (esExtension && cargoExtension > 0) {
-          <div class="checkout-alert checkout-alert--charge">
-            <span class="material-symbols-outlined" style="color:var(--clr-secondary)">payments</span>
-            <div>
-              <p class="checkout-alert__title">CARGO ADICIONAL</p>
-              <p class="checkout-alert__desc">S/ {{ cargoExtension.toFixed(2) }} por extensión de estadía.</p>
-            </div>
-          </div>
-        }
-      </div>
-
-      <div class="checkout-financial">
-        <div class="checkout-financial__inner">
-          <h3 class="checkout-financial__label">RESUMEN DE SALDOS</h3>
-          <div class="checkout-financial__items">
-            <div class="checkout-financial__row">
-              <span>Total pagado</span>
-              <span class="checkout-financial__value">S/ {{ (hospedajeEncontrado.totalPagado || 0).toFixed(2) }}</span>
-            </div>
-            <div class="checkout-financial__row">
-              <span>Deuda pendiente</span>
-              <span class="checkout-financial__value">S/ {{ (hospedajeEncontrado.deudaPendiente || 0).toFixed(2) }}</span>
-            </div>
-            @if (esExtension && cargoExtension > 0) {
-              <div class="checkout-financial__row checkout-financial__row--highlight">
-                <span>Cargo por extensión ({{ nochesExtra }} noche(s))</span>
-                <span class="checkout-financial__value">+ S/ {{ cargoExtension.toFixed(2) }}</span>
+          @if (esExtension) {
+            <div class="co-alert co-alert--warning">
+              <span class="material-symbols-outlined" style="color:#d97706;font-size:18px">warning</span>
+              <div>
+                <p class="co-alert-title">STATUS: RIESGO DE OVERSTAY</p>
+                <p class="co-alert-desc">{{ nochesExtra }}h de extensi&oacute;n solicitada. La salida programada era {{ formatFechaDesdeStr(hospedajeEncontrado.fechaSalidaProgramada) }}.</p>
               </div>
+            </div>
+          }
+
+          @if (esExtension && cargoExtension > 0) {
+            <div class="co-alert co-alert--charge">
+              <span class="material-symbols-outlined" style="color:var(--clr-secondary)">payments</span>
+              <div>
+                <p class="co-alert-title">CARGO ADICIONAL</p>
+                <p class="co-alert-desc">S/ {{ cargoExtension.toFixed(2) }} por cargo de d&iacute;a adicional pendiente de procesar.</p>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="co-financial-card">
+          <div class="co-financial-inner">
+            <h3 class="co-financial-label">RESUMEN DE SALDOS</h3>
+            <div class="co-financial-items">
+              <div class="co-fin-row">
+                <span>Costo de Hospedaje</span>
+                <span class="co-fin-value">S/ {{ ((hospedajeEncontrado.totalPagado || 0) + (hospedajeEncontrado.deudaPendiente || 0)).toFixed(2) }}</span>
+              </div>
+              @if (esExtension && cargoExtension > 0) {
+                <div class="co-fin-row co-fin-row--hl">
+                  <span>Cargo por Extensi&oacute;n</span>
+                  <span class="co-fin-value">+ S/ {{ cargoExtension.toFixed(2) }}</span>
+                </div>
+              }
+              <div class="co-fin-row">
+                <span>Adelanto Pagado</span>
+                <span class="co-fin-value" style="color:#86efac">- S/ {{ (hospedajeEncontrado.totalPagado || 0).toFixed(2) }}</span>
+              </div>
+            </div>
+            <div class="co-fin-total">
+              <span class="co-fin-total-label">TOTAL A PAGAR</span>
+              <span class="co-fin-total-amount">S/ {{ totalDeuda.toFixed(2) }}</span>
+            </div>
+          </div>
+          <div class="co-fin-footer">
+            El saldo pendiente debe liquidarse para la entrega de llaves.
+          </div>
+        </div>
+      </div>
+
+      <!-- Date/Time + Payment + Actions -->
+      <div class="co-transaction-card">
+        <div class="co-transaction-header">
+          <h3 class="co-section-label" style="color:var(--clr-on-surface)">TRANSACCI&Oacute;N FINAL Y LIBERACI&Oacute;N</h3>
+          <span class="co-session-id">Session ID: #CO-{{ hospedajeEncontrado.id }}</span>
+        </div>
+        <div class="co-transaction-body">
+          <div class="co-trans-left">
+            <label class="co-label">REGISTRAR SALIDA REAL</label>
+            <div class="co-date-row">
+              <div class="co-date-badge">
+                <span class="material-symbols-outlined">event</span>
+                <span>{{ formatFechaCorta(fechaActual) }}</span>
+              </div>
+              <div class="co-date-badge">
+                <span class="material-symbols-outlined">schedule</span>
+                <span>{{ formatHora(fechaActual) }}</span>
+              </div>
+            </div>
+
+            <div class="co-quick-actions-box">
+              <p class="co-section-label" style="color:var(--clr-secondary);margin-bottom:8px">ACCIONES R&Aacute;PIDAS</p>
+              <div class="co-quick-grid">
+                <button class="co-quick-btn" type="button">
+                  <span class="material-symbols-outlined">print</span>
+                  <span>FACTURA</span>
+                </button>
+                <button class="co-quick-btn" type="button">
+                  <span class="material-symbols-outlined">cleaning_services</span>
+                  <span>SUCIO</span>
+                </button>
+                <button class="co-quick-btn" type="button">
+                  <span class="material-symbols-outlined">inventory</span>
+                  <span>MINIBAR</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="co-trans-right">
+            <label class="co-label">PAGO DE EXTENSI&Oacute;N Y SALDO</label>
+            <div class="co-monto-row">
+              <span class="co-currency-symbol">S/</span>
+              <input class="co-input co-monto-input" type="text" [(ngModel)]="montoPago" placeholder="0.00" />
+            </div>
+
+            <label class="co-label" style="margin-top:12px;display:block">M&Eacute;TODO DE PAGO</label>
+            <div class="co-pm-grid">
+              <label class="co-pm-option">
+                <input type="radio" name="co-metodo" [(ngModel)]="metodoPago" value="EFECTIVO" class="co-pm-hidden" />
+                <div class="co-pm-box">EFECTIVO</div>
+              </label>
+              <label class="co-pm-option">
+                <input type="radio" name="co-metodo" [(ngModel)]="metodoPago" value="TARJETA" class="co-pm-hidden" />
+                <div class="co-pm-box">TARJETA</div>
+              </label>
+              <label class="co-pm-option">
+                <input type="radio" name="co-metodo" [(ngModel)]="metodoPago" value="YAPE" class="co-pm-hidden" />
+                <div class="co-pm-box">YAPE / PLIN</div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="co-transaction-footer">
+          <button class="co-btn co-btn-cancel" (click)="cerrar()" [disabled]="loading">CANCELAR</button>
+          <button class="co-btn co-btn-finish"
+            [disabled]="!hospedajeEncontrado || loading" (click)="finalizarCheckOut()">
+            @if (loading) {
+              <span class="material-symbols-outlined" style="animation:co-spin 1s linear infinite">sync</span>
             }
-          </div>
-          <div class="checkout-financial__total">
-            <span class="checkout-financial__total-label">TOTAL A PAGAR</span>
-            <span class="checkout-financial__total-amount">S/ {{ totalDeuda.toFixed(2) }}</span>
-          </div>
+            <span class="material-symbols-outlined">logout</span>
+            FINALIZAR ESTANCIA
+          </button>
         </div>
       </div>
     }
-
-    @if (hospedajeEncontrado) {
-      <div class="hs-field">
-        <label class="hs-label">REGISTRAR SALIDA REAL</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="checkout-date-badge">
-            <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-outline)">event</span>
-            <span>{{ formatFechaCorta(fechaActual) }}</span>
-          </div>
-          <div class="checkout-date-badge">
-            <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-outline)">schedule</span>
-            <span>{{ formatHora(fechaActual) }}</span>
-          </div>
-        </div>
-      </div>
-    }
-
-    @if (hospedajeEncontrado && totalDeuda > 0) {
-      <div class="checkout-payment-section">
-        <label class="hs-label">MONTO A PAGAR</label>
-        <div class="checkout-payment-amount">
-          <span class="checkout-currency-symbol">S/</span>
-          <input class="hs-input" type="number" [(ngModel)]="montoPago" min="0" [max]="totalDeuda" step="0.01" style="flex:1;padding-left:32px" />
-        </div>
-        @if (esExtension && cargoExtension > 0 && montoPago > 0) {
-          <p class="checkout-partial-note">S/ {{ Math.min(cargoExtension, montoPago).toFixed(2) }} para extensión, S/ {{ Math.max(0, montoPago - cargoExtension).toFixed(2) }} para saldo pendiente</p>
-        }
-        @if (montoPago > 0 && montoPago < totalDeuda) {
-          <p class="checkout-partial-note">Pago parcial. Saldo restante: S/ {{ saldoRestante.toFixed(2) }}</p>
-        }
-        <div>
-          <label class="hs-label" style="margin-top:12px">MÉTODO DE PAGO</label>
-          <div class="checkout-payment-methods">
-            <label class="checkout-payment-option">
-              <input type="radio" name="metodoPago" [(ngModel)]="metodoPago" value="EFECTIVO" class="hidden peer" />
-              <div class="checkout-payment-card">EFECTIVO</div>
-            </label>
-            <label class="checkout-payment-option">
-              <input type="radio" name="metodoPago" [(ngModel)]="metodoPago" value="YAPE" class="hidden peer" />
-              <div class="checkout-payment-card">YAPE</div>
-            </label>
-          </div>
-        </div>
-      </div>
-    }
-
-    @if (hospedajeEncontrado && totalDeuda === 0) {
-      <div class="checkout-no-debt">
-        <span class="material-symbols-outlined" style="color:var(--clr-secondary);font-size:22px">check_circle</span>
-        <span>No hay deuda pendiente. El hospedaje está al día.</span>
-      </div>
-    }
-  </div>
-
-  <div class="hs-slide-panel__footer">
-    <button class="hs-btn hs-btn-outline" style="flex:1" (click)="cerrar()" [disabled]="loading">
-      Cancelar
-    </button>
-    <button class="hs-btn hs-btn-secondary" style="flex:1"
-      [disabled]="!hospedajeEncontrado || loading" (click)="finalizarCheckOut()">
-      @if (loading) {
-        <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
-      }
-      {{ loading ? 'PROCESANDO...' : 'FINALIZAR ESTANCIA' }}
-    </button>
   </div>
 </div>
-
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>

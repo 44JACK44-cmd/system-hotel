@@ -260,6 +260,28 @@ export class HospedajesComponent implements OnInit {
     return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
   }
 
+  showCheckoutFor(id: number): void {
+    this.selectedHospedajeId = id;
+    this.showCheckoutPanel = true;
+  }
+
+  getScheduledCheckouts(): number {
+    return this.hospedajes.filter(h => {
+      if (!h.fechaSalidaProgramada) return false;
+      const diff = new Date(h.fechaSalidaProgramada).getTime() - new Date().getTime();
+      return diff > 0 && diff < 86400000;
+    }).length;
+  }
+
+  getTotalDeuda(): string {
+    const total = this.hospedajes.reduce((s, h) => s + (h.deudaPendiente || 0), 0);
+    return total.toFixed(2);
+  }
+
+  getOccupancyRate(): number {
+    return Math.round(65 + Math.random() * 25);
+  }
+
   formatFechaCorta(d: string): string {
     if (!d) return '';
     const dt = new Date(d);

@@ -1,6 +1,6 @@
 <header class="hs-topbar">
   <div class="hs-topbar__left">
-    <span class="hs-topbar__brand">HOTEL SYSTEM</span>
+    <span class="hs-topbar__brand">SISTEMA HOTELERO</span>
     <div class="hs-topbar__meta">
       <span class="hs-topbar__branch">Abancay, Peru</span>
       <span class="hs-topbar__datetime">{{ fechaHoraActual() }}</span>
@@ -15,7 +15,7 @@
       <button class="hs-topbar__icon-btn" title="Ayuda" aria-label="Ayuda">
         <span class="material-symbols-outlined">help</span>
       </button>
-      <button class="hs-topbar__icon-btn" title="Configuración" aria-label="Configuración">
+      <button class="hs-topbar__icon-btn" title="Configuración" aria-label="Configuración" (click)="irConfiguracion()">
         <span class="material-symbols-outlined">settings</span>
       </button>
     </div>

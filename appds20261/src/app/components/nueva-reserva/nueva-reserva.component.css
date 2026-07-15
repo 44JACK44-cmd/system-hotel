@@ -1,36 +1,146 @@
-/* ── Two-column grid ── */
-.nr-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+.nr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: nrFadeIn 0.2s ease;
 }
 
-.nr-col {
+.nr-modal {
+  width: 100%;
+  max-width: 560px;
+  background: var(--clr-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  border: 1px solid var(--clr-outline-variant);
+  animation: nrSlideUp 0.25s ease;
+}
+
+.nr-header {
+  background: var(--clr-primary);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nr-header-title {
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.nr-header-close {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: opacity 0.15s;
+}
+.nr-header-close:hover { opacity: 1; color: white; }
+.nr-header-close .material-symbols-outlined { font-size: 28px; }
+
+.nr-body {
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
-/* ── Search row ── */
-.nr-search-row {
+.nr-section {
   display: flex;
+  flex-direction: column;
   gap: 8px;
 }
-.nr-search-row .hs-input {
-  flex: 1;
-}
-.nr-search-btn {
-  padding: 8px 12px !important;
-  min-width: auto !important;
+
+.nr-label {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--clr-on-surface-variant);
 }
 
-/* ── "o crear nuevo" divider ── */
+.nr-obligatorio {
+  color: var(--clr-error);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 11px;
+}
+
+.nr-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--clr-outline);
+  border-radius: var(--radius-sm);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--clr-on-surface);
+  background: var(--clr-surface-container-lowest);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+.nr-input:focus {
+  border-color: var(--clr-secondary);
+  box-shadow: 0 0 0 2px rgba(5,93,182,0.15);
+}
+.nr-input::placeholder { color: var(--clr-outline); }
+
+.nr-select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.nr-search-row { display: flex; gap: 8px; }
+
+.nr-search-wrap {
+  position: relative;
+  flex: 1;
+}
+.nr-search-wrap .nr-input {
+  padding-right: 36px;
+}
+
+.nr-search-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--clr-secondary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+.nr-search-btn .material-symbols-outlined { font-size: 20px; }
+
 .nr-divider {
   font-size: 11px;
   color: var(--clr-outline);
-  margin: 8px 0;
   text-align: center;
   position: relative;
+  margin: 4px 0;
 }
 .nr-divider-text {
   background: var(--clr-surface-container-lowest);
@@ -48,30 +158,17 @@
   z-index: 0;
 }
 
-/* ── 2-column inner grid ── */
 .nr-grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 16px;
 }
 
-/* ── Spacing helper ── */
-.nr-mb-1 { margin-bottom: 8px; }
-
-/* ── Select wrapper ── */
-.nr-select-wrapper {
-  position: relative;
-}
-.nr-select-wrapper select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  padding-right: 36px;
-  cursor: pointer;
-}
+.nr-select-wrap { position: relative; }
+.nr-select-wrap .nr-input { padding-right: 36px; }
 .nr-select-arrow {
   position: absolute;
-  right: 10px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
@@ -79,20 +176,17 @@
   font-size: 20px;
 }
 
-/* ── Fechas section ── */
 .nr-fechas-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
 }
 
-.nr-saldo {
-  text-align: right;
-}
+.nr-saldo { text-align: right; }
 .nr-saldo-label {
   font-size: 10px;
-  color: var(--clr-outline-variant);
   font-weight: 700;
+  color: var(--clr-outline-variant);
   display: block;
   line-height: 1;
 }
@@ -101,83 +195,47 @@
   font-weight: 700;
   font-size: 16px;
   line-height: 24px;
+  margin: 0;
 }
 
-/* ── Date inputs ── */
 .nr-fechas-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
-.nr-date-wrapper {
+
+.nr-date-wrap {
   flex: 1;
   position: relative;
 }
-.nr-date-input {
-  padding-right: 36px !important;
-  cursor: pointer;
-}
-.nr-date-input::-webkit-calendar-picker-indicator {
-  opacity: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
+.nr-date-wrap .nr-input { padding-right: 36px; cursor: pointer; }
+
 .nr-date-icon {
   position: absolute;
-  right: 10px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
   color: var(--clr-outline);
   font-size: 18px;
 }
+
 .nr-date-sep {
   color: var(--clr-outline);
   font-weight: 600;
   flex-shrink: 0;
 }
 
-/* ── Noches summary ── */
-.nr-noches-box {
-  background: var(--clr-surface-container-low);
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 13px;
-  text-align: right;
-  border: 1px solid var(--clr-outline-variant);
-  margin-top: 8px;
-}
-.nr-noches-text {
-  color: var(--clr-on-surface-variant);
-}
-.nr-noches-total {
-  font-weight: 700;
-  color: var(--clr-primary);
-}
-
-/* ── Obligatorio label ── */
-.nr-obligatorio {
-  color: var(--clr-error);
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: normal;
-  font-size: 11px;
-}
-
-/* ── Adelanto row ── */
 .nr-adelanto-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
 }
-.nr-monto-wrapper {
+
+.nr-monto-wrap {
   position: relative;
-  flex: 0 0 auto;
-  width: 45%;
+  width: 120px;
+  flex-shrink: 0;
 }
 .nr-monto-prefix {
   position: absolute;
@@ -194,12 +252,12 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Payment options ── */
 .nr-pago-opts {
   display: flex;
-  gap: 16px;
+  gap: 24px;
   align-items: center;
 }
+
 .nr-radio {
   display: flex;
   align-items: center;
@@ -218,86 +276,96 @@
   width: 0;
   height: 0;
 }
-.nr-radio-dot {
+.nr-radio-circle {
   width: 16px;
   height: 16px;
+  border-radius: 50%;
   border: 2px solid var(--clr-outline);
-  border-radius: 50%;
-  display: inline-block;
-  position: relative;
-  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  transition: border-color 0.15s;
 }
-.nr-radio input:checked + .nr-radio-dot {
+.nr-radio input:checked + .nr-radio-circle {
   border-color: var(--clr-secondary);
-  background: var(--clr-secondary);
 }
-.nr-radio input:checked + .nr-radio-dot::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 6px;
-  height: 6px;
-  background: white;
+.nr-radio-dot {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
+  background: var(--clr-secondary);
+  transform: scale(0);
+  transition: transform 0.15s;
 }
-.nr-radio:hover .nr-radio-dot {
+.nr-radio input:checked + .nr-radio-circle .nr-radio-dot {
+  transform: scale(1);
+}
+.nr-radio:hover .nr-radio-circle {
   border-color: var(--clr-secondary);
 }
 
-/* ── Button overrides for reference look ── */
-.nr-btn-cancel {
+.nr-textarea {
+  resize: none;
+  min-height: 52px;
+}
+
+.nr-actions {
+  display: flex;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.nr-btn {
   flex: 1;
-  border: 2px solid var(--clr-secondary) !important;
-  color: var(--clr-secondary) !important;
-  background: transparent !important;
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
-  padding: 12px 20px !important;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.nr-btn-cancel {
+  border: 2px solid var(--clr-secondary);
+  color: var(--clr-secondary);
+  background: transparent;
 }
 .nr-btn-cancel:hover {
-  background: rgba(5, 93, 182, 0.05) !important;
+  background: rgba(5,93,182,0.05);
 }
+
 .nr-btn-save {
-  flex: 1;
-  background: var(--clr-secondary) !important;
-  color: var(--clr-on-secondary) !important;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
-  padding: 12px 20px !important;
-  box-shadow: 0 2px 8px rgba(5, 93, 182, 0.3) !important;
+  border: none;
+  background: var(--clr-secondary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(5,93,182,0.3);
 }
 .nr-btn-save:hover:not(:disabled) {
-  background: var(--clr-secondary-container) !important;
-  color: var(--clr-on-secondary-container) !important;
+  background: var(--clr-secondary-container);
+  color: var(--clr-on-secondary-container);
 }
 .nr-btn-save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* ── Responsive: single column on narrow screens ── */
-@media (max-width: 500px) {
-  .nr-grid {
-    grid-template-columns: 1fr;
-  }
-  .nr-fechas-row {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .nr-date-sep {
-    display: none;
-  }
-  .nr-adelanto-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-  .nr-monto-wrapper {
-    width: 100%;
-  }
+@keyframes nrFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nrSlideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes nr-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 600px) {
+  .nr-overlay { padding: 8px; align-items: flex-end; }
+  .nr-modal { border-radius: var(--radius-lg) var(--radius-lg) 0 0; max-height: 90vh; overflow-y: auto; }
+  .nr-grid-2 { grid-template-columns: 1fr; }
+  .nr-fechas-row { flex-direction: column; gap: 8px; }
+  .nr-date-sep { display: none; }
+  .nr-adelanto-row { flex-direction: column; align-items: stretch; gap: 12px; }
+  .nr-monto-wrap { width: 100%; }
 }

@@ -1,36 +1,25 @@
 <div class="cli-page">
   <div class="cli-layout">
-    <!-- LEFT: Main content -->
     <div class="cli-main">
-      <!-- Header -->
       <div class="cli-page__header">
         <div>
-          <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Directorio de Clientes</h1>
-          <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
-            Administra y revisa la base de datos de huéspedes global.
-          </p>
+          <h1 class="cli-page__title">Directorio de Clientes</h1>
+          <p class="cli-page__subtitle">Administra y revisa la base de datos de huéspedes global.</p>
         </div>
         <div class="cli-header-actions">
-
           <button class="hs-btn hs-btn-primary" (click)="showDialog()">
             <span class="material-symbols-outlined">add</span>
             Nuevo Cliente
           </button>
         </div>
       </div>
-
-      <!-- Search Bar -->
       <div class="hs-card" style="padding:16px">
         <div class="hs-input-icon">
           <span class="material-symbols-outlined">search</span>
-          <input class="hs-input" type="text" placeholder="Buscar por nombre, DNI, correo o teléfono..."
-            [(ngModel)]="searchTerm" (input)="search()" />
+          <input class="hs-input" type="text" placeholder="Buscar por nombre, DNI, correo o teléfono..." [(ngModel)]="searchTerm" (input)="search()" />
         </div>
       </div>
-
       <p-toast />
-
-      <!-- Table -->
       <div class="hs-card" style="overflow:hidden">
         <table class="hs-table cli-table">
           <thead>
@@ -49,49 +38,30 @@
                   <div class="cli-guest-cell">
                     <div class="cli-avatar">{{ c.nombreCompleto | slice:0:2 }}</div>
                     <div>
-                      <div class="text-body-md cli-guest-name">{{ c.nombreCompleto }}</div>
+                      <div class="cli-guest-name">{{ c.nombreCompleto }}</div>
                       <div class="cli-guest-email">{{ c.email || c.telefono || '—' }}</div>
                     </div>
                   </div>
                 </td>
                 <td>
-                  @if (c.estado === 'Hospedado') {
-                    <span class="cli-status-badge badge-active">Hospedado</span>
-                  } @else if (c.estado === 'Reserva') {
-                    <span class="cli-status-badge badge-pending">Reserva</span>
-                  } @else {
-                    <span class="cli-status-badge cli-status-registrado">Registrado</span>
-                  }
+                  @if (c.estado === 'Hospedado') { <span class="cli-status-badge badge-active">Hospedado</span> }
+                  @else if (c.estado === 'Reserva') { <span class="cli-status-badge badge-pending">Reserva</span> }
+                  @else { <span class="cli-status-badge cli-status-registrado">Registrado</span> }
                 </td>
                 <td>
                   <div class="cli-loyalty">
-                    @if (c.lealtad === 'VIP') {
-                      <span class="material-symbols-outlined cli-star" style="color:#d4a017">workspace_premium</span>
-                    } @else if (c.lealtad === 'Frecuente') {
-                      <span class="material-symbols-outlined cli-star" style="color:var(--clr-secondary)">star</span>
-                    } @else if (c.lealtad === 'Regular') {
-                      <span class="material-symbols-outlined cli-star" style="color:var(--clr-on-surface-variant)">star</span>
-                    } @else {
-                      <span class="material-symbols-outlined cli-star" style="color:var(--clr-outline-variant)">person_outline</span>
-                    }
+                    @if (c.lealtad === 'VIP') { <span class="material-symbols-outlined" style="color:#d4a017;font-size:16px;font-variation-settings:'FILL' 1">workspace_premium</span> }
+                    @else if (c.lealtad === 'Frecuente') { <span class="material-symbols-outlined" style="color:var(--clr-secondary);font-size:16px;font-variation-settings:'FILL' 1">star</span> }
+                    @else if (c.lealtad === 'Regular') { <span class="material-symbols-outlined" style="color:var(--clr-on-surface-variant);font-size:16px;font-variation-settings:'FILL' 1">star</span> }
+                    @else { <span class="material-symbols-outlined" style="color:var(--clr-outline-variant);font-size:16px">person_outline</span> }
                     <span class="text-data-tabular">{{ c.lealtad }}</span>
                   </div>
                 </td>
-                <td class="text-data-tabular cli-last-stay">
-                  @if (c.ultimaEstancia) {
-                    {{ c.ultimaEstancia | date:'dd/MM/yy' }}
-                  } @else {
-                    —
-                  }
-                </td>
+                <td class="text-data-tabular" style="color:var(--clr-on-surface-variant)">@if (c.ultimaEstancia) { {{ c.ultimaEstancia | date:'dd/MM/yy' }} } @else { — }</td>
                 <td style="text-align:right">
                   <div class="cli-actions-cell">
-                    <button class="cli-action-btn cli-action-btn--edit" (click)="editCliente(c); $event.stopPropagation()" title="Editar">
-                      <span class="material-symbols-outlined">edit</span>
-                    </button>
-                    <button class="cli-action-btn cli-action-btn--history" (click)="showHistorial(c); $event.stopPropagation()" title="Historial">
-                      <span class="material-symbols-outlined">history</span>
-                    </button>
+                    <button class="cli-action-btn cli-action-btn--edit" (click)="editCliente(c); $event.stopPropagation()" title="Editar"><span class="material-symbols-outlined">edit</span></button>
+                    <button class="cli-action-btn cli-action-btn--history" (click)="showHistorial(c); $event.stopPropagation()" title="Historial"><span class="material-symbols-outlined">history</span></button>
                   </div>
                 </td>
               </tr>
@@ -104,16 +74,11 @@
             }
           </tbody>
         </table>
-        <div class="cli-table-footer">
-          Mostrando {{ clientes.length }} cliente(s)
-        </div>
+        <div class="cli-table-footer">Mostrando {{ clientes.length }} cliente(s)</div>
       </div>
     </div>
-
-    <!-- RIGHT: Detail Panel -->
     @if (detailCliente) {
       <aside class="cli-detail-panel">
-        <!-- Cover photo -->
         <div class="cli-detail-cover">
           <div class="cli-detail-cover__img"></div>
           <div class="cli-detail-cover__gradient"></div>
@@ -121,96 +86,71 @@
             <div class="cli-detail-avatar">{{ detailCliente.nombreCompleto | slice:0:2 }}</div>
             <div>
               <h2 class="cli-detail-name">{{ detailCliente.nombreCompleto }}</h2>
-              <p class="cli-detail-subtitle">CLIENTE &bull; ID: {{ detailCliente.id }} &bull; {{ detailCliente.lealtad }}</p>
+              <p class="cli-detail-subtitle">{{ detailCliente.lealtad }} • ID: {{ detailCliente.id }}</p>
             </div>
           </div>
-          <button class="cli-detail-close" (click)="detailCliente = null">
-            <span class="material-symbols-outlined">close</span>
-          </button>
+          <button class="cli-detail-close" (click)="detailCliente = null"><span class="material-symbols-outlined">close</span></button>
         </div>
-
         <div class="cli-detail-body">
-          <!-- Personal Info -->
+          <div class="cli-detail-actions">
+            <button class="cli-btn-primary"><span class="material-symbols-outlined">add_box</span> Nueva Reserva</button>
+            <button class="cli-btn-outline"><span class="material-symbols-outlined">mail</span> Contactar</button>
+          </div>
           <section class="cli-section">
             <h3 class="cli-section-title">Información Personal</h3>
             <div class="cli-info-grid">
-              <div class="cli-info-item">
-                <span class="material-symbols-outlined cli-info-icon">badge</span>
-                <div>
-                  <p class="cli-info-label">Documento</p>
-                  <p class="cli-info-value">{{ detailCliente.documento || '—' }}</p>
-                </div>
-              </div>
-              <div class="cli-info-item">
-                <span class="material-symbols-outlined cli-info-icon">phone</span>
-                <div>
-                  <p class="cli-info-label">Teléfono</p>
-                  <p class="cli-info-value">{{ detailCliente.telefono || '—' }}</p>
-                </div>
-              </div>
-              <div class="cli-info-item">
-                <span class="material-symbols-outlined cli-info-icon">mail</span>
-                <div>
-                  <p class="cli-info-label">Email</p>
-                  <p class="cli-info-value">{{ detailCliente.email || '—' }}</p>
-                </div>
-              </div>
-              <div class="cli-info-item">
-                <span class="material-symbols-outlined cli-info-icon">calendar_month</span>
-                <div>
-                  <p class="cli-info-label">Registrado desde</p>
-                  <p class="cli-info-value">{{ detailCliente.createdAt | date:'dd/MM/yyyy' }}</p>
-                </div>
-              </div>
-              <div class="cli-info-item">
-                <span class="material-symbols-outlined cli-info-icon">meeting_room</span>
-                <div>
-                  <p class="cli-info-label">Estado actual</p>
-                  <p class="cli-info-value">{{ detailCliente.estado }}</p>
-                </div>
-              </div>
-              <div class="cli-info-item">
-                <span class="material-symbols-outlined cli-info-icon">hotel</span>
-                <div>
-                  <p class="cli-info-label">Estancias completadas</p>
-                  <p class="cli-info-value">{{ detailCliente.totalEstancias || 0 }}</p>
-                </div>
-              </div>
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">badge</span><div><p class="cli-info-label">Documento</p><p class="cli-info-value">{{ detailCliente.documento || '—' }}</p></div></div>
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">phone</span><div><p class="cli-info-label">Teléfono</p><p class="cli-info-value">{{ detailCliente.telefono || '—' }}</p></div></div>
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">mail</span><div><p class="cli-info-label">Email</p><p class="cli-info-value">{{ detailCliente.email || '—' }}</p></div></div>
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">calendar_month</span><div><p class="cli-info-label">Registrado desde</p><p class="cli-info-value">{{ detailCliente.createdAt | date:'dd/MM/yyyy' }}</p></div></div>
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">meeting_room</span><div><p class="cli-info-label">Estado actual</p><p class="cli-info-value">{{ detailCliente.estado }}</p></div></div>
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">hotel</span><div><p class="cli-info-label">Estancias completadas</p><p class="cli-info-value">{{ detailCliente.totalEstancias || 0 }}</p></div></div>
             </div>
           </section>
-
-          <!-- Stay History -->
+          <section class="cli-section">
+            <h3 class="cli-section-title">Preferencias y Salud</h3>
+            <div class="cli-pref-grid">
+              <div class="cli-pref-card"><span class="material-symbols-outlined cli-pref-icon">bed</span><p class="cli-pref-label">Cama / Almohada</p><p class="cli-pref-desc">Almohada de Plumas, Firmeza Media</p></div>
+              <div class="cli-pref-card cli-pref-card--alert"><span class="material-symbols-outlined" style="color:var(--clr-error);font-size:20px">medical_services</span><p class="cli-pref-label" style="color:var(--clr-error)">Alergias</p><p class="cli-pref-desc" style="color:var(--clr-on-error-container)">Frutos Secos, Penicilina</p></div>
+              <div class="cli-pref-card"><span class="material-symbols-outlined cli-pref-icon">restaurant</span><p class="cli-pref-label">Dieta</p><p class="cli-pref-desc">Vegetariana, Sin Gluten</p></div>
+              <div class="cli-pref-card"><span class="material-symbols-outlined cli-pref-icon">thermostat</span><p class="cli-pref-label">Habitación</p><p class="cli-pref-desc">22°C, Piso Alto, Lejos de Elevador</p></div>
+            </div>
+          </section>
           <section class="cli-section">
             <div class="cli-section-header">
               <h3 class="cli-section-title" style="border:none;padding:0;margin:0">Historial de Estancias</h3>
-              <button class="cli-link-btn" (click)="showHistorial(detailCliente)">Ver todo</button>
+              <button class="cli-link-btn" (click)="showHistorial(detailCliente)">Ver todo ({{ historialReservas.length }})</button>
             </div>
-            @if (historialVisible && historialReservas.length > 0) {
+            @if (historialReservas.length > 0) {
               <div class="cli-history-list">
                 @for (r of historialReservas.slice(0, 3); track $index) {
                   <div class="cli-history-item">
-                    <div class="cli-history-icon">
-                      <span class="material-symbols-outlined">meeting_room</span>
-                    </div>
+                    <div class="cli-history-icon"><span class="material-symbols-outlined">meeting_room</span></div>
                     <div class="cli-history-info">
-                      <p class="cli-history-room">Hab. {{ r.habitacionNumero }}</p>
-                      <p class="cli-history-dates">{{ r.fechaEntrada | date:'dd/MM/yy' }} &mdash; {{ r.fechaSalida | date:'dd/MM/yy' }}</p>
+                      <p class="cli-history-room">{{ r.habitacionNumero || 'N/A' }}</p>
+                      <p class="cli-history-dates">{{ r.fechaEntrada | date:'dd/MM/yy' }} — {{ r.fechaSalida | date:'dd/MM/yy' }}</p>
                     </div>
-                    <span class="badge" [ngClass]="r.estado === 'CONFIRMADA' ? 'badge-confirmed' : r.estado === 'CANCELADA' ? 'badge-cancelled' : r.estado === 'REALIZADA' ? 'badge-completed' : 'badge-info'">{{ r.estado }}</span>
+                    <div style="text-align:right">
+                      @if (r.totalPagado) { <p class="cli-history-amount">S/ {{ r.totalPagado.toFixed(2) }}</p> }
+                      <span class="badge" [ngClass]="r.estado === 'CONFIRMADA' ? 'badge-confirmed' : r.estado === 'CANCELADA' ? 'badge-cancelled' : r.estado === 'REALIZADA' ? 'badge-completed' : 'badge-info'">{{ r.estado }}</span>
+                    </div>
                   </div>
                 }
               </div>
-            } @else {
-              <p class="cli-empty-text">Sin estancias registradas.</p>
-            }
+            } @else { <p class="cli-empty-text">Sin estancias registradas.</p> }
+          </section>
+          <section class="cli-section">
+            <h3 class="cli-section-title">Notas de Recepción</h3>
+            <div class="cli-notes-card">
+              "Huésped corporativa frecuente. Prefiere check-in temprano. Siempre solicita late check-out a las 14:00 si hay disponibilidad."
+              <div style="margin-top:8px;text-align:right;font-style:normal"><span class="cli-note-author">— Maria G., Recepción</span></div>
+            </div>
           </section>
         </div>
       </aside>
     }
   </div>
 </div>
-
-<!-- Dialog: Nuevo / Editar Cliente -->
 @if (dialogVisible) {
   <div class="hs-overlay" (click)="dialogVisible = false"></div>
   <div class="hs-slide-panel">
@@ -219,72 +159,40 @@
         <span class="material-symbols-outlined">{{ editing ? 'edit' : 'person_add' }}</span>
         <span style="font-weight:700;font-size:16px">{{ editing ? 'Editar Cliente' : 'Nuevo Cliente' }}</span>
       </div>
-      <button class="hs-topbar__icon-btn" (click)="dialogVisible = false">
-        <span class="material-symbols-outlined">close</span>
-      </button>
+      <button class="hs-topbar__icon-btn" (click)="dialogVisible = false"><span class="material-symbols-outlined">close</span></button>
     </div>
-
     <div class="hs-slide-panel__body">
       <form [formGroup]="clienteForm" style="display:flex;flex-direction:column;gap:16px">
         <div class="hs-field">
           <label class="hs-label">Nombre Completo</label>
-          <div class="hs-input-icon">
-            <span class="material-symbols-outlined">person</span>
-            <input class="hs-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan P&eacute;rez" />
-          </div>
-          @if (clienteForm.get('nombreCompleto')?.invalid && clienteForm.get('nombreCompleto')?.touched) {
-            <p class="hs-error">El nombre es obligatorio</p>
-          }
+          <div class="hs-input-icon"><span class="material-symbols-outlined">person</span><input class="hs-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan Pérez" /></div>
+          @if (clienteForm.get('nombreCompleto')?.invalid && clienteForm.get('nombreCompleto')?.touched) { <p class="hs-error">El nombre es obligatorio</p> }
         </div>
-
         <div class="hs-field">
-          <label class="hs-label">Tel&eacute;fono</label>
-          <div class="hs-input-icon">
-            <span class="material-symbols-outlined">phone</span>
-            <input class="hs-input" type="text" formControlName="telefono" placeholder="999 888 777" />
-          </div>
-          @if (clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched) {
-            <p class="hs-error">El tel&eacute;fono es obligatorio</p>
-          }
+          <label class="hs-label">Teléfono</label>
+          <div class="hs-input-icon"><span class="material-symbols-outlined">phone</span><input class="hs-input" type="text" formControlName="telefono" placeholder="999 888 777" /></div>
+          @if (clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched) { <p class="hs-error">El teléfono es obligatorio</p> }
         </div>
-
         <div class="hs-field">
           <label class="hs-label">Documento (opcional)</label>
-          <div class="hs-input-icon">
-            <span class="material-symbols-outlined">badge</span>
-            <input class="hs-input" type="text" formControlName="documento" placeholder="DNI / Pasaporte" />
-          </div>
+          <div class="hs-input-icon"><span class="material-symbols-outlined">badge</span><input class="hs-input" type="text" formControlName="documento" placeholder="DNI / Pasaporte" /></div>
         </div>
-
         <div class="hs-field">
           <label class="hs-label">Email (opcional)</label>
-          <div class="hs-input-icon">
-            <span class="material-symbols-outlined">mail</span>
-            <input class="hs-input" type="email" formControlName="email" placeholder="cliente@correo.com" />
-          </div>
-          @if (clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched) {
-            <p class="hs-error">Email inv&aacute;lido</p>
-          }
+          <div class="hs-input-icon"><span class="material-symbols-outlined">mail</span><input class="hs-input" type="email" formControlName="email" placeholder="cliente@correo.com" /></div>
+          @if (clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched) { <p class="hs-error">Email inválido</p> }
         </div>
       </form>
     </div>
-
     <div class="hs-slide-panel__footer">
-      <button class="hs-btn hs-btn-outline" style="flex:1" (click)="dialogVisible = false">
-        Cancelar
-      </button>
-      <button class="hs-btn hs-btn-primary" style="flex:1"
-        [disabled]="clienteForm.invalid || loading" (click)="save()">
-        @if (loading) {
-          <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
-        }
+      <button class="hs-btn hs-btn-outline" style="flex:1" (click)="dialogVisible = false">Cancelar</button>
+      <button class="hs-btn hs-btn-primary" style="flex:1" [disabled]="clienteForm.invalid || loading" (click)="save()">
+        @if (loading) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
         {{ editing ? 'Guardar Cambios' : 'Crear Cliente' }}
       </button>
     </div>
   </div>
 }
-
-<!-- Historial Slide Panel -->
 @if (historialVisible) {
   <div class="hs-overlay" (click)="historialVisible = false"></div>
   <div class="hs-slide-panel" style="max-width:520px">
@@ -293,68 +201,38 @@
         <span class="material-symbols-outlined">history</span>
         <span style="font-weight:700;font-size:16px">Historial — {{ selectedCliente?.nombreCompleto }}</span>
       </div>
-      <button class="hs-topbar__icon-btn" (click)="historialVisible = false">
-        <span class="material-symbols-outlined">close</span>
-      </button>
+      <button class="hs-topbar__icon-btn" (click)="historialVisible = false"><span class="material-symbols-outlined">close</span></button>
     </div>
-
     <div class="hs-slide-panel__body">
-      <div style="display:flex;gap:0;border-bottom:2px solid var(--clr-outline-variant);margin-bottom:16px">
-        <button class="cli-tab" [class.cli-tab--active]="historialTab === '0'" (click)="historialTab = '0'">
-          <span class="material-symbols-outlined">event</span>
-          Reservas
-        </button>
-        <button class="cli-tab" [class.cli-tab--active]="historialTab === '1'" (click)="historialTab = '1'">
-          <span class="material-symbols-outlined">hotel</span>
-          Hospedajes
-        </button>
+      <div class="cli-tab-bar">
+        <button class="cli-tab" [class.cli-tab--active]="historialTab === '0'" (click)="historialTab = '0'"><span class="material-symbols-outlined">event</span> Reservas</button>
+        <button class="cli-tab" [class.cli-tab--active]="historialTab === '1'" (click)="historialTab = '1'"><span class="material-symbols-outlined">hotel</span> Hospedajes</button>
       </div>
-
       @if (historialTab === '0') {
         @for (r of historialReservas; track $index) {
           <div class="cli-history-item">
-            <div class="cli-history-item__icon" style="background:rgba(5,93,182,0.1)">
-              <span class="material-symbols-outlined" style="color:var(--clr-secondary)">event</span>
-            </div>
+            <div class="cli-history-item__icon" style="background:rgba(5,93,182,.1)"><span class="material-symbols-outlined" style="color:var(--clr-secondary)">event</span></div>
             <div style="flex:1">
-              <div class="text-body-md" style="font-weight:600">Hab. {{ r.habitacionNumero }}</div>
-              <div class="text-data-tabular" style="color:var(--clr-on-surface-variant)">
-                {{ r.fechaEntrada | date:'dd/MM/yy' }} — {{ r.fechaSalida | date:'dd/MM/yy' }}
-              </div>
+              <div class="text-body-md" style="font-weight:600">{{ r.habitacionNumero || 'N/A' }}</div>
+              <div class="text-data-tabular" style="color:var(--clr-on-surface-variant)">{{ r.fechaEntrada | date:'dd/MM/yy' }} — {{ r.fechaSalida | date:'dd/MM/yy' }}</div>
             </div>
             <span class="badge" [ngClass]="r.estado === 'CONFIRMADA' ? 'badge-confirmed' : r.estado === 'CANCELADA' ? 'badge-cancelled' : r.estado === 'REALIZADA' ? 'badge-completed' : 'badge-info'">{{ r.estado }}</span>
           </div>
-        } @empty {
-          <div style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">
-            Sin reservas registradas.
-          </div>
-        }
+        } @empty { <div style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">Sin reservas registradas.</div> }
       }
-
       @if (historialTab === '1') {
         @for (h of historialHospedajes; track $index) {
           <div class="cli-history-item">
-            <div class="cli-history-item__icon" style="background:rgba(67,160,71,0.1)">
-              <span class="material-symbols-outlined" style="color:var(--clr-status-available)">hotel</span>
-            </div>
+            <div class="cli-history-item__icon" style="background:rgba(67,160,71,.1)"><span class="material-symbols-outlined" style="color:var(--clr-status-available)">hotel</span></div>
             <div style="flex:1">
-              <div class="text-body-md" style="font-weight:600">Hab. {{ h.habitacionNumero }}</div>
-              <div class="text-data-tabular" style="color:var(--clr-on-surface-variant)">
-                {{ h.fechaIngreso | date:'dd/MM/yy' }} — {{ h.fechaSalidaReal ? (h.fechaSalidaReal | date:'dd/MM/yy') : 'En curso' }}
-              </div>
+              <div class="text-body-md" style="font-weight:600">{{ h.habitacionNumero || 'N/A' }}</div>
+              <div class="text-data-tabular" style="color:var(--clr-on-surface-variant)">{{ h.fechaIngreso | date:'dd/MM/yy' }} — {{ h.fechaSalidaReal ? (h.fechaSalidaReal | date:'dd/MM/yy') : 'En curso' }}</div>
             </div>
             <span class="badge" [ngClass]="h.estado === 'ACTIVO' ? 'badge-active' : h.estado === 'FINALIZADO' ? 'badge-completed' : 'badge-info'">{{ h.estado }}</span>
           </div>
-        } @empty {
-          <div style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">
-            Sin hospedajes registrados.
-          </div>
-        }
+        } @empty { <div style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">Sin hospedajes registrados.</div> }
       }
     </div>
   </div>
 }
-
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>

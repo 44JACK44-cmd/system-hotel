@@ -12,6 +12,7 @@ import { Login } from './page/auth/login/login';
 import { AccessDenied } from './page/auth/access-denied/access-denied';
 import { Admin } from './page/auth/admin/admin';
 import { Clientes } from './page/auth/clientes/clientes';
+import { Configuracion } from './page/auth/configuracion/configuracion';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -42,6 +43,7 @@ export const routes: Routes = [
       { path: 'usuarios', component: UsuariosComponent },
       { path: 'habitaciones', component: HabitacionesComponent },
       { path: 'reportes', component: ReportesComponent },
+      { path: 'configuracion', component: Configuracion },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },  

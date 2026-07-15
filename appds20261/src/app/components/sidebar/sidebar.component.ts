@@ -41,6 +41,7 @@ export class SidebarComponent {
         { label: 'Incidencias',  icon: 'cleaning_services',  route: '/recepcion/incidencias'},
         { label: 'Usuarios',     icon: 'manage_accounts',    route: '/admin/usuarios'       },
         { label: 'Reportes',     icon: 'bar_chart',          route: '/admin/reportes'       },
+        { label: 'Configuración', icon: 'settings',          route: '/admin/configuracion'  },
       ];
     }
     return [

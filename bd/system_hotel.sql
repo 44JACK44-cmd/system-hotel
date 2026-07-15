@@ -113,7 +113,7 @@ CREATE INDEX idx_hospedajes_fechas ON hospedajes(fecha_ingreso, fecha_salida_pro
 CREATE INDEX idx_pagos_fecha ON pagos(fecha_pago);
 CREATE INDEX idx_incidencias_habitacion ON incidencias_habitacion(habitacion_id, tipo);
 -- ==========================================
--- DATOS INICIALES (OPCIONALES)
+-- DATOS INICIALES caja
 -- ==========================================
 -- Usuario admin por defecto (contraseña: admin123)
 INSERT INTO usuarios (nombre_completo, username, password, rol) VALUES

@@ -1,7 +1,7 @@
 <div class="admin-page">
   <div class="admin-page__header">
     <div>
-      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Admin Dashboard</h1>
+      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Panel de Administraci&oacute;n</h1>
       <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
         Monitoreo de ingresos y métricas operativas — {{ mesActual }}
       </p>
@@ -13,7 +13,7 @@
       </button>
       <a [routerLink]="'/admin/reportes'" class="hs-btn hs-btn-secondary">
         <span class="material-symbols-outlined">download</span>
-        Export Report
+        Exportar Reporte
       </a>
     </div>
   </div>
@@ -32,7 +32,7 @@
         }
       </div>
       <div style="margin-top:12px">
-        <div class="hs-kpi__label">OCCUPANCY RATE</div>
+        <div class="hs-kpi__label">TASA DE OCUPACI&Oacute;N</div>
         <div class="hs-kpi__value">{{ ocupacion?.porcentajeOcupacion || 0 }}%</div>
         <div class="hs-progress" style="margin-top:8px">
           <div class="hs-progress__fill" [style.width.%]="ocupacion?.porcentajeOcupacion || 0"></div>
@@ -44,7 +44,7 @@
       <div class="admin-revenue-content">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
-            <div class="hs-kpi__label">ESTIMATED REVENUE</div>
+            <div class="hs-kpi__label">INGRESOS ESTIMADOS</div>
             <div class="hs-kpi__value" style="font-size:26px">S/ {{ ingresos?.total || '0.00' }}</div>
           </div>
           <div class="hs-kpi__icon" style="background:var(--clr-primary-container)">
@@ -62,14 +62,14 @@
             <div class="admin-mini-chart__bar admin-mini-chart__bar--current" style="height:100%"></div>
           </div>
           <div class="admin-mini-chart__labels">
-            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>S&aacute;</span><span>Do</span>
           </div>
         </div>
       </div>
     </div>
 
     <div class="hs-kpi" style="background:var(--clr-primary-container);display:flex;flex-direction:column">
-      <div class="hs-kpi__label" style="color:rgba(255,255,255,0.7)">PENDING TASKS</div>
+      <div class="hs-kpi__label" style="color:rgba(255,255,255,0.7)">TAREAS PENDIENTES</div>
       <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px;flex:1">
         <div class="admin-pending-item">
           <span class="pulse-dot" style="background:var(--clr-error)"></span>
@@ -84,7 +84,7 @@
           <span style="color:white;font-size:14px">Saldos: S/ {{ ingresos?.totalSaldos || '0.00' }}</span>
         </div>
       </div>
-      <a [routerLink]="'/admin/reportes'" class="admin-pending-link">View Details</a>
+      <a [routerLink]="'/admin/reportes'" class="admin-pending-link">Ver Detalles</a>
     </div>
   </div>
 
@@ -107,15 +107,15 @@
     <div class="admin-right-col">
       <div class="hs-card">
         <div class="hs-card-header" style="justify-content:space-between">
-          <h3 class="text-title-sm" style="color:var(--clr-primary)">User Access</h3>
-          <button class="text-secondary" style="font-size:11px;font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit;padding:0;text-decoration:none">Manage All</button>
+          <h3 class="text-title-sm" style="color:var(--clr-primary)">Acceso de Usuarios</h3>
+          <button class="text-secondary" style="font-size:11px;font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit;padding:0;text-decoration:none">Gestionar Todo</button>
         </div>
         <div class="hs-card-body" style="display:flex;flex-direction:column;gap:12px">
           <div class="admin-user-row">
             <div class="admin-user-row__left">
               <div class="hs-initials-avatar">AA</div>
               <div>
-                <div class="text-label-caps" style="font-weight:700">Admin User</div>
+                <div class="text-label-caps" style="font-weight:700">Usuario Admin</div>
                 <div class="text-label-caps" style="opacity:0.6;font-size:10px;text-transform:uppercase">Administrador</div>
               </div>
             </div>
@@ -126,14 +126,14 @@
               <div class="hs-initials-avatar" style="background:var(--clr-surface-container-high);color:var(--clr-primary)">RC</div>
               <div>
                 <div class="text-label-caps" style="font-weight:700">Recepcionista</div>
-                <div class="text-label-caps" style="opacity:0.6;font-size:10px;text-transform:uppercase">Receptionist</div>
+                <div class="text-label-caps" style="opacity:0.6;font-size:10px;text-transform:uppercase">Recepcionista</div>
               </div>
             </div>
             <span class="status-dot status-dot--offline"></span>
           </div>
           <div style="margin-top:8px;padding-top:12px;border-top:1px dashed var(--clr-outline-variant)">
             <button class="admin-add-staff" style="pointer-events:none">
-              + Add New Staff Member
+              + Agregar Nuevo Miembro
             </button>
           </div>
         </div>
@@ -176,34 +176,34 @@
 
   <div class="hs-card">
     <div class="hs-card-header" style="justify-content:space-between">
-      <h3 class="text-title-sm" style="color:var(--clr-primary)">Comprehensive Reports</h3>
-      <span class="text-label-caps" style="color:var(--clr-on-surface-variant)">Last updated: Today</span>
+      <h3 class="text-title-sm" style="color:var(--clr-primary)">Reportes Integrales</h3>
+      <span class="text-label-caps" style="color:var(--clr-on-surface-variant)">Actualizado: Hoy</span>
     </div>
     <div class="hs-card-body">
       <div class="admin-reports-grid">
         <a [routerLink]="'/admin/reportes'" class="admin-report-btn">
           <span class="material-symbols-outlined">receipt_long</span>
-          <span>Invoicing</span>
+          <span>Facturaci&oacute;n</span>
         </a>
         <a [routerLink]="'/admin/reportes'" class="admin-report-btn">
           <span class="material-symbols-outlined">account_balance_wallet</span>
-          <span>Tax Ledger</span>
+          <span>Libro de Impuestos</span>
         </a>
         <a [routerLink]="'/admin/reportes'" class="admin-report-btn">
           <span class="material-symbols-outlined">monitoring</span>
-          <span>Trends</span>
+          <span>Tendencias</span>
         </a>
         <a [routerLink]="'/recepcion/incidencias'" class="admin-report-btn">
           <span class="material-symbols-outlined">inventory_2</span>
-          <span>Supplies</span>
+          <span>Suministros</span>
         </a>
         <a [routerLink]="'/admin/usuarios'" class="admin-report-btn">
           <span class="material-symbols-outlined">history</span>
-          <span>Logs</span>
+          <span>Registros</span>
         </a>
         <a [routerLink]="'/admin/habitaciones'" class="admin-report-btn">
           <span class="material-symbols-outlined">engineering</span>
-          <span>Settings</span>
+          <span>Ajustes</span>
         </a>
       </div>
     </div>

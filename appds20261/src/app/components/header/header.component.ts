@@ -49,4 +49,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+  irConfiguracion(): void {
+    if (this.authService.isAdmin()) {
+      this.router.navigate(['/admin', 'configuracion']);
+    }
+  }
 }

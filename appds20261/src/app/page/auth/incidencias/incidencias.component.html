@@ -1,89 +1,84 @@
 <div class="inc-page">
-
   <div class="inc-page__header">
     <div>
       <h1 class="inc-page__title">Incidencias</h1>
-      <p class="inc-page__subtitle">
-        Gestión de limpieza, mantenimiento y reportes de habitaciones.
-      </p>
+      <p class="inc-page__subtitle">Gestión de limpieza, mantenimiento y reportes de habitaciones.</p>
     </div>
   </div>
-
   <p-toast />
-
   <section class="kpi-grid">
     <div class="kpi-card">
-      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);margin:0">Limpias</p>
+      <p class="kpi-label">Limpias</p>
       <div class="kpi-row">
         <span class="kpi-value" style="color:var(--clr-primary)">{{ habitacionesLimpias.length }}</span>
-        <span style="background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:3px 8px;border-radius:var(--radius-md);text-transform:uppercase">{{ (habitacionesLimpias.length / (habitaciones.length || 1) * 100) | number:'1.0-0' }}% Total</span>
+        <span class="kpi-badge kpi-badge--green">{{ (habitacionesLimpias.length / (habitaciones.length || 1) * 100) | number:'1.0-0' }}% Total</span>
       </div>
     </div>
     <div class="kpi-card">
-      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);margin:0">Sucias</p>
+      <p class="kpi-label">Sucias</p>
       <div class="kpi-row">
         <span class="kpi-value" style="color:var(--clr-error)">{{ habitacionesSucias.length }}</span>
-        <span style="background:#fee2e2;color:#991b1b;font-size:11px;font-weight:700;padding:3px 8px;border-radius:var(--radius-md);text-transform:uppercase">Requiere atenci&oacute;n</span>
+        <span class="kpi-badge kpi-badge--red">Requiere atención</span>
       </div>
     </div>
     <div class="kpi-card">
-      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);margin:0">En Progreso</p>
+      <p class="kpi-label">En Progreso</p>
       <div class="kpi-row">
         <span class="kpi-value" style="color:var(--clr-secondary)">{{ habitacionesEnProgreso.length | number:'2.0' }}</span>
         <span class="material-symbols-outlined" style="color:var(--clr-secondary);animation:pulse 2s cubic-bezier(0.4,0,0.6,1) infinite;font-size:20px">sync</span>
       </div>
     </div>
     <div class="kpi-card">
-      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);margin:0">Mantenimiento</p>
+      <p class="kpi-label">Mantenimiento</p>
       <div class="kpi-row">
         <span class="kpi-value" style="color:var(--clr-on-tertiary-fixed-variant)">{{ habitacionesMantenimiento.length }}</span>
         <span class="material-symbols-outlined" style="color:var(--clr-outline);font-size:20px">engineering</span>
       </div>
     </div>
   </section>
-
   <div class="room-section">
     <div class="room-section__header">
       <div class="room-section__title">
-        <h2 style="font-size:20px;font-weight:600;line-height:28px;color:var(--clr-primary);margin:0">Estado de Habitaciones</h2>
-        <span style="background:var(--clr-surface-variant);color:var(--clr-on-surface-variant);padding:3px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:700;text-transform:uppercase">Planta 1 &amp; 2</span>
+        <h2 class="room-section__heading">Estado de Habitaciones</h2>
+        <span class="room-section__floor-badge">Planta 1 &amp; 2</span>
       </div>
-        <div class="room-section__controls">
-          <div class="search-box">
-            <span class="material-symbols-outlined search-box__icon">search</span>
-            <input class="search-box__input" placeholder="Buscar hab..." type="text"/>
-          </div>
+      <div class="room-section__controls">
+        <div class="search-box">
+          <span class="material-symbols-outlined search-box__icon">search</span>
+          <input class="search-box__input" placeholder="Buscar hab..." type="text"/>
         </div>
+        <button class="filter-btn"><span class="material-symbols-outlined" style="font-size:16px">filter_list</span> Filtrar</button>
+      </div>
     </div>
-
     <div class="room-grid">
       @for (hab of habitaciones; track hab.id) {
         @let activeInc = getActiveIncidentForRoom(hab);
         <div class="room-card">
-          <div class="room-indicator"
-            [style.background]="activeInc?.tipo === 'LIMPIEZA' ? 'var(--clr-secondary-container)' : hab.estado === 'DISPONIBLE' ? '#22c55e' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'">
-          </div>
+          <div class="room-indicator" [style.background]="activeInc?.tipo === 'LIMPIEZA' ? 'var(--clr-secondary-container)' : hab.estado === 'DISPONIBLE' ? '#22c55e' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'"></div>
           <div class="room-card__body">
             <div class="room-card__top">
-              <h3 style="font-size:16px;font-weight:600;line-height:24px;color:var(--clr-primary);margin:0">Hab. {{ hab.numero }}</h3>
+              <h3 class="room-card__number">Hab. {{ hab.numero }}</h3>
               @if (activeInc?.tipo === 'LIMPIEZA') {
-                <span style="font-size:10px;font-weight:700;text-transform:uppercase;padding:1px 6px;border-radius:var(--radius-md);border:1px solid;line-height:1.4;color:var(--clr-secondary);border-color:var(--clr-secondary)">Limpiando</span>
+                <span class="room-badge room-badge--cleaning">Limpiando</span>
               } @else {
-                <span style="font-size:10px;font-weight:700;text-transform:uppercase;padding:1px 6px;border-radius:var(--radius-md);border:1px solid;line-height:1.4"
-                  [style.color]="hab.estado === 'DISPONIBLE' ? '#16a34a' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'"
-                  [style.borderColor]="hab.estado === 'DISPONIBLE' ? '#16a34a' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'">
+                <span class="room-badge" [style.color]="hab.estado === 'DISPONIBLE' ? '#16a34a' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'" [style.borderColor]="hab.estado === 'DISPONIBLE' ? '#16a34a' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'">
                   {{ hab.estado === 'DISPONIBLE' ? 'Limpia' : hab.estado === 'OCUPADA' ? 'Sucia' : 'Manten.' }}
                 </span>
               }
             </div>
-            <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);margin:0">{{ hab.tipo }}</p>
+            <p class="room-card__type">{{ hab.tipo }}</p>
             <div class="room-card__action">
-              @if (hab.estado === 'DISPONIBLE') {
-                <span style="font-size:11px;color:var(--clr-status-available)">Disponible</span>
+              @if (activeInc?.tipo === 'LIMPIEZA') {
+                <div class="staff-row">
+                  <div class="staff-avatar staff-avatar--sm"><span class="material-symbols-outlined" style="font-size:14px">person</span></div>
+                  <span class="staff-name">En curso...</span>
+                </div>
               } @else if (hab.estado === 'OCUPADA') {
-                <span style="font-size:11px;color:var(--clr-error)">Ocupada</span>
+                <button class="room-btn room-btn--primary">ASIGNAR</button>
+              } @else if (hab.estado !== 'DISPONIBLE') {
+                <button class="room-btn room-btn--tertiary">VER REPORTE</button>
               } @else {
-                <span style="font-size:11px;color:var(--clr-on-tertiary-fixed-variant)">{{ activeInc?.tipo === 'LIMPIEZA' ? 'Limpieza en curso' : 'Mantenimiento' }}</span>
+                <button class="room-btn room-btn--outline">DETALLES</button>
               }
             </div>
           </div>
@@ -91,39 +86,31 @@
       }
     </div>
   </div>
-
-  <div style="background:var(--clr-surface-container-lowest);border:1px solid var(--clr-outline-variant);border-radius:var(--radius-xl);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
-    <div style="padding:var(--sp-md) var(--sp-lg);border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;gap:var(--sp-sm);background:var(--clr-surface-container-low)">
-      <h3 style="font-size:16px;font-weight:600;line-height:24px;color:var(--clr-primary);margin:0;display:flex;align-items:center;gap:6px">
-        <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:18px">warning</span>
-        INCIDENCIAS ACTIVAS
-      </h3>
+  <div class="inc-table-card">
+    <div class="inc-table-card__header">
+      <h3 class="inc-table-card__title"><span class="material-symbols-outlined" style="color:var(--clr-error);font-size:18px">warning</span> INCIDENCIAS ACTIVAS</h3>
       <span class="badge badge-error">{{ incidenciasActivas.length }}</span>
     </div>
     <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse;text-align:left">
+      <table class="hs-table">
         <thead>
-          <tr style="background:var(--clr-surface-container)">
-            <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Habitación</th>
-            <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Tipo</th>
-            <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Motivo</th>
-            <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Inicio</th>
-            <th style="padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant);white-space:nowrap;text-align:right">Acción</th>
+          <tr>
+            <th>Habitación</th>
+            <th>Tipo</th>
+            <th>Motivo</th>
+            <th>Inicio</th>
+            <th style="text-align:right">Acción</th>
           </tr>
         </thead>
         <tbody>
           @for (inc of incidenciasActivas; track inc.id) {
             <tr class="hover-row">
-              <td style="padding:12px 16px;font-size:13px;font-weight:700;color:var(--clr-primary);border-bottom:1px solid rgba(196,198,207,0.3);font-variant-numeric:tabular-nums">{{ inc.habitacionNumero }}</td>
-              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3)">
-                <span class="badge" [ngClass]="inc.tipo === 'LIMPIEZA' ? 'badge-dirty' : 'badge-maintenance'">
-                  {{ inc.tipo }}
-                </span>
-              </td>
-              <td style="padding:12px 16px;font-size:14px;border-bottom:1px solid rgba(196,198,207,0.3)">{{ inc.motivo }}</td>
-              <td style="padding:12px 16px;font-size:13px;font-weight:500;border-bottom:1px solid rgba(196,198,207,0.3);font-variant-numeric:tabular-nums">{{ inc.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</td>
-              <td style="padding:12px 16px;border-bottom:1px solid rgba(196,198,207,0.3);text-align:right">
-                <button style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;background:var(--clr-status-available);color:white;border:none;border-radius:var(--radius-md);font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif" (click)="finalizar(inc)">
+              <td style="font-weight:700;color:var(--clr-primary)">{{ inc.habitacionNumero }}</td>
+              <td><span class="badge" [ngClass]="inc.tipo === 'LIMPIEZA' ? 'badge-dirty' : 'badge-maintenance'">{{ inc.tipo }}</span></td>
+              <td>{{ inc.motivo }}</td>
+              <td>{{ inc.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td style="text-align:right">
+                <button class="hs-btn hs-btn-sm" style="background:var(--clr-status-available);color:#fff" (click)="finalizar(inc)">
                   <span class="material-symbols-outlined" style="font-size:16px">check_circle</span>
                   Finalizar
                 </button>
@@ -143,51 +130,81 @@
       </table>
     </div>
   </div>
-
   <div class="bottom-grid">
-
-    <div style="background:var(--clr-surface-container-lowest);border:1px solid var(--clr-outline-variant);border-radius:var(--radius-xl);padding:var(--sp-lg);box-shadow:0 1px 3px rgba(0,0,0,0.06);align-self:flex-start">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--sp-md);padding-bottom:12px;border-bottom:1px solid var(--clr-outline-variant)">
+    <div class="inc-form-card">
+      <div class="inc-form-card__header">
         <span class="material-symbols-outlined" style="color:var(--clr-error)">report_problem</span>
-        <h3 style="font-size:16px;font-weight:600;line-height:24px;color:var(--clr-primary);margin:0">Reportar Incidencia</h3>
+        <h3 class="inc-form-card__title">Reportar Incidencia</h3>
       </div>
       <form [formGroup]="incidenciaForm" style="display:flex;flex-direction:column;gap:14px">
-
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant)">Habitación / Área</label>
-          <select class="report-select" formControlName="habitacionId">
+        <div class="hs-field">
+          <label class="hs-label">Habitación / Área</label>
+          <select class="hs-select" formControlName="habitacionId">
             <option [ngValue]="null" disabled>Seleccionar habitación</option>
             @for (h of habitaciones; track h.id) {
               <option [ngValue]="h.id">{{ h.label }}</option>
             }
           </select>
         </div>
-
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant)">Tipo</label>
-          <select class="report-select" formControlName="tipo">
+        <div class="hs-field">
+          <label class="hs-label">Tipo</label>
+          <select class="hs-select" formControlName="tipo">
             @for (t of tipos; track t.value) {
               <option [value]="t.value">{{ t.label }}</option>
             }
           </select>
         </div>
-
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <label style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--clr-on-surface-variant)">Descripción del Problema</label>
-          <textarea class="report-textarea" formControlName="motivo" rows="3" placeholder="Ej: Aire acondicionado no enfría..."></textarea>
+        <div class="hs-field">
+          <label class="hs-label">Descripción del Problema</label>
+          <textarea class="hs-textarea" formControlName="motivo" rows="3" placeholder="Ej: Aire acondicionado no enfría..."></textarea>
         </div>
-
-        <button style="width:100%;padding:12px 20px;background:var(--clr-error);color:var(--clr-on-error);border:none;border-radius:var(--radius-lg);font-family:Inter,sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:inline-flex;align-items:center;justify-content:center;gap:8px"
-          [disabled]="incidenciaForm.invalid || loading"
-          (click)="save()">
-          @if (loading) {
-            <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
-          }
+        <div class="hs-field">
+          <label class="hs-label">Fotos / Evidencia</label>
+          <div class="upload-zone">
+            <span class="material-symbols-outlined upload-zone__icon" style="font-size:28px">add_a_photo</span>
+            <p class="upload-zone__text">Subir Imagen</p>
+          </div>
+        </div>
+        <button class="hs-btn hs-btn-error" style="width:100%;justify-content:center" [disabled]="incidenciaForm.invalid || loading" (click)="save()">
+          @if (loading) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
           ENVIAR REPORTE URGENTE
         </button>
-
       </form>
     </div>
+    <div class="staff-card">
+      <div class="staff-card__header">
+        <h3 class="staff-card__title">Seguimiento de Personal</h3>
+        <button class="hs-link-btn">Gestionar Turnos</button>
+      </div>
+      <div class="staff-table-wrap">
+        <table class="hs-table">
+          <thead>
+            <tr>
+              <th>Personal</th>
+              <th>Tarea Actual</th>
+              <th>Inicio</th>
+              <th>Rendimiento</th>
+              <th style="text-align:right">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="hover-row">
+              <td><div class="staff-row"><div class="staff-avatar" style="background:var(--clr-secondary-fixed);color:var(--clr-secondary)">MG</div><div><p class="staff-name">María García</p><p class="staff-zone">Zona A - Planta 1</p></div></div></td>
+              <td><div class="staff-task"><span class="status-dot status-dot--active"></span>Limpieza Hab. 103</div></td>
+              <td class="text-data-tabular">10:15 AM</td>
+              <td><div class="progress-bar"><div class="progress-fill progress-fill--high" style="width:90%"></div></div><span class="perf-label perf-label--high">Excelente</span></td>
+              <td style="text-align:right"><button class="hs-icon-btn"><span class="material-symbols-outlined">more_vert</span></button></td>
+            </tr>
+            <tr class="hover-row">
+              <td><div class="staff-row"><div class="staff-avatar" style="background:var(--clr-primary-fixed);color:var(--clr-primary)">JR</div><div><p class="staff-name">Juan Rodríguez</p><p class="staff-zone">Mantenimiento Gen.</p></div></div></td>
+              <td><div class="staff-task"><span class="status-dot status-dot--maintenance"></span>Reparación Hab. 104</div></td>
+              <td class="text-data-tabular">09:40 AM</td>
+              <td><div class="progress-bar"><div class="progress-fill progress-fill--mid" style="width:60%"></div></div><span class="perf-label">Promedio</span></td>
+              <td style="text-align:right"><button class="hs-icon-btn"><span class="material-symbols-outlined">more_vert</span></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-
 </div>

@@ -1,73 +1,80 @@
-<div class="config-page">
-  <header class="config-page__header">
+<div class="cfg-page">
+  <header class="cfg-header">
     <div>
-      <h1 class="text-display-lg" style="color:var(--clr-primary)">Configuraci&oacute;n General</h1>
-      <p class="text-body-md" style="color:var(--clr-on-surface-variant)">Gestione la identidad, finanzas y operabilidad de su sucursal.</p>
+      <h1 class="cfg-title">Configuración General</h1>
+      <p class="cfg-subtitle">Gestione la identidad, finanzas y operabilidad de su sucursal.</p>
     </div>
-    <div class="config-btn-row">
-      @if (saved) {
-        <span class="badge badge-success" style="display:flex;align-items:center;gap:4px;padding:8px 16px">
-          <span class="material-symbols-outlined" style="font-size:16px">check</span> Cambios guardados
-        </span>
-      }
-      @if (isDirty()) {
-        <button class="hs-btn hs-btn-outline" (click)="descartar()">Descartar Cambios</button>
-        <button class="hs-btn hs-btn-primary" (click)="guardarTodo()" [disabled]="saving">
-          @if (saving) { Guardando... } @else { Guardar Todo }
-        </button>
-      }
+    <div class="cfg-btn-row">
+      <button class="cfg-btn cfg-btn-outline" (click)="descartar()">Descartar Cambios</button>
+      <button class="cfg-btn cfg-btn-primary" (click)="guardarTodo()" [disabled]="saving">
+        @if (saving) { Guardando... } @else { Guardar Todo }
+      </button>
     </div>
   </header>
 
   @if (loading) {
-    <div class="config-loading">
+    <div class="cfg-loading">
       <span class="material-symbols-outlined" style="font-size:48px;color:var(--clr-outline)">sync</span>
-      <p>Cargando configuraci&oacute;n...</p>
+      <p>Cargando configuración...</p>
     </div>
   } @else {
-    <div class="config-grid">
-      <nav class="config-tabs">
-        <button class="config-tab" [class.config-tab--active]="activeTab === 'datos-hotel'" (click)="switchTab('datos-hotel')">
+    <div class="cfg-grid">
+      <nav class="cfg-tabs">
+        <button class="cfg-tab" [class.cfg-tab--active]="activeTab === 'datos-hotel'" (click)="switchTab('datos-hotel')">
           <span class="material-symbols-outlined">hotel</span>
           <span>Datos del Hotel</span>
         </button>
-        <button class="config-tab" [class.config-tab--active]="activeTab === 'tarifas'" (click)="switchTab('tarifas')">
+        <button class="cfg-tab" [class.cfg-tab--active]="activeTab === 'tarifas'" (click)="switchTab('tarifas')">
           <span class="material-symbols-outlined">payments</span>
           <span>Tarifas</span>
         </button>
-        <button class="config-tab" [class.config-tab--active]="activeTab === 'politicas'" (click)="switchTab('politicas')">
+        <button class="cfg-tab" [class.cfg-tab--active]="activeTab === 'pagos'" (click)="switchTab('pagos')">
+          <span class="material-symbols-outlined">credit_card</span>
+          <span>Métodos de Pago</span>
+        </button>
+        <button class="cfg-tab" [class.cfg-tab--active]="activeTab === 'politicas'" (click)="switchTab('politicas')">
           <span class="material-symbols-outlined">policy</span>
-          <span>Impuestos y Pol&iacute;ticas</span>
+          <span>Impuestos y Políticas</span>
         </button>
       </nav>
 
-      <section class="config-content">
+      <section class="cfg-content">
         @if (activeTab === 'datos-hotel') {
-          <div class="config-section">
-            <div class="hs-card">
-              <div class="hs-card-body">
-                <h3 class="config-card__title">Informaci&oacute;n Identitaria</h3>
-                <div class="config-input-grid">
-                  <div class="config-field">
-                    <label class="config-field__label">NOMBRE COMERCIAL <span class="ph">(*)</span></label>
-                    <input class="hs-input" type="text" [(ngModel)]="params['hotel.nombre']" />
+          <div class="cfg-section">
+            <div class="cfg-card">
+              <h3 class="cfg-card-title">Información Identitaria</h3>
+              <div class="cfg-logo-section">
+                <div class="cfg-logo-box">
+                  <div class="cfg-logo-overlay">
+                    <span class="material-symbols-outlined" style="color:white">upload</span>
                   </div>
-                  <div class="config-field">
-                    <label class="config-field__label">RUC / ID FISCAL <span class="ph">(*)</span></label>
-                    <input class="hs-input" type="text" [(ngModel)]="params['hotel.ruc']" />
-                  </div>
-                  <div class="config-field col-span-2" style="grid-column:span 2">
-                    <label class="config-field__label">DIRECCI&Oacute;N F&Iacute;SICA <span class="ph">(*)</span></label>
-                    <input class="hs-input" type="text" [(ngModel)]="params['hotel.direccion']" />
-                  </div>
-                  <div class="config-field">
-                    <label class="config-field__label">TEL&Eacute;FONO DE RECEPCI&Oacute;N <span class="ph">(*)</span></label>
-                    <input class="hs-input" type="tel" [(ngModel)]="params['hotel.telefono']" />
-                  </div>
-                  <div class="config-field">
-                    <label class="config-field__label">CORREO ELECTR&Oacute;NICO <span class="ph">(*)</span></label>
-                    <input class="hs-input" type="email" [(ngModel)]="params['hotel.email']" />
-                  </div>
+                </div>
+                <div>
+                  <h4 style="font-size:16px;font-weight:700;margin:0 0 2px">Logo de Sucursal</h4>
+                  <p style="font-size:14px;line-height:20px;color:var(--clr-on-surface-variant);margin:0">PNG o SVG recomendado. Máximo 2MB.</p>
+                  <button class="cfg-link-btn">REEMPLAZAR IMAGEN</button>
+                </div>
+              </div>
+              <div class="cfg-input-grid">
+                <div class="cfg-field">
+                  <label class="cfg-field-label">NOMBRE COMERCIAL</label>
+                  <input class="cfg-input" type="text" [(ngModel)]="params['hotel.nombre']" />
+                </div>
+                <div class="cfg-field">
+                  <label class="cfg-field-label">RUC / ID FISCAL</label>
+                  <input class="cfg-input" type="text" [(ngModel)]="params['hotel.ruc']" />
+                </div>
+                <div class="cfg-field cfg-field--full">
+                  <label class="cfg-field-label">DIRECCIÓN FÍSICA</label>
+                  <input class="cfg-input" type="text" [(ngModel)]="params['hotel.direccion']" />
+                </div>
+                <div class="cfg-field">
+                  <label class="cfg-field-label">TELÉFONO DE RECEPCIÓN</label>
+                  <input class="cfg-input" type="tel" [(ngModel)]="params['hotel.telefono']" />
+                </div>
+                <div class="cfg-field">
+                  <label class="cfg-field-label">CORREO ELECTRÓNICO</label>
+                  <input class="cfg-input" type="email" [(ngModel)]="params['hotel.email']" />
                 </div>
               </div>
             </div>
@@ -75,74 +82,174 @@
         }
 
         @if (activeTab === 'tarifas') {
-          <div class="config-section">
-            <div class="hs-card">
-              <div class="hs-card-body">
-                <h3 class="config-card__title">Tarifas por Habitaci&oacute;n</h3>
-                <p style="font-size:14px;color:var(--clr-on-surface-variant);margin-bottom:var(--sp-lg)">
-                  Precios configurados por noche en cada habitaci&oacute;n. Para modificar, dir&iacute;jase a la secci&oacute;n Habitaciones.
-                </p>
-                <div class="config-table-wrap">
-                  <table class="hs-table">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Piso</th>
-                        <th>Tipo</th>
-                        <th>Estado</th>
-                        <th style="text-align:right">Precio por Noche</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (h of habitaciones; track h.id) {
-                        <tr>
-                          <td style="font-weight:700">{{ h.numero }}</td>
-                          <td>{{ h.piso }}</td>
-                          <td>{{ h.tipo }}</td>
-                          <td>
-                            <span class="badge" [class.badge-success]="h.estado === 'DISPONIBLE'"
-                                  [class.badge-warning]="h.estado === 'OCUPADA'"
-                                  [class.badge-secondary]="h.estado !== 'DISPONIBLE' && h.estado !== 'OCUPADA'">
-                              {{ h.estado }}
-                            </span>
-                          </td>
-                          <td style="text-align:right;font-weight:600">S/ {{ h.precioNoche | number:'1.2-2' }}</td>
-                        </tr>
-                      }
-                      @empty {
-                        <tr>
-                          <td colspan="5" style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">
-                            No hay habitaciones registradas.
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
+          <div class="cfg-section">
+            <div class="cfg-card">
+              <div class="cfg-season-header">
+                <h3 class="cfg-card-title" style="margin-bottom:0">Configuración de Temporadas</h3>
+                <button class="cfg-btn cfg-btn-accent">
+                  <span class="material-symbols-outlined" style="font-size:14px">add</span>
+                  NUEVA TEMPORADA
+                </button>
+              </div>
+              <div class="cfg-table-wrap">
+                <table class="cfg-table">
+                  <thead>
+                    <tr>
+                      <th>Temporada</th>
+                      <th>Rango de Fechas</th>
+                      <th>Multiplicador</th>
+                      <th>Estado</th>
+                      <th class="cfg-th-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="font-weight:700">Temporada Baja</td>
+                      <td>Todo el año (Base)</td>
+                      <td>1.00x</td>
+                      <td><span class="cfg-badge cfg-badge-active">ACTIVO</span></td>
+                      <td class="cfg-td-right">
+                        <button class="cfg-icon-btn"><span class="material-symbols-outlined">edit</span></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:700">Fiestas Patrias</td>
+                      <td>15 Jul - 31 Jul</td>
+                      <td style="color:var(--clr-error);font-weight:700">1.50x</td>
+                      <td><span class="cfg-badge cfg-badge-scheduled">PROGRAMADO</span></td>
+                      <td class="cfg-td-right">
+                        <button class="cfg-icon-btn"><span class="material-symbols-outlined">edit</span></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:700">Año Nuevo</td>
+                      <td>20 Dic - 05 Ene</td>
+                      <td style="color:var(--clr-error);font-weight:700">1.80x</td>
+                      <td><span class="cfg-badge cfg-badge-scheduled">PROGRAMADO</span></td>
+                      <td class="cfg-td-right">
+                        <button class="cfg-icon-btn"><span class="material-symbols-outlined">edit</span></button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab === 'pagos') {
+          <div class="cfg-section">
+            <div class="cfg-method-grid">
+              <div class="cfg-method-card">
+                <div class="cfg-method-card__header">
+                  <div class="cfg-method-icon">
+                    <span class="material-symbols-outlined">payments</span>
+                  </div>
+                  <div class="cfg-method-card__status-row">
+                    <span class="cfg-badge cfg-badge-active" style="font-size:10px">CONFIGURADO</span>
+                    <label class="cfg-toggle">
+                      <input type="checkbox" checked class="cfg-toggle-input" />
+                      <div class="cfg-toggle-track"></div>
+                    </label>
+                  </div>
                 </div>
+                <h4 style="font-size:16px;font-weight:700;margin:0 0 4px">Efectivo</h4>
+                <p style="font-size:14px;line-height:20px;color:var(--clr-on-surface-variant);margin:0">Gestión directa en caja. Emisión de boleta o factura física/electrónica.</p>
+                <button class="cfg-method-btn cfg-method-btn--outline">Configurar Flujo</button>
+              </div>
+              <div class="cfg-method-card">
+                <div class="cfg-method-card__header">
+                  <div class="cfg-method-icon">
+                    <span class="material-symbols-outlined">credit_card</span>
+                  </div>
+                  <div class="cfg-method-card__status-row">
+                    <label class="cfg-toggle">
+                      <input type="checkbox" checked class="cfg-toggle-input" />
+                      <div class="cfg-toggle-track"></div>
+                    </label>
+                  </div>
+                </div>
+                <h4 style="font-size:16px;font-weight:700;margin:0 0 4px">Pasarela (Stripe/Niubiz)</h4>
+                <p style="font-size:14px;line-height:20px;color:var(--clr-on-surface-variant);margin:0">Cobros automáticos mediante tarjetas Visa, Mastercard y Amex.</p>
+                <button class="cfg-method-btn cfg-method-btn--primary">Editar API Keys</button>
+              </div>
+              <div class="cfg-method-card">
+                <div class="cfg-method-card__header">
+                  <div class="cfg-method-icon">
+                    <span class="material-symbols-outlined">qr_code_2</span>
+                  </div>
+                  <div class="cfg-method-card__status-row">
+                    <label class="cfg-toggle">
+                      <input type="checkbox" checked class="cfg-toggle-input" />
+                      <div class="cfg-toggle-track"></div>
+                    </label>
+                  </div>
+                </div>
+                <h4 style="font-size:16px;font-weight:700;margin:0 0 4px">Billeteras Digitales (Yape/Plin)</h4>
+                <p style="font-size:14px;line-height:20px;color:var(--clr-on-surface-variant);margin:0">Recepción de pagos mediante QR o número de celular. Verificación manual.</p>
+                <button class="cfg-method-btn cfg-method-btn--outline">Subir QR</button>
+              </div>
+              <div class="cfg-add-card">
+                <span class="material-symbols-outlined" style="font-size:32px;color:var(--clr-outline-variant);margin-bottom:8px">add_circle</span>
+                <h4 style="font-size:16px;font-weight:700;color:var(--clr-outline);margin:0 0 4px">Agregar Método</h4>
+                <p style="font-size:14px;line-height:20px;color:var(--clr-outline-variant);margin:0;padding:0 16px">Integra nuevas formas de pago para tus clientes.</p>
               </div>
             </div>
           </div>
         }
 
         @if (activeTab === 'politicas') {
-          <div class="config-section">
-            <div class="hs-card">
-              <div class="hs-card-body">
-                <h3 class="config-card__title">Pol&iacute;ticas de Cancelaci&oacute;n</h3>
-                <div style="display:flex;flex-direction:column;gap:var(--sp-lg)">
-                  <div class="config-field" style="margin-bottom:0">
-                    <label class="config-field__label">POL&Iacute;TICA EST&aacute;NDAR <span class="ph">(*)</span></label>
-                    <input class="hs-input" type="text" [(ngModel)]="params['politicas.cancelacion']" />
+          <div class="cfg-section">
+            <div class="cfg-card">
+              <h3 class="cfg-card-title">Impuestos y Facturación</h3>
+              <div class="cfg-tax-grid">
+                <div style="display:flex;flex-direction:column;gap:16px">
+                  <div class="cfg-tax-row">
+                    <span>IGV / IVA Aplicable</span>
+                    <div class="cfg-tax-input-group">
+                      <input class="cfg-tax-input" type="number" value="18" />
+                      <span>%</span>
+                    </div>
                   </div>
-                  <div class="config-field" style="margin-bottom:0">
-                    <label class="config-field__label">T&Eacute;RMINOS Y CONDICIONES <span class="ph">(*)</span></label>
-                    <textarea class="hs-textarea" rows="4" [(ngModel)]="params['politicas.terminos']"></textarea>
+                  <div class="cfg-tax-row">
+                    <span>Tasa de Servicio</span>
+                    <div class="cfg-tax-input-group">
+                      <input class="cfg-tax-input" type="number" value="10" />
+                      <span>%</span>
+                    </div>
                   </div>
-                  <div class="config-field" style="margin-bottom:0">
-                    <label class="config-field__label">HORA DE CHECK-OUT <span class="ph">(*)</span></label>
-                    <input class="hs-input" type="text" [(ngModel)]="params['politicas.checkout']" style="max-width:120px" />
+                  <div class="cfg-check-row">
+                    <input type="checkbox" checked class="cfg-checkbox" id="tax-included" />
+                    <label for="tax-included">Precios mostrados ya incluyen impuestos</label>
                   </div>
                 </div>
+                <div class="cfg-invoice-preview">
+                  <div class="cfg-invoice-header">
+                    <span class="material-symbols-outlined">info</span>
+                    <span>VISTA PREVIA DE FACTURA</span>
+                  </div>
+                  <div class="cfg-invoice-lines">
+                    <div class="cfg-invoice-line"><span>SUBTOTAL</span><span>$100.00</span></div>
+                    <div class="cfg-invoice-line"><span>IGV (18%)</span><span>$18.00</span></div>
+                    <div class="cfg-invoice-line cfg-invoice-line--total"><span>TOTAL</span><span>$118.00</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="cfg-card" style="margin-top:16px">
+              <h3 class="cfg-card-title">Políticas de Cancelación</h3>
+              <div class="cfg-field" style="margin-bottom:16px">
+                <label class="cfg-field-label">POLÍTICA ESTÁNDAR</label>
+                <select class="cfg-input cfg-select">
+                  <option>Flexible: Cancelación gratuita hasta 24h antes</option>
+                  <option selected>Moderada: Reembolso 50% hasta 48h antes</option>
+                  <option>Estricta: Sin reembolso tras la reserva</option>
+                  <option>Personalizada...</option>
+                </select>
+              </div>
+              <div class="cfg-field">
+                <label class="cfg-field-label">TÉRMINOS Y CONDICIONES (PIE DE PÁGINA)</label>
+                <textarea class="cfg-input cfg-textarea" rows="4">El cliente acepta que el hotel no se hace responsable por objetos de valor no declarados en la caja fuerte de recepción. La hora de Check-out es a las 11:00 AM, penalidad de media tarifa tras 1 hora de retraso.</textarea>
               </div>
             </div>
           </div>

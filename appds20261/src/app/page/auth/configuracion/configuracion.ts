@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfiguracionService } from '../../../observable/configuracion.service';
 import { HabitacionService } from '../../../observable/habitacion.service';
@@ -8,7 +7,7 @@ import { ParametroResponse, HabitacionResponse } from '../../../shared/models';
 @Component({
   selector: 'app-configuracion',
   standalone: true,
-  imports: [DecimalPipe, FormsModule],
+  imports: [FormsModule],
   templateUrl: './configuracion.html',
   styleUrl: './configuracion.css',
 })
