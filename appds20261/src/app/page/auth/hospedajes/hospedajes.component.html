@@ -51,8 +51,8 @@
     </div>
     <div class="hos-layout">
       <div class="hos-main-table">
-        <div class="hs-card" style="overflow:hidden">
-          <div class="hos-table-scroll">
+        <div class="hs-card">
+          <div class="hs-table-scroll">
             <table class="hs-table">
               <thead>
                 <tr>
@@ -174,7 +174,7 @@
             <div class="hos-section">
               <p class="hos-section-title">Extender Estadía</p>
               <div style="display:flex;gap:8px">
-                <input class="hs-input" type="datetime-local" [(ngModel)]="extensionFecha" style="flex:1" />
+                <p-datepicker [(ngModel)]="extensionFecha" dateFormat="yy-mm-dd HH:mm" inputStyleClass="hs-input" styleClass="w-full" style="flex:1;min-width:0" placeholder="Seleccionar fecha" appendTo="body" [showTime]="true" hourFormat="24" />
                 <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="extenderEstadia()" [disabled]="loadingExtension">
                   @if (loadingExtension) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;font-size:16px">sync</span> } @else { Extender }
                 </button>

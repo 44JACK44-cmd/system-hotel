@@ -37,6 +37,7 @@
   </div>
 
   <div class="hab-table-card">
+    <div class="hs-table-scroll">
     <table class="hab-table">
       <thead>
         <tr>
@@ -89,6 +90,7 @@
         }
       </tbody>
     </table>
+    </div>
 
     <div class="hab-pagination">
       <span class="hab-pagination-info">Mostrando {{ filteredHabitaciones.length }} de {{ habitaciones.length }} habitaci&oacute;n(es)</span>
@@ -97,19 +99,19 @@
 </div>
 
 @if (dialogVisible) {
-  <div class="hab-overlay" (click)="dialogVisible = false"></div>
-  <div class="hab-slide-panel">
-    <div class="hab-slide-header">
-      <div class="hab-slide-header-left">
+  <div class="hs-overlay" (click)="closeDialog()"></div>
+  <div class="hs-slide-panel">
+    <div class="hs-slide-panel__header">
+      <div style="display:flex;align-items:center;gap:8px">
         <span class="material-symbols-outlined">{{ editing ? 'edit' : 'add' }}</span>
-        <span class="hab-slide-title">{{ editing ? 'Editar Habitaci&oacute;n' : 'Nueva Habitaci&oacute;n' }}</span>
+        <span style="font-weight:700">{{ editing ? 'Editar Habitaci&oacute;n' : 'Nueva Habitaci&oacute;n' }}</span>
       </div>
-      <button class="hab-slide-close" (click)="dialogVisible = false">
+      <button class="hs-topbar__icon-btn" (click)="closeDialog()">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
 
-    <div class="hab-slide-body">
+    <div class="hs-slide-panel__body">
       <form [formGroup]="habForm" class="hab-form">
         <div class="hab-form-row">
           <div class="hs-field">
@@ -138,8 +140,8 @@
       </form>
     </div>
 
-    <div class="hab-slide-footer">
-      <button class="hs-btn hs-btn-outline" style="flex:1" (click)="dialogVisible = false">
+    <div class="hs-slide-panel__footer">
+      <button class="hs-btn hs-btn-outline" style="flex:1" (click)="closeDialog()">
         Cancelar
       </button>
       <button class="hs-btn hs-btn-primary" style="flex:1"
@@ -154,7 +156,7 @@
 }
 
 @if (estadoDialogVisible) {
-  <div class="hs-overlay" (click)="estadoDialogVisible = false"></div>
+  <div class="hs-overlay" (click)="closeEstadoDialog()"></div>
   <div class="hs-slide-panel">
     <div class="hs-slide-panel__header">
       <div style="display:flex;align-items:center;gap:10px">

@@ -15,6 +15,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { PageResponse } from '../../../shared/models';
+import { LayoutStateService } from '../../../services/layout-state.service';
 
 @Component({
   selector: 'app-reservas',
@@ -32,6 +33,7 @@ export class ReservasComponent implements OnInit, OnDestroy {
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private authService = inject(AuthService);
+  private layoutState = inject(LayoutStateService);
 
   reservas: any[] = [];
   searchTerm = '';
@@ -60,8 +62,8 @@ export class ReservasComponent implements OnInit, OnDestroy {
     clienteSearch: [''],
     clienteId: [null as number | null, Validators.required],
     habitacionId: [null, Validators.required],
-    fechaEntrada: ['', Validators.required],
-    fechaSalida: ['', Validators.required],
+    fechaEntrada: [null, Validators.required],
+    fechaSalida: [null, Validators.required],
     montoAdelanto: [0, [Validators.required, Validators.min(0.01)]],
     metodoAdelanto: ['YAPE', Validators.required],
     referenciaPago: [''],
@@ -133,6 +135,12 @@ export class ReservasComponent implements OnInit, OnDestroy {
     this.editMode = false;
     this.editReservaId = null;
     this.newDialogVisible = false;
+    this.layoutState.setOverlay(false);
+  }
+
+  closeDetail(): void {
+    this.detailVisible = false;
+    this.layoutState.setOverlay(false);
   }
 
   showNewDialog(): void {
@@ -140,6 +148,7 @@ export class ReservasComponent implements OnInit, OnDestroy {
     this.editReservaId = null;
     this.reservaForm.reset({ montoAdelanto: 0, metodoAdelanto: 'YAPE' });
     this.newDialogVisible = true;
+    this.layoutState.setOverlay(true);
   }
 
   showEditDialog(r: any): void {
@@ -152,6 +161,7 @@ export class ReservasComponent implements OnInit, OnDestroy {
       observacion: r.observacion || ''
     });
     this.newDialogVisible = true;
+    this.layoutState.setOverlay(true);
   }
 
   searchCliente(): void {
@@ -203,6 +213,7 @@ export class ReservasComponent implements OnInit, OnDestroy {
             this.loading = false;
             this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Reserva creada' });
             this.newDialogVisible = false;
+            this.layoutState.setOverlay(false);
             this.loadReservas();
           },
           error: (err) => {
@@ -233,6 +244,7 @@ export class ReservasComponent implements OnInit, OnDestroy {
         this.editMode = false;
         this.editReservaId = null;
         this.newDialogVisible = false;
+        this.layoutState.setOverlay(false);
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Reserva actualizada correctamente' });
         this.loadReservas();
       },
@@ -246,6 +258,7 @@ export class ReservasComponent implements OnInit, OnDestroy {
   showDetail(r: any): void {
     this.selectedReserva = r;
     this.detailVisible = true;
+    this.layoutState.setOverlay(true);
   }
 
   getReservaBadge(estado: string): string {

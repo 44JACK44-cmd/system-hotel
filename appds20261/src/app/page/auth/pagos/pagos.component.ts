@@ -11,6 +11,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { PageResponse } from '../../../shared/models';
+import { LayoutStateService } from '../../../services/layout-state.service';
 
 @Component({
   selector: 'app-pagos',
@@ -25,6 +26,7 @@ export class PagosComponent implements OnInit, OnDestroy {
   private egresoService = inject(EgresoService);
   private cajaService = inject(CajaService);
   private messageService = inject(MessageService);
+  private layoutState = inject(LayoutStateService);
 
   Math = Math;
   pagos: any[] = [];
@@ -192,6 +194,12 @@ export class PagosComponent implements OnInit, OnDestroy {
     this.pagoHospedajeId = null;
     this.pagoObservacion = '';
     this.dialogVisible = true;
+    this.layoutState.setOverlay(true);
+  }
+
+  closeDialog(): void {
+    this.dialogVisible = false;
+    this.layoutState.setOverlay(false);
   }
 
   savePago(): void {
@@ -212,6 +220,7 @@ export class PagosComponent implements OnInit, OnDestroy {
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Pago registrado' });
         this.dialogVisible = false;
+        this.layoutState.setOverlay(false);
         this.loadingPago = false;
         this.loadAllPagos();
         this.loadPagos();
@@ -225,6 +234,9 @@ export class PagosComponent implements OnInit, OnDestroy {
     if (this.showCierreModal) {
       this.cierreMontoFisico = this.totalEfectivo;
       this.cierreObservacion = '';
+      this.layoutState.setOverlay(true);
+    } else {
+      this.layoutState.setOverlay(false);
     }
   }
 
@@ -241,6 +253,7 @@ export class PagosComponent implements OnInit, OnDestroy {
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Cierre de caja realizado' });
         this.showCierreModal = false;
+        this.layoutState.setOverlay(false);
         this.loading = false;
         this.cajaActual = null;
         this.loadCaja();

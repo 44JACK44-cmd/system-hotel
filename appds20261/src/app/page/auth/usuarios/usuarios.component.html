@@ -54,8 +54,8 @@
   </div>
 
   <!-- User Table -->
-  <div class="hs-card" style="overflow:hidden;display:flex;flex-direction:column">
-    <div class="usr-table-scroll">
+  <div class="hs-card" style="display:flex;flex-direction:column">
+    <div class="hs-table-scroll">
     <table class="hs-table">
       <thead>
         <tr>
@@ -137,14 +137,14 @@
 
 
   @if (dialogVisible) {
-    <div class="hs-overlay" (click)="dialogVisible = false"></div>
+    <div class="hs-overlay" (click)="closeDialog()"></div>
     <div class="hs-slide-panel">
       <div class="hs-slide-panel__header">
         <div style="display:flex;align-items:center;gap:10px">
           <span class="material-symbols-outlined">{{ editing ? 'edit' : 'person_add' }}</span>
           <span style="font-weight:700;font-size:16px">{{ editing ? 'Editar Usuario' : 'Nuevo Usuario' }}</span>
         </div>
-        <button class="hs-topbar__icon-btn" (click)="dialogVisible = false">
+        <button class="hs-topbar__icon-btn" (click)="closeDialog()">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -183,7 +183,7 @@
       </div>
 
       <div class="hs-slide-panel__footer">
-        <button class="hs-btn hs-btn-outline" style="flex:1" (click)="dialogVisible = false">
+        <button class="hs-btn hs-btn-outline" style="flex:1" (click)="closeDialog()">
           Cancelar
         </button>
         <button class="hs-btn hs-btn-primary" style="flex:1"

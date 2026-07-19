@@ -39,17 +39,6 @@
   .usr-avatar { width: 32px; height: 32px; font-size: 11px; }
 }
 
-/* === Table scroll wrapper & fixed header === */
-.usr-table-scroll {
-  max-height: 480px;
-  overflow: auto;
-}
-.usr-table-scroll::-webkit-scrollbar { width: 4px; }
-.usr-table-scroll::-webkit-scrollbar-track { background: transparent; }
-.usr-table-scroll::-webkit-scrollbar-thumb { background: var(--clr-outline-variant); border-radius: 10px; }
-.usr-table-scroll thead { position: sticky; top: 0; z-index: 1; }
-.usr-table-scroll thead th { background: var(--clr-surface-container); }
-
 /* Sortable header */
 .usr-th-sortable { cursor: pointer; user-select: none; }
 .usr-th-sortable:hover { background: var(--clr-surface-container-high) !important; }
@@ -69,11 +58,6 @@
   flex-shrink: 0;
 }
 
-/* Responsive: stack to cards on narrow screens */
-@media (max-width: 640px) {
-  .usr-table-scroll { max-height: none; }
-  .usr-table-scroll thead { position: static; }
-}
 .usr-stat-card {
   background: var(--clr-surface-container-lowest);
   border: 1px solid var(--clr-outline-variant);

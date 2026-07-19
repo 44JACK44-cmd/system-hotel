@@ -13,7 +13,7 @@
     </main>
   </div>
 
-  @if (!isPublicPage) {
+  @if (!isPublicPage && !layoutState.overlayActive()) {
     <nav class="hs-bottom-nav" role="navigation" aria-label="Navegación móvil">
       <a class="hs-bottom-nav__item"
          [class.active]="isActiveRoute(dashboardRoute)"

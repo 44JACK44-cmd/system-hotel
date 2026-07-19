@@ -15,22 +15,9 @@
   .rep-export-group{width:100%}
   .rep-btn{flex:1;justify-content:center}
 
-  .rep-hist-scroll { max-height: none; }
-  .rep-hist-scroll thead { position: static; }
-  .rep-rank-scroll { max-height: none; }
-  .rep-rank-scroll thead { position: static; }
 }
 
-/* Scroll wrappers for historial & ranking */
-.rep-hist-scroll, .rep-rank-scroll {
-  max-height: 400px;
-  overflow: auto;
-}
-.rep-hist-scroll::-webkit-scrollbar, .rep-rank-scroll::-webkit-scrollbar { width: 4px; }
-.rep-hist-scroll::-webkit-scrollbar-track, .rep-rank-scroll::-webkit-scrollbar-track { background: transparent; }
-.rep-hist-scroll::-webkit-scrollbar-thumb, .rep-rank-scroll::-webkit-scrollbar-thumb { background: var(--clr-outline-variant); border-radius: 10px; }
-.rep-hist-scroll thead, .rep-rank-scroll thead { position: sticky; top: 0; z-index: 1; }
-.rep-hist-scroll thead th, .rep-rank-scroll thead th { background: var(--clr-surface-container); }
+.hs-table-scroll { max-height: 400px; }
 
 /* Sortable header */
 .rep-th-sortable { cursor: pointer; user-select: none; }

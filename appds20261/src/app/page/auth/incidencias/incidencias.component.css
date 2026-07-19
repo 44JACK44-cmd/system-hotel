@@ -79,27 +79,13 @@
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
 @keyframes spin { to{transform:rotate(360deg)} }
 
-/* === Table scroll wrapper & fixed header === */
-.inc-table-scroll {
-  max-height: 400px;
-  overflow: auto;
-}
-.inc-table-scroll::-webkit-scrollbar { width: 4px; }
-.inc-table-scroll::-webkit-scrollbar-track { background: transparent; }
-.inc-table-scroll::-webkit-scrollbar-thumb { background: var(--clr-outline-variant); border-radius: 10px; }
-.inc-table-scroll thead { position: sticky; top: 0; z-index: 1; }
-.inc-table-scroll thead th { background: var(--clr-surface-container); }
-
 /* Sortable header */
 .inc-th-sortable { cursor: pointer; user-select: none; }
 .inc-th-sortable:hover { background: var(--clr-surface-container-high) !important; }
 .inc-sort-icon { font-size: 14px; vertical-align: middle; margin-left: 4px; opacity: 0.4; }
 .inc-sort-icon--active { opacity: 1; color: var(--clr-primary); }
 
-@media (max-width: 640px) {
-  .inc-table-scroll { max-height: none; }
-  .inc-table-scroll thead { position: static; }
-}
+.hs-table-scroll { max-height: 400px; }
 .room-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

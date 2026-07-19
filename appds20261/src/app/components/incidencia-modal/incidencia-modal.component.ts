@@ -1,4 +1,4 @@
-import { Component, inject, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, inject, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IncidenciaService } from '../../observable/incidencia.service';
@@ -9,6 +9,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { LayoutStateService } from '../../services/layout-state.service';
 
 @Component({
   selector: 'app-incidencia-modal',
@@ -18,13 +19,14 @@ import { MessageService } from 'primeng/api';
   templateUrl: './incidencia-modal.component.html',
   styleUrl: './incidencia-modal.component.css'
 })
-export class IncidenciaModalComponent implements OnInit {
+export class IncidenciaModalComponent implements OnInit, OnDestroy {
   @Input() visible = false;
   @Output() close = new EventEmitter<void>();
 
   private incidenciaService = inject(IncidenciaService);
   private habService = inject(HabitacionService);
   private messageService = inject(MessageService);
+  private layoutState = inject(LayoutStateService);
 
   habitaciones: any[] = [];
 
@@ -39,7 +41,12 @@ export class IncidenciaModalComponent implements OnInit {
   loading = false;
 
   ngOnInit(): void {
+    this.layoutState.setOverlay(true);
     this.cargarHabitaciones();
+  }
+
+  ngOnDestroy(): void {
+    this.layoutState.setOverlay(false);
   }
 
   cargarHabitaciones(): void {
@@ -78,6 +85,7 @@ export class IncidenciaModalComponent implements OnInit {
   cerrar(): void {
     this.habitacionId = null;
     this.motivo = '';
+    this.layoutState.setOverlay(false);
     this.close.emit();
   }
 }

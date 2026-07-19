@@ -12,6 +12,7 @@ import { ConsumoModalComponent } from '../../../components/consumo-modal/consumo
 import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { DatePickerModule } from 'primeng/datepicker';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -20,7 +21,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 @Component({
   selector: 'app-hospedajes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, SelectModule, InputNumberModule, TooltipModule, ConfirmDialogModule, CheckOutComponent, ConsumoModalComponent],
+  imports: [CommonModule, FormsModule, ToastModule, SelectModule, InputNumberModule, DatePickerModule, TooltipModule, ConfirmDialogModule, CheckOutComponent, ConsumoModalComponent],
   providers: [MessageService, ConfirmationService],
   templateUrl: './hospedajes.component.html',
   styleUrls: ['./hospedajes.component.css']
@@ -53,7 +54,7 @@ export class HospedajesComponent implements OnInit, OnDestroy {
   totalConsumos = 0;
   loadingConsumos = false;
 
-  extensionFecha = '';
+  extensionFecha: Date | null = null;
   loadingExtension = false;
 
   nuevaHabitacionId: number | null = null;
@@ -208,7 +209,7 @@ export class HospedajesComponent implements OnInit, OnDestroy {
     this.detailHospedaje = null;
     this.consumos = [];
     this.totalConsumos = 0;
-    this.extensionFecha = '';
+    this.extensionFecha = null;
     this.nuevaHabitacionId = null;
   }
 
@@ -278,7 +279,7 @@ export class HospedajesComponent implements OnInit, OnDestroy {
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Estadía extendida correctamente' });
         this.loadingExtension = false;
-        this.extensionFecha = '';
+        this.extensionFecha = null;
         this.selectHospedaje(this.selectedHospedajeId!);
         this.loadActivos();
       },

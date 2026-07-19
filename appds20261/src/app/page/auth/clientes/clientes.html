@@ -20,8 +20,8 @@
         </div>
       </div>
       <p-toast />
-      <div class="hs-card" style="overflow:hidden;display:flex;flex-direction:column">
-        <div class="cli-table-scroll">
+      <div class="hs-card" style="display:flex;flex-direction:column">
+        <div class="hs-table-scroll">
         <table class="hs-table cli-table">
           <thead>
             <tr>
@@ -158,14 +158,14 @@
   </div>
 </div>
 @if (dialogVisible) {
-  <div class="hs-overlay" (click)="dialogVisible = false"></div>
+  <div class="hs-overlay" (click)="closeDialog()"></div>
   <div class="hs-slide-panel">
     <div class="hs-slide-panel__header">
       <div style="display:flex;align-items:center;gap:10px">
         <span class="material-symbols-outlined">{{ editing ? 'edit' : 'person_add' }}</span>
         <span style="font-weight:700;font-size:16px">{{ editing ? 'Editar Cliente' : 'Nuevo Cliente' }}</span>
       </div>
-      <button class="hs-topbar__icon-btn" (click)="dialogVisible = false"><span class="material-symbols-outlined">close</span></button>
+      <button class="hs-topbar__icon-btn" (click)="closeDialog()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div class="hs-slide-panel__body">
       <form [formGroup]="clienteForm" style="display:flex;flex-direction:column;gap:16px">
@@ -191,7 +191,7 @@
       </form>
     </div>
     <div class="hs-slide-panel__footer">
-      <button class="hs-btn hs-btn-outline" style="flex:1" (click)="dialogVisible = false">Cancelar</button>
+      <button class="hs-btn hs-btn-outline" style="flex:1" (click)="closeDialog()">Cancelar</button>
       <button class="hs-btn hs-btn-primary" style="flex:1" [disabled]="clienteForm.invalid || loading" (click)="save()">
         @if (loading) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
         {{ editing ? 'Guardar Cambios' : 'Crear Cliente' }}
@@ -200,14 +200,14 @@
   </div>
 }
 @if (historialVisible) {
-  <div class="hs-overlay" (click)="historialVisible = false"></div>
+  <div class="hs-overlay" (click)="closeHistorial()"></div>
   <div class="hs-slide-panel" style="max-width:520px">
     <div class="hs-slide-panel__header">
       <div style="display:flex;align-items:center;gap:10px">
         <span class="material-symbols-outlined">history</span>
         <span style="font-weight:700;font-size:16px">Historial — {{ selectedCliente?.nombreCompleto }}</span>
       </div>
-      <button class="hs-topbar__icon-btn" (click)="historialVisible = false"><span class="material-symbols-outlined">close</span></button>
+      <button class="hs-topbar__icon-btn" (click)="closeHistorial()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div class="hs-slide-panel__body">
       <div class="cli-tab-bar">

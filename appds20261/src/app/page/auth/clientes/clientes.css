@@ -134,27 +134,11 @@
   background: var(--clr-tertiary-fixed);
   color: var(--clr-on-tertiary-fixed);
 }
-/* === Table scroll wrapper & fixed header === */
-.cli-table-scroll {
-  max-height: 480px;
-  overflow: auto;
-}
-.cli-table-scroll::-webkit-scrollbar { width: 4px; }
-.cli-table-scroll::-webkit-scrollbar-track { background: transparent; }
-.cli-table-scroll::-webkit-scrollbar-thumb { background: var(--clr-outline-variant); border-radius: 10px; }
-.cli-table-scroll thead { position: sticky; top: 0; z-index: 1; }
-.cli-table-scroll thead th { background: var(--clr-surface-container); }
-
 /* Sortable header */
 .cli-th-sortable { cursor: pointer; user-select: none; }
 .cli-th-sortable:hover { background: var(--clr-surface-container-high) !important; }
 .cli-sort-icon { font-size: 14px; vertical-align: middle; margin-left: 4px; opacity: 0.4; }
 .cli-sort-icon--active { opacity: 1; color: var(--clr-primary); }
-
-@media (max-width: 640px) {
-  .cli-table-scroll { max-height: none; }
-  .cli-table-scroll thead { position: static; }
-}
 
 .cli-table-footer {
   font-size: 11px;

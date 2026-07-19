@@ -1,15 +1,9 @@
-.nr-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: color-mix(in srgb, var(--clr-on-surface) 35%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  animation: nrFadeIn 0.2s ease;
-}
 .nr-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-slide);
   width: 100%;
   max-width: 560px;
   background: var(--clr-surface-container-lowest);
@@ -17,7 +11,6 @@
   overflow: hidden;
   box-shadow: 0 4px 24px color-mix(in srgb, var(--clr-on-surface) 15%, transparent);
   border: 1px solid var(--clr-outline-variant);
-  animation: nrSlideUp 0.25s ease;
   display: flex;
   flex-direction: column;
   max-height: 90vh;
@@ -355,34 +348,13 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
-@keyframes nrFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes nrSlideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
+
 @keyframes nr-spin {
   to {
     transform: rotate(360deg);
   }
 }
 @media (max-width: 600px) {
-  .nr-overlay {
-    padding: 8px;
-    align-items: flex-end;
-  }
   .nr-modal {
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }

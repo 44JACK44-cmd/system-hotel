@@ -1,9 +1,10 @@
-import { Component, inject, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, inject, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ConsumoService, ConsumoResponse } from '../../observable/consumo.service';
+import { LayoutStateService } from '../../services/layout-state.service';
 
 @Component({
   selector: 'app-consumo-modal',
@@ -13,7 +14,7 @@ import { ConsumoService, ConsumoResponse } from '../../observable/consumo.servic
   templateUrl: './consumo-modal.component.html',
   styleUrl: './consumo-modal.component.css'
 })
-export class ConsumoModalComponent implements OnInit {
+export class ConsumoModalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() visible = false;
   @Input() hospedajeId: number | null = null;
   @Input() editConsumo: ConsumoResponse | null = null;
@@ -22,6 +23,7 @@ export class ConsumoModalComponent implements OnInit {
 
   private consumoService = inject(ConsumoService);
   private messageService = inject(MessageService);
+  private layoutState = inject(LayoutStateService);
 
   saving = false;
   tipos = ['MINIBAR', 'LAVANDERIA', 'RESTAURANTE', 'ROOM_SERVICE', 'OTROS'];
@@ -35,8 +37,18 @@ export class ConsumoModalComponent implements OnInit {
     return (this.cantidad || 0) * (this.precioUnitario || 0);
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['visible']) {
+      this.layoutState.setOverlay(!!changes['visible'].currentValue);
+    }
+  }
+
   ngOnInit(): void {
     this.resetForm();
+  }
+
+  ngOnDestroy(): void {
+    this.layoutState.setOverlay(false);
   }
 
   resetForm(): void {

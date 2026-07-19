@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { PageResponse } from '../../../shared/models';
+import { LayoutStateService } from '../../../services/layout-state.service';
 
 @Component({
   selector: 'app-clientes',
@@ -21,6 +22,7 @@ export class Clientes implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
   private router = inject(Router);
+  private layoutState = inject(LayoutStateService);
 
   clientes: any[] = [];
   loading = false;
@@ -103,12 +105,24 @@ export class Clientes implements OnInit, OnDestroy {
     this.editing = false; this.editingId = null;
     this.clienteForm.reset();
     this.dialogVisible = true;
+    this.layoutState.setOverlay(true);
   }
 
   editCliente(c: any): void {
     this.editing = true; this.editingId = c.id;
     this.clienteForm.patchValue(c);
     this.dialogVisible = true;
+    this.layoutState.setOverlay(true);
+  }
+
+  closeDialog(): void {
+    this.dialogVisible = false;
+    this.layoutState.setOverlay(false);
+  }
+
+  closeHistorial(): void {
+    this.historialVisible = false;
+    this.layoutState.setOverlay(false);
   }
 
   save(): void {
@@ -116,12 +130,12 @@ export class Clientes implements OnInit, OnDestroy {
     this.loading = true;
     if (this.editing && this.editingId) {
       this.clienteService.actualizar(this.editingId, this.clienteForm.value).subscribe({
-        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente actualizado' }); this.dialogVisible = false; this.loading = false; this.loadClientes(); },
+        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente actualizado' }); this.dialogVisible = false; this.layoutState.setOverlay(false); this.loading = false; this.loadClientes(); },
         error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); }
       });
     } else {
       this.clienteService.crear(this.clienteForm.value).subscribe({
-        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente creado' }); this.dialogVisible = false; this.loading = false; this.loadClientes(); },
+        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente creado' }); this.dialogVisible = false; this.layoutState.setOverlay(false); this.loading = false; this.loadClientes(); },
         error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); }
       });
     }
@@ -130,6 +144,7 @@ export class Clientes implements OnInit, OnDestroy {
   showHistorial(c: any): void {
     this.selectedCliente = c;
     this.historialVisible = true;
+    this.layoutState.setOverlay(true);
     this.clienteService.historialReservas(c.id).subscribe(res => this.historialReservas = res.data || []);
     this.clienteService.historialHospedajes(c.id).subscribe(res => this.historialHospedajes = res.data || []);
   }

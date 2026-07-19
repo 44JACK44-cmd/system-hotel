@@ -1,4 +1,4 @@
-import { Component, inject, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, inject, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HabitacionService } from '../../observable/habitacion.service';
@@ -13,6 +13,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { LayoutStateService } from '../../services/layout-state.service';
 
 @Component({
   selector: 'app-nueva-reserva',
@@ -22,7 +23,7 @@ import { MessageService } from 'primeng/api';
   templateUrl: './nueva-reserva.component.html',
   styleUrl: './nueva-reserva.component.css'
 })
-export class NuevaReservaComponent implements OnInit {
+export class NuevaReservaComponent implements OnInit, OnDestroy {
   @Input() visible = false;
   @Output() close = new EventEmitter<void>();
 
@@ -30,6 +31,7 @@ export class NuevaReservaComponent implements OnInit {
   private clienteService = inject(ClienteService);
   private reservaService = inject(ReservaService);
   private messageService = inject(MessageService);
+  private layoutState = inject(LayoutStateService);
 
   searchTerm = '';
   clientes: any[] = [];
@@ -53,15 +55,20 @@ export class NuevaReservaComponent implements OnInit {
 
   reservaData: any = {
     habitacionId: null,
-    fechaEntrada: '',
-    fechaSalida: '',
+    fechaEntrada: null,
+    fechaSalida: null,
     adelanto: 0,
     metodoPago: 'YAPE',
     observaciones: ''
   };
 
   ngOnInit(): void {
+    this.layoutState.setOverlay(true);
     this.cargarHabitaciones();
+  }
+
+  ngOnDestroy(): void {
+    this.layoutState.setOverlay(false);
   }
 
   cargarHabitaciones(): void {
@@ -86,8 +93,8 @@ export class NuevaReservaComponent implements OnInit {
 
   recalcular(): void {
     if (this.reservaData.fechaEntrada && this.reservaData.fechaSalida && this.precioNoche > 0) {
-      const inicio = new Date(this.reservaData.fechaEntrada);
-      const fin = new Date(this.reservaData.fechaSalida);
+      const inicio = this.reservaData.fechaEntrada;
+      const fin = this.reservaData.fechaSalida;
       const diff = fin.getTime() - inicio.getTime();
       this.noches = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
       this.montoTotal = this.noches * this.precioNoche;
@@ -120,15 +127,18 @@ export class NuevaReservaComponent implements OnInit {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     if (this.reservaData.fechaEntrada) {
-      const fechaEntrada = new Date(this.reservaData.fechaEntrada + 'T00:00:00');
+      const fechaEntrada = new Date(this.reservaData.fechaEntrada);
+      fechaEntrada.setHours(0, 0, 0, 0);
       if (fechaEntrada < hoy) {
         this.messageService.add({ severity: 'error', summary: 'Fecha inválida', detail: 'La fecha de entrada no puede ser anterior a hoy' });
         return;
       }
     }
     if (this.reservaData.fechaEntrada && this.reservaData.fechaSalida) {
-      const entrada = new Date(this.reservaData.fechaEntrada + 'T00:00:00');
-      const salida = new Date(this.reservaData.fechaSalida + 'T00:00:00');
+      const entrada = new Date(this.reservaData.fechaEntrada);
+      const salida = new Date(this.reservaData.fechaSalida);
+      entrada.setHours(0, 0, 0, 0);
+      salida.setHours(0, 0, 0, 0);
       if (salida <= entrada) {
         this.messageService.add({ severity: 'error', summary: 'Fechas inválidas', detail: 'La fecha de salida debe ser posterior a la fecha de entrada' });
         return;
@@ -202,12 +212,13 @@ export class NuevaReservaComponent implements OnInit {
     this.nuevoCliente = { nombreCompleto: '', telefono: '', documento: '', email: '' };
     this.reservaData = {
       habitacionId: null,
-      fechaEntrada: '',
-      fechaSalida: '',
+      fechaEntrada: null,
+      fechaSalida: null,
       adelanto: 0,
       metodoPago: 'YAPE',
       observaciones: ''
     };
+    this.layoutState.setOverlay(false);
     this.close.emit();
   }
 }

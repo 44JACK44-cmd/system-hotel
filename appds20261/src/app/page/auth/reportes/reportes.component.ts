@@ -72,13 +72,13 @@ export class ReportesComponent implements OnInit {
     else { this.rankSortField = field; this.rankSortDir = 'asc'; }
   }
 
-  ingresoInicio = '';
-  ingresoFin = '';
+  ingresoInicio: Date | null = null;
+  ingresoFin: Date | null = null;
   metodoInicio = '';
   metodoFin = '';
-  ocupacionFecha = '';
-  noConcretadasInicio = '';
-  noConcretadasFin = '';
+  ocupacionFecha: Date | null = null;
+  noConcretadasInicio: Date | null = null;
+  noConcretadasFin: Date | null = null;
 
   metodoChartData: any = null;
   chartOptions = {
@@ -87,13 +87,20 @@ export class ReportesComponent implements OnInit {
     }
   };
 
+  private toDateStr(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   ngOnInit(): void {
-    const today = new Date().toISOString().split('T')[0];
-    const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     this.ingresoInicio = firstDay;
     this.ingresoFin = today;
-    this.metodoInicio = firstDay;
-    this.metodoFin = today;
+    this.metodoInicio = this.toDateStr(firstDay);
+    this.metodoFin = this.toDateStr(today);
     this.ocupacionFecha = today;
     this.noConcretadasInicio = firstDay;
     this.noConcretadasFin = today;
@@ -106,7 +113,7 @@ export class ReportesComponent implements OnInit {
   loadIngresos(): void {
     if (!this.ingresoInicio || !this.ingresoFin) return;
     this.loading = true;
-    this.reporteService.ingresos(this.ingresoInicio, this.ingresoFin).subscribe({
+    this.reporteService.ingresos(this.toDateStr(this.ingresoInicio), this.toDateStr(this.ingresoFin)).subscribe({
       next: (res) => { this.ingresos = res.data; this.loading = false; },
       error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar ingresos' }); }
     });
@@ -134,7 +141,7 @@ export class ReportesComponent implements OnInit {
   loadOcupacion(): void {
     if (!this.ocupacionFecha) return;
     this.loading = true;
-    this.reporteService.ocupacion(this.ocupacionFecha).subscribe({
+    this.reporteService.ocupacion(this.toDateStr(this.ocupacionFecha)).subscribe({
       next: (res) => { this.ocupacion = res.data; this.loading = false; },
       error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar ocupacion' }); }
     });
@@ -143,7 +150,7 @@ export class ReportesComponent implements OnInit {
   loadNoConcretadas(): void {
     if (!this.noConcretadasInicio || !this.noConcretadasFin) return;
     this.loading = true;
-    this.reporteService.reservasNoConcretadas(this.noConcretadasInicio, this.noConcretadasFin).subscribe({
+    this.reporteService.reservasNoConcretadas(this.toDateStr(this.noConcretadasInicio), this.toDateStr(this.noConcretadasFin)).subscribe({
       next: (res) => { this.noConcretadas = res.data; this.loading = false; },
       error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar no concretadas' }); }
     });

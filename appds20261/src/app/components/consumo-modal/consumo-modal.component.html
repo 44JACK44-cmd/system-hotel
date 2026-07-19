@@ -1,6 +1,6 @@
 @if (visible) {
-  <div class="cm-overlay" (click)="cerrar()">
-    <div class="cm-modal" (click)="$event.stopPropagation()">
+  <div class="hs-overlay" (click)="cerrar()"></div>
+  <div class="cm-modal" (click)="$event.stopPropagation()">
       <p-toast />
       <div class="cm-header">
         <span class="material-symbols-outlined">inventory</span>
@@ -50,5 +50,4 @@
         </button>
       </div>
     </div>
-  </div>
 }

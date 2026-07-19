@@ -67,9 +67,6 @@
     grid-template-columns: 1fr;
   }
 }
-.hab-table-card {
-  overflow: hidden;
-}
 .hab-table {
   width: 100%;
   border-collapse: collapse;
@@ -196,72 +193,7 @@
   color: var(--clr-white);
   border-color: var(--clr-primary);
 }
-.hab-overlay {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: color-mix(in srgb, var(--clr-primary) 40%, transparent);
-  backdrop-filter: blur(4px);
-  z-index: 100;
-}
-.hab-slide-panel {
-  position: fixed;
-  top: 64px;
-  right: 0;
-  height: calc(100vh - 64px);
-  width: 100%;
-  max-width: 440px;
-  background: var(--clr-surface-container-lowest);
-  box-shadow: var(--shadow-slide);
-  z-index: 110;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.hab-slide-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--clr-outline-variant);
-}
-.hab-slide-header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.hab-slide-title {
-  font-weight: 700;
-  font-size: 20px;
-  color: var(--clr-primary);
-}
-.hab-slide-close {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 50%;
-  color: var(--clr-on-surface-variant);
-  transition: background 0.15s;
-}
-.hab-slide-close:hover {
-  background: var(--clr-surface-variant);
-}
-.hab-slide-body {
-  flex: 1;
-  min-height: 0;
-  padding: 16px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+
 .hab-room-image {
   position: relative;
   aspect-ratio: 16/9;
@@ -374,14 +306,7 @@
   border-color: var(--clr-secondary);
   color: var(--clr-secondary);
 }
-.hab-slide-footer {
-  display: flex;
-  gap: 12px;
-  padding: 14px 20px;
-  border-top: 1px solid var(--clr-outline-variant);
-  background: var(--clr-surface-container-low);
-  flex-shrink: 0;
-}
+
 .hab-action-btn {
   width: 32px;
   height: 32px;
@@ -487,7 +412,7 @@
   .hab-page { padding: 12px; }
   .hab-page__title { font-size: 20px; }
   .hab-btn-primary { padding: 10px 18px; font-size: 13px; }
-  .hab-slide-panel { max-width: 100%; }
+
   .hab-form-row { grid-template-columns: 1fr; }
   .hab-radio-group { grid-template-columns: 1fr; }
   .hab-filter-grid { grid-template-columns: 1fr; }

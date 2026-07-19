@@ -8,6 +8,15 @@ import Aura from '@primeuix/themes/aura';
 import { definePreset } from '@primeuix/themes';
 
 const HotelPreset = definePreset(Aura, {
+  components: {
+    datepicker: {
+      dropdown: {
+        color: '#44474e',
+        hoverColor: '#44474e',
+        activeColor: '#44474e'
+      }
+    }
+  },
   semantic: {
     primary: {
       50:  '#eef4ff',
@@ -47,6 +56,39 @@ const HotelPreset = definePreset(Aura, {
           focusBackground: 'color-mix(in srgb, {primary.700} 20%, transparent)',
           color: '{primary.700}',
           focusColor: '{primary.700}'
+        }
+      },
+      dark: {
+        primary: {
+          color:         '{primary.700}',
+          hoverColor:    '{primary.800}',
+          activeColor:   '{primary.900}'
+        },
+        surface: {
+          0: '#ffffff',
+          50: '#faf9fd',
+          100: '#f4f3f7',
+          200: '#efedf1',
+          300: '#e9e7eb',
+          400: '#e3e2e6',
+          500: '#c4c6cf',
+          600: '#74777f',
+          700: '#44474e',
+          800: '#1a1b1e',
+          900: '#1a1b1e'
+        },
+        highlight: {
+          background: 'color-mix(in srgb, {primary.700} 12%, transparent)',
+          focusBackground: 'color-mix(in srgb, {primary.700} 20%, transparent)',
+          color: '{primary.700}',
+          focusColor: '{primary.700}'
+        },
+        datepicker: {
+          dropdown: {
+            color: '#44474e',
+            hoverColor: '#44474e',
+            activeColor: '#44474e'
+          }
         }
       }
     }

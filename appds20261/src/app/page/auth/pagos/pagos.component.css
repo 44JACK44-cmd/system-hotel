@@ -76,27 +76,8 @@
   background: var(--clr-surface-container-low);
   flex-shrink: 0;
 }
-.pag-table-scroll {
+.hs-table-scroll {
   flex: 1;
-  overflow: auto;
-  max-height: 480px;
-}
-.pag-table-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-.pag-table-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.pag-table-scroll::-webkit-scrollbar-thumb {
-  background: var(--clr-outline-variant);
-  border-radius: 10px;
-}
-.pag-table-scroll thead { position: sticky; top: 0; z-index: 1; }
-.pag-table-scroll thead th { background: var(--clr-surface-container); }
-
-@media (max-width: 640px) {
-  .pag-table-scroll { max-height: none; }
-  .pag-table-scroll thead { position: static; }
 }
 .pag-table-footer {
   padding: 8px 16px;

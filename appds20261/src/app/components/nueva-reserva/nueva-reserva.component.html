@@ -1,5 +1,5 @@
-<div class="nr-overlay" (click)="cerrar()">
-  <div class="nr-modal" (click)="$event.stopPropagation()">
+<div class="hs-overlay" (click)="cerrar()"></div>
+<div class="nr-modal" (click)="$event.stopPropagation()">
     <header class="nr-header">
       <h1 class="nr-header-title">NUEVA RESERVA</h1>
       <button class="nr-header-close" (click)="cerrar()">
@@ -49,11 +49,11 @@
         </div>
         <div class="nr-fechas-row">
           <div class="nr-date-wrap">
-            <p-datepicker [(ngModel)]="reservaData.fechaEntrada" name="fechaEntrada" (ngModelChange)="recalcular()" dateFormat="yy-mm-dd" inputStyleClass="nr-input" styleClass="w-full" placeholder="Fecha entrada" appendTo="body" />
+            <p-datepicker [(ngModel)]="reservaData.fechaEntrada" name="fechaEntrada" (ngModelChange)="recalcular()" dateFormat="yy-mm-dd HH:mm" inputStyleClass="nr-input" styleClass="w-full" placeholder="Fecha entrada" appendTo="body" [showTime]="true" hourFormat="24" />
           </div>
           <span class="nr-date-sep">-</span>
           <div class="nr-date-wrap">
-            <p-datepicker [(ngModel)]="reservaData.fechaSalida" name="fechaSalida" (ngModelChange)="recalcular()" dateFormat="yy-mm-dd" inputStyleClass="nr-input" styleClass="w-full" placeholder="Fecha salida" appendTo="body" />
+            <p-datepicker [(ngModel)]="reservaData.fechaSalida" name="fechaSalida" (ngModelChange)="recalcular()" dateFormat="yy-mm-dd HH:mm" inputStyleClass="nr-input" styleClass="w-full" placeholder="Fecha salida" appendTo="body" [showTime]="true" hourFormat="24" />
           </div>
         </div>
       </section>
@@ -88,5 +88,4 @@
         GUARDAR
       </button>
     </div>
-  </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HabitacionService } from '../../../observable/habitacion.service';
@@ -14,6 +14,7 @@ import { ToastModule } from 'primeng/toast';
 import { TabsModule } from 'primeng/tabs';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { LayoutStateService } from '../../../services/layout-state.service';
 
 @Component({
   selector: 'app-habitaciones',
@@ -23,13 +24,14 @@ import { ConfirmationService, MessageService } from 'primeng/api';
   templateUrl: './habitaciones.component.html',
   styleUrls: ['./habitaciones.component.css']
 })
-export class HabitacionesComponent implements OnInit {
+export class HabitacionesComponent implements OnInit, OnDestroy {
   private habService = inject(HabitacionService);
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
 
   private authService = inject(AuthService);
+  private layoutState = inject(LayoutStateService);
   habitaciones: any[] = [];
   loading = false;
 
@@ -109,6 +111,10 @@ export class HabitacionesComponent implements OnInit {
     this.loadData();
   }
 
+  ngOnDestroy(): void {
+    this.layoutState.setOverlay(false);
+  }
+
   loadData(): void {
     this.loading = true;
     this.habService.listarActivas().subscribe({ next: res => {
@@ -135,6 +141,7 @@ export class HabitacionesComponent implements OnInit {
     this.editingId = null;
     this.habForm.reset({ piso: 1, tipo: 'SIMPLE', precioNoche: 0 });
     this.dialogVisible = true;
+    this.layoutState.setOverlay(true);
   }
 
   editHabitacion(h: any): void {
@@ -142,6 +149,12 @@ export class HabitacionesComponent implements OnInit {
     this.editingId = h.id;
     this.habForm.patchValue(h);
     this.dialogVisible = true;
+    this.layoutState.setOverlay(true);
+  }
+
+  closeDialog(): void {
+    this.dialogVisible = false;
+    this.layoutState.setOverlay(false);
   }
 
   save(): void {
@@ -149,12 +162,12 @@ export class HabitacionesComponent implements OnInit {
     this.loading = true;
     if (this.editing && this.editingId) {
       this.habService.actualizar(this.editingId, this.habForm.value).subscribe({
-        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Habitacion actualizada' }); this.dialogVisible = false; this.loading = false; this.loadData(); },
+        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Habitacion actualizada' }); this.dialogVisible = false; this.layoutState.setOverlay(false); this.loading = false; this.loadData(); },
         error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); }
       });
     } else {
       this.habService.crear(this.habForm.value).subscribe({
-        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Habitacion creada' }); this.dialogVisible = false; this.loading = false; this.loadData(); },
+        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Habitacion creada' }); this.dialogVisible = false; this.layoutState.setOverlay(false); this.loading = false; this.loadData(); },
         error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); }
       });
     }
@@ -178,13 +191,19 @@ export class HabitacionesComponent implements OnInit {
   showEstadoDialog(h: any): void {
     this.selectedHabitacion = h;
     this.estadoDialogVisible = true;
+    this.layoutState.setOverlay(true);
+  }
+
+  closeEstadoDialog(): void {
+    this.estadoDialogVisible = false;
+    this.layoutState.setOverlay(false);
   }
 
   cambiarEstado(estado: string): void {
     if (!this.selectedHabitacion) return;
     this.loading = true;
     this.habService.cambiarEstado(this.selectedHabitacion.id, estado).subscribe({
-      next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Estado cambiado' }); this.estadoDialogVisible = false; this.loading = false; this.loadData(); },
+      next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Estado cambiado' }); this.estadoDialogVisible = false; this.layoutState.setOverlay(false); this.loading = false; this.loadData(); },
       error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); }
     });
   }

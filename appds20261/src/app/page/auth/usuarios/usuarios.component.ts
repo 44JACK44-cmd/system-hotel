@@ -11,6 +11,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { PageResponse } from '../../../shared/models';
+import { LayoutStateService } from '../../../services/layout-state.service';
 
 @Component({
   selector: 'app-usuarios',
@@ -25,6 +26,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
+  private layoutState = inject(LayoutStateService);
 
   usuarios: any[] = [];
   stats = { total: 0, activos: 0, admins: 0, recepcionistas: 0 };
@@ -127,6 +129,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.userForm.reset({ rol: 'RECEPCIONISTA' });
     this.userForm.get('password')?.setValidators(Validators.required);
     this.dialogVisible = true;
+    this.layoutState.setOverlay(true);
   }
 
   editUser(u: any): void {
@@ -136,6 +139,12 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.userForm.get('password')?.clearValidators();
     this.userForm.get('password')?.updateValueAndValidity();
     this.dialogVisible = true;
+    this.layoutState.setOverlay(true);
+  }
+
+  closeDialog(): void {
+    this.dialogVisible = false;
+    this.layoutState.setOverlay(false);
   }
 
   save(): void {
@@ -144,12 +153,12 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     const data = this.userForm.value;
     if (this.editing && this.editingId) {
       this.usuarioService.actualizar(this.editingId, data).subscribe({
-        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Usuario actualizado' }); this.dialogVisible = false; this.loading = false; this.loadUsuarios(); },
+        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Usuario actualizado' }); this.dialogVisible = false; this.layoutState.setOverlay(false); this.loading = false; this.loadUsuarios(); },
         error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); }
       });
     } else {
       this.usuarioService.crear(data).subscribe({
-        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Usuario creado' }); this.dialogVisible = false; this.loading = false; this.loadUsuarios(); },
+        next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Usuario creado' }); this.dialogVisible = false; this.layoutState.setOverlay(false); this.loading = false; this.loadUsuarios(); },
         error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); }
       });
     }

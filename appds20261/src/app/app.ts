@@ -5,6 +5,7 @@ import { HeaderComponent } from './components/header/header.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './observable/auth.service';
+import { LayoutStateService } from './services/layout-state.service';
 import { Subscription } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
@@ -27,6 +28,7 @@ export class App implements OnInit, OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
   private messageService = inject(MessageService);
+  protected layoutState = inject(LayoutStateService);
   private routerSub: Subscription | null = null;
 
   isPublicPage = true;
@@ -84,10 +86,12 @@ export class App implements OnInit, OnDestroy {
 
   toggleMobileDrawer(): void {
     this.mobileDrawerOpen = !this.mobileDrawerOpen;
+    this.layoutState.setOverlay(this.mobileDrawerOpen);
   }
 
   closeMobileDrawer(): void {
     this.mobileDrawerOpen = false;
+    this.layoutState.setOverlay(false);
   }
 
   centroAyuda(): void {

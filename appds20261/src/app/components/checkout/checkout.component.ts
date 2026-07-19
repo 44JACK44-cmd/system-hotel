@@ -1,4 +1,4 @@
-import { Component, inject, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, inject, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { LayoutStateService } from '../../services/layout-state.service';
 
 @Component({
   selector: 'app-checkout',
@@ -22,7 +23,7 @@ import { MessageService } from 'primeng/api';
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.css'
 })
-export class CheckOutComponent implements OnChanges {
+export class CheckOutComponent implements OnInit, OnDestroy, OnChanges {
   @Input() visible = false;
   @Input() hospedajeId: number | null = null;
   @Output() close = new EventEmitter<void>();
@@ -32,6 +33,7 @@ export class CheckOutComponent implements OnChanges {
   private incidenciaService = inject(IncidenciaService);
   private consumoService = inject(ConsumoService);
   private messageService = inject(MessageService);
+  private layoutState = inject(LayoutStateService);
 
   Math = Math;
   private dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -51,10 +53,20 @@ export class CheckOutComponent implements OnChanges {
   consumos: ConsumoResponse[] = [];
   loadingConsumos = false;
 
-  ngOnChanges(changes: any): void {
-    if (changes['hospedajeId'] && this.hospedajeId && this.visible) {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['visible']) {
+      this.layoutState.setOverlay(!!changes['visible'].currentValue);
+    }
+  }
+
+  ngOnInit(): void {
+    if (this.hospedajeId && this.visible) {
       this.buscarHospedajePorId(this.hospedajeId);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.layoutState.setOverlay(false);
   }
 
   private diagnosticarAlturas(): void {

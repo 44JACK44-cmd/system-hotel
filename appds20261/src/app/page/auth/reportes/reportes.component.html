@@ -12,9 +12,9 @@
         <div class="rep-filter-item">
           <span class="material-symbols-outlined rep-filter-icon">calendar_today</span>
           <span class="rep-filter-label">Ingresos</span>
-          <p-datepicker [(ngModel)]="ingresoInicio" dateFormat="yy-mm-dd" inputStyleClass="rep-date-input" styleClass="w-full" appendTo="body" />
+          <p-datepicker [(ngModel)]="ingresoInicio" dateFormat="yy-mm-dd HH:mm" inputStyleClass="rep-date-input" styleClass="w-full" appendTo="body" [showTime]="true" hourFormat="24" />
           <span class="rep-filter-sep">—</span>
-          <p-datepicker [(ngModel)]="ingresoFin" dateFormat="yy-mm-dd" inputStyleClass="rep-date-input" styleClass="w-full" appendTo="body" />
+          <p-datepicker [(ngModel)]="ingresoFin" dateFormat="yy-mm-dd HH:mm" inputStyleClass="rep-date-input" styleClass="w-full" appendTo="body" [showTime]="true" hourFormat="24" />
           <button class="rep-filter-btn" (click)="loadIngresos()">
             <span class="material-symbols-outlined">refresh</span>
           </button>
@@ -22,7 +22,7 @@
         <div class="rep-filter-divider"></div>
         <div class="rep-filter-item">
           <span class="rep-filter-label">Ocup</span>
-          <p-datepicker [(ngModel)]="ocupacionFecha" dateFormat="yy-mm-dd" inputStyleClass="rep-date-input" styleClass="w-full" appendTo="body" />
+          <p-datepicker [(ngModel)]="ocupacionFecha" dateFormat="yy-mm-dd HH:mm" inputStyleClass="rep-date-input" styleClass="w-full" appendTo="body" [showTime]="true" hourFormat="24" />
           <button class="rep-filter-btn" (click)="loadOcupacion()">
             <span class="material-symbols-outlined">refresh</span>
           </button>
@@ -30,9 +30,9 @@
         <div class="rep-filter-divider"></div>
         <div class="rep-filter-item">
           <span class="rep-filter-label">NC</span>
-          <p-datepicker [(ngModel)]="noConcretadasInicio" dateFormat="yy-mm-dd" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="w-full" appendTo="body" />
+          <p-datepicker [(ngModel)]="noConcretadasInicio" dateFormat="yy-mm-dd HH:mm" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="w-full" appendTo="body" [showTime]="true" hourFormat="24" />
           <span class="rep-filter-sep">—</span>
-          <p-datepicker [(ngModel)]="noConcretadasFin" dateFormat="yy-mm-dd" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="w-full" appendTo="body" />
+          <p-datepicker [(ngModel)]="noConcretadasFin" dateFormat="yy-mm-dd HH:mm" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="w-full" appendTo="body" [showTime]="true" hourFormat="24" />
           <button class="rep-filter-btn" (click)="loadNoConcretadas()">
             <span class="material-symbols-outlined">refresh</span>
           </button>
@@ -272,7 +272,7 @@
   <div class="rep-legacy-grid">
 
     <!-- Historial de Incidencias -->
-    <div class="hs-card" style="overflow:hidden">
+    <div class="hs-card">
       <div class="hs-card-header">
         <h3 class="text-title-sm" style="color:var(--clr-primary);display:flex;align-items:center;gap:6px">
           <span class="material-symbols-outlined" style="color:var(--clr-error)">cleaning_services</span>
@@ -289,7 +289,7 @@
           </button>
         </div>
       </div>
-      <div class="rep-hist-scroll">
+      <div class="hs-table-scroll">
       <table class="hs-table">
         <thead>
           <tr><th class="rep-th-sortable" (click)="toggleSortHist('habitacion')">Habitación @if (histSortField === 'habitacion') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortHist('tipo')">Tipo @if (histSortField === 'tipo') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortHist('motivo')">Motivo @if (histSortField === 'motivo') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th>Inicio</th><th>Duración</th></tr>
@@ -314,7 +314,7 @@
     </div>
 
     <!-- Ranking de Habitaciones -->
-    <div class="hs-card" style="overflow:hidden">
+    <div class="hs-card">
       <div class="hs-card-header">
         <h3 class="text-title-sm" style="color:var(--clr-primary);display:flex;align-items:center;gap:6px">
           <span class="material-symbols-outlined" style="color:var(--clr-secondary)">leaderboard</span>
@@ -331,7 +331,7 @@
           </button>
         </div>
       </div>
-      <div class="rep-rank-scroll">
+      <div class="hs-table-scroll">
       <table class="hs-table">
         <thead>
           <tr><th class="rep-th-sortable" (click)="toggleSortRank('numero')"># @if (rankSortField === 'numero') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortRank('numero')">Habitación @if (rankSortField === 'numero') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortRank('tipo')">Tipo @if (rankSortField === 'tipo') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortRank('vecesReservada')">Veces Reservada @if (rankSortField === 'vecesReservada') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortRank('ingresoGenerado')">Ingreso Generado @if (rankSortField === 'ingresoGenerado') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th></tr>

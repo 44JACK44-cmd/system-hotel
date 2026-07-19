@@ -163,6 +163,7 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 .hs-main {
   flex: 1;
   overflow-y: auto;
+  min-width: 0;
   background-color: var(--clr-background);
   -webkit-overflow-scrolling: touch;
 }
@@ -199,6 +200,7 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 .badge-info       { background: color-mix(in srgb, var(--clr-info) 18%, var(--clr-white)); color: color-mix(in srgb, var(--clr-info) 80%, var(--clr-black)); }
 
 .hs-card {
+  min-width: 0;
   background: var(--clr-surface-container-lowest);
   border: 1px solid var(--clr-outline-variant);
   border-radius: var(--radius-xl);
@@ -215,6 +217,39 @@ app-root { display: block; height: 100vh; overflow: hidden; }
 }
 
 .hs-card-body { padding: 16px; }
+
+/* --- Reusable table scroll wrapper (design system pattern) --- */
+.hs-table-scroll {
+  overflow: auto;
+  max-height: 480px;
+}
+.hs-table-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+.hs-table-scroll::-webkit-scrollbar-track { background: transparent; }
+.hs-table-scroll::-webkit-scrollbar-thumb { background: var(--clr-outline-variant); border-radius: 10px; }
+.hs-table-scroll thead { position: sticky; top: 0; z-index: 1; }
+.hs-table-scroll thead th { background: var(--clr-surface-container); }
+@media (max-width: 640px) {
+  .hs-table-scroll { max-height: none; }
+  .hs-table-scroll thead { position: static; }
+}
+
+/* --- Table overflow containment (applies at all widths) --- */
+.hs-card-body:has(p-table) {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --- Table wrapper overflow (global, not scoped like app.css) --- */
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --- PrimeNG p-table: custom element defaults to inline, forces block layout --- */
+p-table {
+  display: block;
+  width: 100%;
+}
 
 .hs-table { width: 100%; border-collapse: collapse; text-align: left; }
 .hs-table thead tr { background-color: var(--clr-surface-container-high); }
@@ -548,10 +583,6 @@ app-root { display: block; height: 100vh; overflow: hidden; }
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  .hs-card-body:has(p-table) {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
   .p-datatable-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -580,6 +611,7 @@ app-root { display: block; height: 100vh; overflow: hidden; }
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   }
 }
+
 
 .hs-bottom-nav__item {
   display: flex;

@@ -1,4 +1,4 @@
-import { Component, inject, Input, Output, EventEmitter } from '@angular/core';
+import { Component, inject, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReservaService } from '../../observable/reserva.service';
@@ -9,6 +9,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { LayoutStateService } from '../../services/layout-state.service';
 
 @Component({
   selector: 'app-checkin',
@@ -18,13 +19,14 @@ import { MessageService } from 'primeng/api';
   templateUrl: './checkin.component.html',
   styleUrl: './checkin.component.css'
 })
-export class CheckInComponent {
+export class CheckInComponent implements OnInit, OnDestroy {
   @Input() visible = false;
   @Output() close = new EventEmitter<void>();
 
   private reservaService = inject(ReservaService);
   private hospedajeService = inject(HospedajeService);
   private messageService = inject(MessageService);
+  private layoutState = inject(LayoutStateService);
 
   private dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -115,9 +117,18 @@ export class CheckInComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.layoutState.setOverlay(true);
+  }
+
+  ngOnDestroy(): void {
+    this.layoutState.setOverlay(false);
+  }
+
   cerrar(): void {
     this.reservaEncontrada = null;
     this.searchTerm = '';
+    this.layoutState.setOverlay(false);
     this.close.emit();
   }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, Input, Output, EventEmitter } from '@angular/core';
+import { Component, inject, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PagoService } from '../../observable/pago.service';
@@ -8,6 +8,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { LayoutStateService } from '../../services/layout-state.service';
 
 @Component({
   selector: 'app-pagos-modal',
@@ -17,12 +18,13 @@ import { MessageService } from 'primeng/api';
   templateUrl: './pagos-modal.component.html',
   styleUrl: './pagos-modal.component.css'
 })
-export class PagosModalComponent {
+export class PagosModalComponent implements OnInit, OnDestroy {
   @Input() visible = false;
   @Output() close = new EventEmitter<void>();
 
   private pagoService = inject(PagoService);
   private messageService = inject(MessageService);
+  private layoutState = inject(LayoutStateService);
 
   tipos = [
     { label: 'Adelanto', value: 'ADELANTO' },
@@ -65,11 +67,20 @@ export class PagosModalComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.layoutState.setOverlay(true);
+  }
+
+  ngOnDestroy(): void {
+    this.layoutState.setOverlay(false);
+  }
+
   cerrar(): void {
     this.monto = 0;
     this.referencia = '';
     this.reservaId = null;
     this.hospedajeId = null;
+    this.layoutState.setOverlay(false);
     this.close.emit();
   }
 }
