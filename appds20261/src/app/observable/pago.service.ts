@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../api/environment';
-import { GenericResponse, PagoResponse, toGenericResponse } from '../shared/models';
+import { GenericResponse, PageResponse, PagoResponse, toGenericResponse } from '../shared/models';
 
 @Injectable({ providedIn: 'root' })
 export class PagoService {
@@ -14,6 +14,14 @@ export class PagoService {
     return this.http.get<any>(`${this.API}/getall`).pipe(
       map(r => toGenericResponse<PagoResponse[]>(r, 'listPago'))
     );
+  }
+
+  listarPaginado(page: number, size: number, sortField?: string, sortDir?: string, search?: string): Observable<PageResponse<PagoResponse>> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (sortField) params = params.set('sortField', sortField);
+    if (sortDir) params = params.set('sortDir', sortDir);
+    if (search) params = params.set('search', search);
+    return this.http.get<PageResponse<PagoResponse>>(`${this.API}/getallpaginated`, { params });
   }
 
   obtenerPorId(id: number): Observable<GenericResponse<PagoResponse>> {

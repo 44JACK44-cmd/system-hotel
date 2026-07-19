@@ -2,6 +2,8 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../observable/auth.service';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 interface MenuItem {
   label: string;
@@ -12,13 +14,15 @@ interface MenuItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ToastModule],
+  providers: [MessageService],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private messageService = inject(MessageService);
 
   get rolLabel(): string {
     return this.authService.isAdmin() ? 'Vista Administrador' : 'Vista Recepcionista';
@@ -67,7 +71,11 @@ export class SidebarComponent {
   }
 
   handleNavClick(route: string): void {
-    // Allow routerLink to handle navigation; method kept for potential side-effects
+    this.router.navigate([route]);
+  }
+
+  centroAyuda(): void {
+    this.messageService.add({ severity: 'info', summary: 'Centro de Ayuda', detail: 'Contacte al administrador del sistema para asistencia.' });
   }
 
   logout(): void {

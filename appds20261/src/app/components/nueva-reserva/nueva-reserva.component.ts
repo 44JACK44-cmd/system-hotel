@@ -10,13 +10,14 @@ import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { DatePickerModule } from 'primeng/datepicker';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-nueva-reserva',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, InputTextModule, ButtonModule, SelectModule, InputNumberModule, TextareaModule, RadioButtonModule, ToastModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, InputTextModule, ButtonModule, SelectModule, InputNumberModule, TextareaModule, RadioButtonModule, DatePickerModule, ToastModule],
   providers: [MessageService],
   templateUrl: './nueva-reserva.component.html',
   styleUrl: './nueva-reserva.component.css'

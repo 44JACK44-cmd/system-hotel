@@ -3,6 +3,7 @@ package com.hotel.apifds20261.controller;
 import com.hotel.apifds20261.business.BusinessPago;
 import com.hotel.apifds20261.dto.request.RequestPagoInsert;
 import com.hotel.apifds20261.dto.response.PagoResponse;
+import com.hotel.apifds20261.dto.response.ResponsePage;
 import com.hotel.apifds20261.dto.response.ResponsePago;
 import com.hotel.apifds20261.exception.BusinessException;
 import com.hotel.apifds20261.security.JwtService;
@@ -38,6 +39,17 @@ public class PagoController {
         ResponsePago response = new ResponsePago();
         response.success();
         response.setListPago(list);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("getallpaginated")
+    public ResponseEntity<ResponsePage<PagoResponse>> actionGetAllPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(required = false) String search) {
+        ResponsePage<PagoResponse> response = pagoBusiness.listarPaginado(search, page, size, sortField, sortDir);
         return ResponseEntity.ok(response);
     }
 

@@ -3,6 +3,7 @@ package com.hotel.apifds20261.controller;
 import com.hotel.apifds20261.business.BusinessIncidencia;
 import com.hotel.apifds20261.dto.request.RequestIncidenciaInsert;
 import com.hotel.apifds20261.dto.response.IncidenciaResponse;
+import com.hotel.apifds20261.dto.response.ResponsePage;
 import com.hotel.apifds20261.dto.response.ResponseIncidencia;
 import com.hotel.apifds20261.security.JwtService;
 import jakarta.validation.Valid;
@@ -26,6 +27,17 @@ public class IncidenciaController {
         ResponseIncidencia response = new ResponseIncidencia();
         response.success();
         response.setListIncidencia(list);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("getallpaginated")
+    public ResponseEntity<ResponsePage<IncidenciaResponse>> actionGetAllPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(required = false) String search) {
+        ResponsePage<IncidenciaResponse> response = incidenciaBusiness.listarPaginado(search, page, size, sortField, sortDir);
         return ResponseEntity.ok(response);
     }
 

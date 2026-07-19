@@ -11,18 +11,19 @@ import { TagModule } from 'primeng/tag';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
 import { NuevaReservaComponent } from '../../../components/nueva-reserva/nueva-reserva.component';
 import { CheckInComponent } from '../../../components/checkin/checkin.component';
 import { CheckOutComponent } from '../../../components/checkout/checkout.component';
 import { PagosModalComponent } from '../../../components/pagos-modal/pagos-modal.component';
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, TableModule, TagModule, CardModule, ButtonModule, SkeletonModule, NuevaReservaComponent, CheckInComponent, CheckOutComponent, PagosModalComponent],
+  imports: [CommonModule, TableModule, TagModule, CardModule, ButtonModule, SkeletonModule, TooltipModule, NuevaReservaComponent, CheckInComponent, CheckOutComponent, PagosModalComponent],
   standalone: true,
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
   private router = inject(Router);
   private habitacionService = inject(HabitacionService);
   private reservaService = inject(ReservaService);
@@ -34,6 +35,7 @@ export class Dashboard implements OnInit {
   showCheckIn = false;
   showCheckOut = false;
   showPagos = false;
+  selectedCheckOutId: number | null = null;
   loading = false;
 
   pisos: { numero: number; habitaciones: any[] }[] = [];
@@ -49,6 +51,11 @@ export class Dashboard implements OnInit {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  trackByPiso(_index: number, piso: any): number { return piso.numero; }
+  trackByHab(_index: number, hab: any): number { return hab.id; }
+  trackByReserva(_index: number, r: any): any { return r.id; }
+  trackByHospedaje(_index: number, h: any): any { return h.id; }
 
   getHuespedNombre(hab: any): string {
     return this.huespedMap.get(hab.numero) || '---';
@@ -85,7 +92,7 @@ export class Dashboard implements OnInit {
       habitaciones: this.habitacionService.listarActivas().pipe(catchError(() => of({ data: [] }))),
       reservas: this.reservaService.listarDelDia().pipe(catchError(() => of({ data: [] }))),
       hospedajes: this.hospedajeService.listarActivos().pipe(catchError(() => of({ data: [] })))
-    }).pipe(takeUntil(this.destroy$)).subscribe({ next: ({ habitaciones, reservas, hospedajes }) => {
+    }    ).pipe(takeUntil(this.destroy$)).subscribe({ next: ({ habitaciones, reservas, hospedajes }) => {
       const rooms = (habitaciones as any).data || [];
       const hospedajesList = (hospedajes as any).data || [];
 

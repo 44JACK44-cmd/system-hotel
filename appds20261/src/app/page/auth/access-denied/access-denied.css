@@ -1,1 +1,51 @@
-:host ::ng-deep .p-card { border-radius: 16px}
+.adm-access-denied {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--clr-background);
+  min-height: 100vh;
+}
+.adm-access-denied__card {
+  background: var(--clr-surface-container-lowest);
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: var(--radius-xl);
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+.adm-access-denied__icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(186,26,26,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--clr-error);
+}
+.adm-access-denied__icon .material-symbols-outlined {
+  font-size: 40px;
+}
+.adm-access-denied__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--clr-primary);
+  margin: 0;
+}
+.adm-access-denied__text {
+  font-size: 14px;
+  color: var(--clr-on-surface-variant);
+  margin: 0;
+}
+@media(max-width:480px){
+  .adm-access-denied{padding:16px}
+  .adm-access-denied__card{padding:32px 24px}
+  .adm-access-denied__title{font-size:20px}
+  .adm-access-denied__icon{width:64px;height:64px}
+}

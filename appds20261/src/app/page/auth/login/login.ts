@@ -1,16 +1,19 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, NgZone, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../observable/auth.service';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { CheckboxModule } from 'primeng/checkbox';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   // Removed PrimeNG ButtonModule/PasswordModule — replaced by native HTML in new template
-  imports: [ToastModule, CommonModule, ReactiveFormsModule],
+  imports: [ToastModule, CommonModule, ReactiveFormsModule, InputTextModule, PasswordModule, CheckboxModule],
   providers: [MessageService],
   templateUrl: './login.html',
   styleUrls: ['./login.css'],
@@ -20,9 +23,9 @@ export class Login implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   private messageService = inject(MessageService);
+  private zone = inject(NgZone);
 
   loading = false;
-  showPassword = false;
 
   /** Reactive signal — updated every second */
   fechaActual = signal<string>('');
@@ -31,7 +34,8 @@ export class Login implements OnInit, OnDestroy {
 
   loginForm = this.fb.group({
     username: ['', Validators.required],
-    password: ['', Validators.required]
+    password: ['', Validators.required],
+    rememberMe: [false]
   });
 
   ngOnInit(): void {
@@ -57,13 +61,19 @@ export class Login implements OnInit, OnDestroy {
     this.horaActual.set(`${h12}:${mStr} ${ampm}`);
   }
 
+  forgotPassword(): void {
+    this.messageService.add({ severity: 'info', summary: 'Recuperar clave', detail: 'Contacte al administrador del sistema para restablecer su contraseña.' });
+  }
+
   onSubmit(): void {
     if (this.loginForm.invalid) return;
     this.loading = true;
     this.authService.login(this.loginForm.value as any).subscribe({
       next: () => {
         const rol = this.authService.getRol();
-        this.router.navigate([rol === 'ADMIN' ? '/admin/dashboard' : '/recepcion/dashboard']);
+        this.zone.run(() => {
+          this.router.navigate([rol === 'ADMIN' ? '/admin/dashboard' : '/recepcion/dashboard']);
+        });
       },
       error: (err) => {
         this.loading = false;

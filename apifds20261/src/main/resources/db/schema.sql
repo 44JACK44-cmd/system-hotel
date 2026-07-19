@@ -107,6 +107,25 @@ CREATE TABLE IF NOT EXISTS incidencias_habitacion (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 8. CONSUMOS (Minibar, Lavanderia, Servicio a la habitacion, etc.)
+CREATE TABLE IF NOT EXISTS tconsumo (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_consumo VARCHAR(36) NOT NULL UNIQUE,
+    hospedaje_id BIGINT NOT NULL,
+    usuario_id BIGINT NOT NULL,
+    tipo_consumo VARCHAR(20) NOT NULL DEFAULT 'OTROS',
+    descripcion VARCHAR(200) NOT NULL,
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL,
+    observacion VARCHAR(500),
+    fecha_registro DATETIME NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    FOREIGN KEY (hospedaje_id) REFERENCES hospedajes(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ==========================================
 -- INDICES
 -- ==========================================

@@ -1,0 +1,54 @@
+@if (visible) {
+  <div class="cm-overlay" (click)="cerrar()">
+    <div class="cm-modal" (click)="$event.stopPropagation()">
+      <p-toast />
+      <div class="cm-header">
+        <span class="material-symbols-outlined">inventory</span>
+        <span>{{ editConsumo ? 'EDITAR CONSUMO' : 'REGISTRAR CONSUMO' }}</span>
+        <button class="cm-close" (click)="cerrar()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="cm-body">
+        <div class="cm-field">
+          <label class="cm-label">Tipo de Consumo</label>
+          <select class="cm-select" [(ngModel)]="tipoSeleccionado">
+            @for (t of tipos; track t) {
+              <option [ngValue]="t">{{ t }}</option>
+            }
+          </select>
+        </div>
+        <div class="cm-field">
+          <label class="cm-label">Descripción</label>
+          <input class="cm-input" type="text" [(ngModel)]="descripcion" placeholder="Ej: Gaseosa, llamada, lavado..." />
+        </div>
+        <div class="cm-row">
+          <div class="cm-field">
+            <label class="cm-label">Cantidad</label>
+            <input class="cm-input" type="number" [(ngModel)]="cantidad" min="1" />
+          </div>
+          <div class="cm-field">
+            <label class="cm-label">Precio Unitario (S/)</label>
+            <input class="cm-input" type="number" [(ngModel)]="precioUnitario" min="0.01" step="0.01" />
+          </div>
+        </div>
+        @if (cantidad > 0 && precioUnitario > 0) {
+          <div class="cm-subtotal">
+            Subtotal: <strong>S/ {{ subtotal.toFixed(2) }}</strong>
+          </div>
+        }
+        <div class="cm-field">
+          <label class="cm-label">Observación (opcional)</label>
+          <textarea class="cm-textarea" [(ngModel)]="observacion" placeholder="Notas adicionales..." rows="2"></textarea>
+        </div>
+      </div>
+      <div class="cm-footer">
+        <button class="cm-btn cm-btn-cancel" (click)="cerrar()" [disabled]="saving">CANCELAR</button>
+        <button class="cm-btn cm-btn-save" (click)="guardar()" [disabled]="saving">
+          @if (saving) {
+            <span class="material-symbols-outlined" style="animation:cm-spin 1s linear infinite">sync</span>
+          }
+          {{ editConsumo ? 'ACTUALIZAR' : 'REGISTRAR' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

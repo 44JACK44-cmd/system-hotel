@@ -1,7 +1,6 @@
 -- ==========================================
 -- SISTEMA DE GESTIÓN HOTELERA
 -- BASE DE DATOS DEFINITIVA
--- 7 TABLAS
 -- ==========================================
 CREATE DATABASE system_hotel;
 USE system_hotel;

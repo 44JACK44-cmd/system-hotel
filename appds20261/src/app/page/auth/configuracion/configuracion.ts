@@ -3,11 +3,15 @@ import { FormsModule } from '@angular/forms';
 import { ConfiguracionService } from '../../../observable/configuracion.service';
 import { HabitacionService } from '../../../observable/habitacion.service';
 import { ParametroResponse, HabitacionResponse } from '../../../shared/models';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TextareaModule } from 'primeng/textarea';
 
 @Component({
   selector: 'app-configuracion',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, SelectModule, InputTextModule, CheckboxModule, TextareaModule],
   templateUrl: './configuracion.html',
   styleUrl: './configuracion.css',
 })

@@ -1,10 +1,8 @@
 <div class="usr-page">
   <div class="usr-page__header">
     <div>
-      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Gesti&oacute;n de Usuarios</h1>
-      <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
-        Administraci&oacute;n de personal, roles y registros de seguridad.
-      </p>
+      <h1 class="page-title">Gesti&oacute;n de Usuarios</h1>
+      <p class="page-subtitle">Administraci&oacute;n de personal, roles y registros de seguridad.</p>
     </div>
     <button class="hs-btn hs-btn-primary" (click)="showDialog()">
       <span class="material-symbols-outlined">person_add</span>
@@ -16,45 +14,63 @@
   <p-confirmDialog />
 
   @if (activeTab === 'personal') {
+  <!-- Search -->
+  <div class="hs-card" style="padding:12px">
+    <div class="hs-input-icon" style="margin:0">
+      <span class="material-symbols-outlined">search</span>
+      <input class="hs-input" type="text" placeholder="Buscar por nombre, usuario o rol..." [(ngModel)]="searchTerm" (input)="onSearchInput()" />
+    </div>
+  </div>
   <!-- Statistics Bento Grid -->
   <div class="usr-stats">
     <div class="usr-stat-card">
       <div class="usr-stat-icon usr-stat-icon--primary">
         <span class="material-symbols-outlined">group</span>
       </div>
-      <div class="usr-stat-value" style="color:var(--clr-primary)">{{ usuarios.length }}</div>
+      <div class="usr-stat-value" style="color:var(--clr-primary)">{{ stats.total }}</div>
       <div class="text-label-caps" style="color:var(--clr-on-surface-variant)">Total Usuarios</div>
     </div>
     <div class="usr-stat-card">
       <div class="usr-stat-icon usr-stat-icon--secondary">
         <span class="material-symbols-outlined">check_circle</span>
       </div>
-      <div class="usr-stat-value" style="color:var(--clr-secondary)">{{ usuarios.filter(u => u.activo).length }}</div>
+      <div class="usr-stat-value" style="color:var(--clr-secondary)">{{ stats.activos }}</div>
       <div class="text-label-caps" style="color:var(--clr-on-surface-variant)">Activos</div>
     </div>
     <div class="usr-stat-card">
       <div class="usr-stat-icon usr-stat-icon--admin">
         <span class="material-symbols-outlined">shield</span>
       </div>
-      <div class="usr-stat-value" style="color:var(--clr-primary-container)">{{ usuarios.filter(u => u.rol === 'ADMIN').length }}</div>
+      <div class="usr-stat-value" style="color:var(--clr-primary-container)">{{ stats.admins }}</div>
       <div class="text-label-caps" style="color:var(--clr-on-surface-variant)">Administradores</div>
     </div>
     <div class="usr-stat-card">
       <div class="usr-stat-icon usr-stat-icon--recep">
         <span class="material-symbols-outlined">support_agent</span>
       </div>
-      <div class="usr-stat-value" style="color:var(--clr-on-secondary-container)">{{ usuarios.filter(u => u.rol === 'RECEPCIONISTA').length }}</div>
+      <div class="usr-stat-value" style="color:var(--clr-on-secondary-container)">{{ stats.recepcionistas }}</div>
       <div class="text-label-caps" style="color:var(--clr-on-surface-variant)">Recepcionistas</div>
     </div>
   </div>
 
   <!-- User Table -->
-  <div class="hs-card" style="overflow:hidden">
+  <div class="hs-card" style="overflow:hidden;display:flex;flex-direction:column">
+    <div class="usr-table-scroll">
     <table class="hs-table">
       <thead>
         <tr>
-          <th>Nombre y Apellido</th>
-          <th>Rol</th>
+          <th class="usr-th-sortable" (click)="toggleSort('nombreCompleto')">
+            Nombre y Apellido
+            @if (sortField === 'nombreCompleto') {
+              <span class="material-symbols-outlined usr-sort-icon usr-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+            }
+          </th>
+          <th class="usr-th-sortable" (click)="toggleSort('rol')">
+            Rol
+            @if (sortField === 'rol') {
+              <span class="material-symbols-outlined usr-sort-icon usr-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+            }
+          </th>
           <th>&Uacute;ltimo Acceso</th>
           <th>Estado</th>
           <th style="text-align:right">Acciones</th>
@@ -88,10 +104,7 @@
             </td>
             <td>
               <div style="display:flex;align-items:center;gap:8px">
-                <label class="hs-toggle">
-                  <input type="checkbox" [checked]="u.activo" (change)="toggleStatus(u)" />
-                  <span class="hs-toggle__slider"></span>
-                </label>
+                <p-toggleswitch [ngModel]="u.activo" (ngModelChange)="toggleStatus(u)" />
                 <span class="text-body-md" [style.color]="u.activo ? 'var(--clr-status-available)' : 'var(--clr-on-surface-variant)'" style="font-weight:600;font-size:13px">
                   {{ u.activo ? 'Activo' : 'Inactivo' }}
                 </span>
@@ -100,9 +113,6 @@
             <td style="text-align:right;white-space:nowrap">
               <button class="hs-icon-btn" (click)="editUser(u)" title="Editar">
                 <span class="material-symbols-outlined">edit</span>
-              </button>
-              <button class="hs-icon-btn" title="M&aacute;s">
-                <span class="material-symbols-outlined">more_vert</span>
               </button>
             </td>
           </tr>
@@ -115,6 +125,11 @@
         }
       </tbody>
     </table>
+    </div>
+    <p-paginator (onPageChange)="onPageChange($event)" [first]="page * pageSize" [rows]="pageSize" [totalRecords]="totalRecords" [rowsPerPageOptions]="[10,20,50,100]" />
+    <div class="usr-table-footer">
+      Mostrando {{ totalRecords }} usuario(s)
+    </div>
   </div>
 
   }
@@ -162,10 +177,7 @@
 
           <div class="hs-field">
             <label class="hs-label">Rol</label>
-            <select class="hs-select" formControlName="rol">
-              <option value="RECEPCIONISTA">Recepcionista</option>
-              <option value="ADMIN">Administrador</option>
-            </select>
+            <p-select formControlName="rol" [options]="roles" optionLabel="label" optionValue="value" placeholder="Seleccionar rol" styleClass="w-full" appendTo="body" />
           </div>
         </form>
       </div>
@@ -186,6 +198,4 @@
   }
 </div>
 
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>
+

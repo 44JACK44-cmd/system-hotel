@@ -1,19 +1,19 @@
 <div class="hs-shell">
-  @if (!isPublicPage()) {
-    <app-header />
+  @if (!isPublicPage) {
+    <app-header (menuToggle)="toggleMobileDrawer()" />
   }
 
   <div class="hs-body">
-    @if (!isPublicPage()) {
+    @if (!isPublicPage) {
       <app-sidebar />
     }
 
-    <main class="hs-main">
+    <main class="hs-main" [class.hs-main--no-padding]="!isPublicPage">
       <router-outlet />
     </main>
   </div>
 
-  @if (!isPublicPage()) {
+  @if (!isPublicPage) {
     <nav class="hs-bottom-nav" role="navigation" aria-label="Navegación móvil">
       <a class="hs-bottom-nav__item"
          [class.active]="isActiveRoute(dashboardRoute)"
@@ -28,17 +28,74 @@
         <span class="nav-label">Reservas</span>
       </a>
       <a class="hs-bottom-nav__item"
+         [class.active]="isActiveRoute('/recepcion/hospedajes')"
+         routerLink="/recepcion/hospedajes">
+        <span class="material-symbols-outlined">hotel</span>
+        <span class="nav-label">Hospedajes</span>
+      </a>
+      <a class="hs-bottom-nav__item"
          [class.active]="isActiveRoute('/recepcion/clientes')"
          routerLink="/recepcion/clientes">
         <span class="material-symbols-outlined">group</span>
         <span class="nav-label">Clientes</span>
       </a>
-      <a class="hs-bottom-nav__item"
-         [class.active]="isActiveRoute('/recepcion/pagos')"
-         routerLink="/recepcion/pagos">
-        <span class="material-symbols-outlined">payments</span>
-        <span class="nav-label">Caja</span>
-      </a>
+      <button class="hs-bottom-nav__item hs-bottom-nav__item--more"
+              (click)="toggleMobileDrawer()"
+              aria-label="Más opciones">
+        <span class="material-symbols-outlined">more_horiz</span>
+        <span class="nav-label">M&aacute;s</span>
+      </button>
     </nav>
   }
 </div>
+
+@if (mobileDrawerOpen && !isPublicPage) {
+  <div class="hs-drawer-overlay" (click)="closeMobileDrawer()"></div>
+  <aside class="hs-drawer" role="dialog" aria-label="Menú de navegación">
+    <div class="hs-drawer__header">
+      <span class="material-symbols-outlined hs-drawer__icon">hotel</span>
+      <div>
+        <div class="hs-drawer__branch">Hotel</div>
+        <div class="hs-drawer__role">{{ rolLabel }}</div>
+      </div>
+      <button class="hs-drawer__close" (click)="closeMobileDrawer()" aria-label="Cerrar menú">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <nav class="hs-drawer__body" role="navigation" aria-label="Navegación completa">
+      <div class="hs-drawer__section">OPERACIONES</div>
+
+      @for (item of mobileMenuItems; track item.route) {
+        <a [routerLink]="item.route"
+           class="hs-drawer__item"
+           [class.hs-drawer__item--active]="isActiveRoute(item.route)"
+           (click)="closeMobileDrawer()">
+          <span class="material-symbols-outlined">{{ item.icon }}</span>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+
+      <div class="hs-drawer__section">ACCIONES</div>
+
+      <a class="hs-drawer__item"
+         [routerLink]="dashboardRoute"
+         (click)="closeMobileDrawer()">
+        <span class="material-symbols-outlined">add_circle</span>
+        <span>Check-In R&aacute;pido</span>
+      </a>
+
+      <div class="hs-drawer__section">SOPORTE</div>
+
+      <button class="hs-drawer__item" (click)="centroAyuda(); closeMobileDrawer()">
+        <span class="material-symbols-outlined">help</span>
+        <span>Centro de Ayuda</span>
+      </button>
+
+      <button class="hs-drawer__item hs-drawer__item--danger" (click)="logout()">
+        <span class="material-symbols-outlined">logout</span>
+        <span>Cerrar Sesi&oacute;n</span>
+      </button>
+    </nav>
+  </aside>
+}

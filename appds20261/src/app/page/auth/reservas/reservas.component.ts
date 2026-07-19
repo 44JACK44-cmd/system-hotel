@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReservaService } from '../../../observable/reserva.service';
@@ -6,18 +6,25 @@ import { ClienteService } from '../../../observable/cliente.service';
 import { HabitacionService } from '../../../observable/habitacion.service';
 import { AuthService } from '../../../observable/auth.service';
 import { ToastModule } from 'primeng/toast';
+import { SelectModule } from 'primeng/select';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { DatePickerModule } from 'primeng/datepicker';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { PaginatorModule } from 'primeng/paginator';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { PageResponse } from '../../../shared/models';
 
 @Component({
   selector: 'app-reservas',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastModule, ConfirmDialogModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastModule, SelectModule, PaginatorModule, InputNumberModule, DatePickerModule, TooltipModule, ConfirmDialogModule],
   providers: [MessageService, ConfirmationService],
   templateUrl: './reservas.component.html',
   styleUrls: ['./reservas.component.css']
 })
-export class ReservasComponent implements OnInit {
+export class ReservasComponent implements OnInit, OnDestroy {
   private reservaService = inject(ReservaService);
   private clienteService = inject(ClienteService);
   private habService = inject(HabitacionService);
@@ -27,7 +34,6 @@ export class ReservasComponent implements OnInit {
   private authService = inject(AuthService);
 
   reservas: any[] = [];
-  filteredReservas: any[] = [];
   searchTerm = '';
   clientes: any[] = [];
   habitaciones: any[] = [];
@@ -37,6 +43,16 @@ export class ReservasComponent implements OnInit {
   loading = false;
   editMode = false;
   editReservaId: number | null = null;
+
+  /* Server-side pagination */
+  page = 0;
+  pageSize = 20;
+  totalRecords = 0;
+  sortField = '';
+  sortDir: 'asc' | 'desc' = 'asc';
+
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
   get isAdmin(): boolean { return this.authService.isAdmin(); }
 
@@ -56,26 +72,49 @@ export class ReservasComponent implements OnInit {
     this.loadReservas();
     this.loadHabitaciones();
     this.loadClientes();
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => { this.page = 0; this.loadReservas(); });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.searchSubject.complete();
   }
 
   loadReservas(): void {
-    this.reservaService.listarTodas().subscribe(res => {
-      this.reservas = res.data || [];
-      this.filteredReservas = [...this.reservas];
+    this.loading = true;
+    this.reservaService.listarPaginado(this.page, this.pageSize, this.sortField || undefined, this.sortDir, this.searchTerm || undefined).subscribe({
+      next: (res: PageResponse<any>) => {
+        this.reservas = res.content;
+        this.totalRecords = res.totalElements;
+        this.loading = false;
+      },
+      error: () => this.loading = false
     });
   }
 
-  filterReservas(): void {
-    const term = this.searchTerm.toLowerCase().trim();
-    if (!term) {
-      this.filteredReservas = [...this.reservas];
-      return;
+  onSearchInput(): void {
+    this.searchSubject.next(this.searchTerm);
+  }
+
+  onPageChange(event: any): void {
+    this.page = event.page;
+    this.pageSize = event.rows;
+    this.loadReservas();
+  }
+
+  toggleSort(field: string): void {
+    if (this.sortField === field) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDir = 'asc';
     }
-    this.filteredReservas = this.reservas.filter(r =>
-      r.clienteNombre?.toLowerCase().includes(term) ||
-      String(r.habitacionNumero).includes(term) ||
-      r.estado?.toLowerCase().includes(term)
-    );
+    this.page = 0;
+    this.loadReservas();
   }
 
   loadHabitaciones(): void {
@@ -221,7 +260,6 @@ export class ReservasComponent implements OnInit {
   }
 
   cancelReserva(r: any): void {
-    // RN-12: solo ADMIN puede cancelar reservas
     if (!this.isAdmin) {
       this.messageService.add({ severity: 'error', summary: 'RN-12', detail: 'Solo el ADMIN puede cancelar reservas' });
       return;

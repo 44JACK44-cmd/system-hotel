@@ -9,7 +9,7 @@
 
     <p-toast position="top-center" />
 
-    <form class="nr-body" (ngSubmit)="guardar()">
+    <div class="nr-body">
       <section class="nr-section">
         <label class="nr-label">CLIENTE</label>
         <div class="nr-search-row">
@@ -21,12 +21,7 @@
           </div>
         </div>
         @if (clientes.length > 0) {
-          <select class="nr-input nr-select" [(ngModel)]="selectedCliente" name="selectedCliente">
-            <option [ngValue]="null" disabled>Seleccionar cliente</option>
-            @for (c of clientes; track c) {
-              <option [ngValue]="c">{{ c.nombreCompleto }}</option>
-            }
-          </select>
+          <p-select [(ngModel)]="selectedCliente" name="selectedCliente" [options]="clientes" optionLabel="nombreCompleto" placeholder="Seleccionar cliente" styleClass="w-full" appendTo="body" />
         }
         <div class="nr-divider">
           <span class="nr-divider-text">O crear nuevo:</span>
@@ -40,13 +35,7 @@
       <section class="nr-section">
         <label class="nr-label">HABITACI&Oacute;N</label>
         <div class="nr-select-wrap">
-          <select class="nr-input nr-select" [(ngModel)]="reservaData.habitacionId" name="habitacionId" (ngModelChange)="recalcular();onHabitacionChange()">
-            <option [ngValue]="null" disabled>Buscar habitaci&oacute;n</option>
-            @for (h of habitaciones; track h) {
-              <option [ngValue]="h.value || h.id">{{ h.label }}</option>
-            }
-          </select>
-          <span class="material-symbols-outlined nr-select-arrow">keyboard_arrow_down</span>
+          <p-select [(ngModel)]="reservaData.habitacionId" name="habitacionId" [options]="habitaciones" optionLabel="label" optionValue="id" placeholder="Buscar habitación" styleClass="w-full" (ngModelChange)="recalcular();onHabitacionChange()" appendTo="body" />
         </div>
       </section>
 
@@ -60,13 +49,11 @@
         </div>
         <div class="nr-fechas-row">
           <div class="nr-date-wrap">
-            <input class="nr-input nr-date-input" type="text" [(ngModel)]="reservaData.fechaEntrada" name="fechaEntrada" (ngModelChange)="recalcular()" placeholder="Fecha entrada" />
-            <span class="material-symbols-outlined nr-date-icon">calendar_month</span>
+            <p-datepicker [(ngModel)]="reservaData.fechaEntrada" name="fechaEntrada" (ngModelChange)="recalcular()" dateFormat="yy-mm-dd" inputStyleClass="nr-input" styleClass="w-full" placeholder="Fecha entrada" appendTo="body" />
           </div>
           <span class="nr-date-sep">-</span>
           <div class="nr-date-wrap">
-            <input class="nr-input nr-date-input" type="text" [(ngModel)]="reservaData.fechaSalida" name="fechaSalida" (ngModelChange)="recalcular()" placeholder="Fecha salida" />
-            <span class="material-symbols-outlined nr-date-icon">calendar_month</span>
+            <p-datepicker [(ngModel)]="reservaData.fechaSalida" name="fechaSalida" (ngModelChange)="recalcular()" dateFormat="yy-mm-dd" inputStyleClass="nr-input" styleClass="w-full" placeholder="Fecha salida" appendTo="body" />
           </div>
         </div>
       </section>
@@ -79,20 +66,10 @@
             <input class="nr-input nr-monto-input" type="text" [(ngModel)]="reservaData.adelanto" name="adelanto" (ngModelChange)="recalcular()" placeholder="0.00" />
           </div>
           <div class="nr-pago-opts">
-            <label class="nr-radio">
-              <input type="radio" name="metodo" [(ngModel)]="reservaData.metodoPago" value="YAPE" />
-              <div class="nr-radio-circle">
-                <div class="nr-radio-dot"></div>
-              </div>
-              <span>YAPE</span>
-            </label>
-            <label class="nr-radio">
-              <input type="radio" name="metodo" [(ngModel)]="reservaData.metodoPago" value="EFECTIVO" />
-              <div class="nr-radio-circle">
-                <div class="nr-radio-dot"></div>
-              </div>
-              <span>EFECTIVO</span>
-            </label>
+            <p-radioButton [(ngModel)]="reservaData.metodoPago" name="metodo" value="YAPE" inputId="nr-yape" />
+            <label for="nr-yape" class="nr-radio-label">YAPE</label>
+            <p-radioButton [(ngModel)]="reservaData.metodoPago" name="metodo" value="EFECTIVO" inputId="nr-efectivo" />
+            <label for="nr-efectivo" class="nr-radio-label">EFECTIVO</label>
           </div>
         </div>
       </section>
@@ -100,16 +77,16 @@
       <section class="nr-section">
         <textarea class="nr-input nr-textarea" [(ngModel)]="reservaData.observaciones" name="observaciones" rows="2" placeholder="Observaciones"></textarea>
       </section>
+    </div>
 
-      <div class="nr-actions">
-        <button class="nr-btn nr-btn-cancel" type="button" (click)="cerrar()">CANCELAR</button>
-        <button class="nr-btn nr-btn-save" type="submit" [disabled]="!puedeGuardar() || loading">
-          @if (loading) {
-            <span class="material-symbols-outlined" style="animation:nr-spin 1s linear infinite;font-size:18px">sync</span>
-          }
-          GUARDAR
-        </button>
-      </div>
-    </form>
+    <div class="nr-actions">
+      <button class="nr-btn nr-btn-cancel" type="button" (click)="cerrar()">CANCELAR</button>
+      <button class="nr-btn nr-btn-save" type="button" (click)="guardar()" [disabled]="!puedeGuardar() || loading">
+        @if (loading) {
+          <span class="material-symbols-outlined" style="animation:nr-spin 1s linear infinite;font-size:18px">sync</span>
+        }
+        GUARDAR
+      </button>
+    </div>
   </div>
 </div>

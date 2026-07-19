@@ -58,23 +58,23 @@
               <div class="cfg-input-grid">
                 <div class="cfg-field">
                   <label class="cfg-field-label">NOMBRE COMERCIAL</label>
-                  <input class="cfg-input" type="text" [(ngModel)]="params['hotel.nombre']" />
+                  <input class="cfg-input" type="text" pInputText [(ngModel)]="params['hotel.nombre']" />
                 </div>
                 <div class="cfg-field">
                   <label class="cfg-field-label">RUC / ID FISCAL</label>
-                  <input class="cfg-input" type="text" [(ngModel)]="params['hotel.ruc']" />
+                  <input class="cfg-input" type="text" pInputText [(ngModel)]="params['hotel.ruc']" />
                 </div>
                 <div class="cfg-field cfg-field--full">
                   <label class="cfg-field-label">DIRECCIÓN FÍSICA</label>
-                  <input class="cfg-input" type="text" [(ngModel)]="params['hotel.direccion']" />
+                  <input class="cfg-input" type="text" pInputText [(ngModel)]="params['hotel.direccion']" />
                 </div>
                 <div class="cfg-field">
                   <label class="cfg-field-label">TELÉFONO DE RECEPCIÓN</label>
-                  <input class="cfg-input" type="tel" [(ngModel)]="params['hotel.telefono']" />
+                  <input class="cfg-input" type="tel" pInputText [(ngModel)]="params['hotel.telefono']" />
                 </div>
                 <div class="cfg-field">
                   <label class="cfg-field-label">CORREO ELECTRÓNICO</label>
-                  <input class="cfg-input" type="email" [(ngModel)]="params['hotel.email']" />
+                  <input class="cfg-input" type="email" pInputText [(ngModel)]="params['hotel.email']" />
                 </div>
               </div>
             </div>
@@ -84,55 +84,8 @@
         @if (activeTab === 'tarifas') {
           <div class="cfg-section">
             <div class="cfg-card">
-              <div class="cfg-season-header">
-                <h3 class="cfg-card-title" style="margin-bottom:0">Configuración de Temporadas</h3>
-                <button class="cfg-btn cfg-btn-accent">
-                  <span class="material-symbols-outlined" style="font-size:14px">add</span>
-                  NUEVA TEMPORADA
-                </button>
-              </div>
-              <div class="cfg-table-wrap">
-                <table class="cfg-table">
-                  <thead>
-                    <tr>
-                      <th>Temporada</th>
-                      <th>Rango de Fechas</th>
-                      <th>Multiplicador</th>
-                      <th>Estado</th>
-                      <th class="cfg-th-right">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style="font-weight:700">Temporada Baja</td>
-                      <td>Todo el año (Base)</td>
-                      <td>1.00x</td>
-                      <td><span class="cfg-badge cfg-badge-active">ACTIVO</span></td>
-                      <td class="cfg-td-right">
-                        <button class="cfg-icon-btn"><span class="material-symbols-outlined">edit</span></button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight:700">Fiestas Patrias</td>
-                      <td>15 Jul - 31 Jul</td>
-                      <td style="color:var(--clr-error);font-weight:700">1.50x</td>
-                      <td><span class="cfg-badge cfg-badge-scheduled">PROGRAMADO</span></td>
-                      <td class="cfg-td-right">
-                        <button class="cfg-icon-btn"><span class="material-symbols-outlined">edit</span></button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight:700">Año Nuevo</td>
-                      <td>20 Dic - 05 Ene</td>
-                      <td style="color:var(--clr-error);font-weight:700">1.80x</td>
-                      <td><span class="cfg-badge cfg-badge-scheduled">PROGRAMADO</span></td>
-                      <td class="cfg-td-right">
-                        <button class="cfg-icon-btn"><span class="material-symbols-outlined">edit</span></button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <h3 class="cfg-card-title">Configuración de Temporadas</h3>
+              <p style="font-size:14px;color:var(--clr-on-surface-variant);margin:8px 0 0">Las tarifas se gestionan por habitación desde el módulo de Habitaciones.</p>
             </div>
           </div>
         }
@@ -160,39 +113,14 @@
               <div class="cfg-method-card">
                 <div class="cfg-method-card__header">
                   <div class="cfg-method-icon">
-                    <span class="material-symbols-outlined">credit_card</span>
-                  </div>
-                  <div class="cfg-method-card__status-row">
-                    <label class="cfg-toggle">
-                      <input type="checkbox" checked class="cfg-toggle-input" />
-                      <div class="cfg-toggle-track"></div>
-                    </label>
-                  </div>
-                </div>
-                <h4 style="font-size:16px;font-weight:700;margin:0 0 4px">Pasarela (Stripe/Niubiz)</h4>
-                <p style="font-size:14px;line-height:20px;color:var(--clr-on-surface-variant);margin:0">Cobros automáticos mediante tarjetas Visa, Mastercard y Amex.</p>
-                <button class="cfg-method-btn cfg-method-btn--primary">Editar API Keys</button>
-              </div>
-              <div class="cfg-method-card">
-                <div class="cfg-method-card__header">
-                  <div class="cfg-method-icon">
                     <span class="material-symbols-outlined">qr_code_2</span>
                   </div>
                   <div class="cfg-method-card__status-row">
-                    <label class="cfg-toggle">
-                      <input type="checkbox" checked class="cfg-toggle-input" />
-                      <div class="cfg-toggle-track"></div>
-                    </label>
+                    <span class="cfg-badge cfg-badge-active" style="font-size:10px">CONFIGURADO</span>
                   </div>
                 </div>
-                <h4 style="font-size:16px;font-weight:700;margin:0 0 4px">Billeteras Digitales (Yape/Plin)</h4>
-                <p style="font-size:14px;line-height:20px;color:var(--clr-on-surface-variant);margin:0">Recepción de pagos mediante QR o número de celular. Verificación manual.</p>
-                <button class="cfg-method-btn cfg-method-btn--outline">Subir QR</button>
-              </div>
-              <div class="cfg-add-card">
-                <span class="material-symbols-outlined" style="font-size:32px;color:var(--clr-outline-variant);margin-bottom:8px">add_circle</span>
-                <h4 style="font-size:16px;font-weight:700;color:var(--clr-outline);margin:0 0 4px">Agregar Método</h4>
-                <p style="font-size:14px;line-height:20px;color:var(--clr-outline-variant);margin:0;padding:0 16px">Integra nuevas formas de pago para tus clientes.</p>
+                <h4 style="font-size:16px;font-weight:700;margin:0 0 4px">Yape</h4>
+                <p style="font-size:14px;line-height:20px;color:var(--clr-on-surface-variant);margin:0">Pagos mediante código QR o número de celular.</p>
               </div>
             </div>
           </div>
@@ -219,37 +147,28 @@
                     </div>
                   </div>
                   <div class="cfg-check-row">
-                    <input type="checkbox" checked class="cfg-checkbox" id="tax-included" />
+                    <p-checkbox binary="true" checked="true" inputId="tax-included" />
                     <label for="tax-included">Precios mostrados ya incluyen impuestos</label>
                   </div>
                 </div>
-                <div class="cfg-invoice-preview">
-                  <div class="cfg-invoice-header">
-                    <span class="material-symbols-outlined">info</span>
-                    <span>VISTA PREVIA DE FACTURA</span>
-                  </div>
-                  <div class="cfg-invoice-lines">
-                    <div class="cfg-invoice-line"><span>SUBTOTAL</span><span>$100.00</span></div>
-                    <div class="cfg-invoice-line"><span>IGV (18%)</span><span>$18.00</span></div>
-                    <div class="cfg-invoice-line cfg-invoice-line--total"><span>TOTAL</span><span>$118.00</span></div>
-                  </div>
+              <div class="cfg-invoice-preview">
+                <div class="cfg-invoice-header">
+                  <span class="material-symbols-outlined">info</span>
+                  <span>CONFIGURACIÓN FISCAL</span>
                 </div>
+                <p style="font-size:13px;color:var(--clr-on-surface-variant);padding:12px;margin:0">Configure el IGV/IVA y la tasa de servicio según la legislación vigente. Estos valores se aplicarán automáticamente en las facturas.</p>
+              </div>
               </div>
             </div>
             <div class="cfg-card" style="margin-top:16px">
               <h3 class="cfg-card-title">Políticas de Cancelación</h3>
               <div class="cfg-field" style="margin-bottom:16px">
                 <label class="cfg-field-label">POLÍTICA ESTÁNDAR</label>
-                <select class="cfg-input cfg-select">
-                  <option>Flexible: Cancelación gratuita hasta 24h antes</option>
-                  <option selected>Moderada: Reembolso 50% hasta 48h antes</option>
-                  <option>Estricta: Sin reembolso tras la reserva</option>
-                  <option>Personalizada...</option>
-                </select>
+                <p-select [options]="[{label:'Flexible: Cancelación gratuita hasta 24h antes',value:'flexible'},{label:'Moderada: Reembolso 50% hasta 48h antes',value:'moderada'},{label:'Estricta: Sin reembolso tras la reserva',value:'estricta'},{label:'Personalizada...',value:'personalizada'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar política" styleClass="w-full" appendTo="body" />
               </div>
               <div class="cfg-field">
                 <label class="cfg-field-label">TÉRMINOS Y CONDICIONES (PIE DE PÁGINA)</label>
-                <textarea class="cfg-input cfg-textarea" rows="4">El cliente acepta que el hotel no se hace responsable por objetos de valor no declarados en la caja fuerte de recepción. La hora de Check-out es a las 11:00 AM, penalidad de media tarifa tras 1 hora de retraso.</textarea>
+                <textarea class="cfg-input cfg-textarea" pTextarea rows="4">El cliente acepta que el hotel no se hace responsable por objetos de valor no declarados en la caja fuerte de recepción. La hora de Check-out es a las 11:00 AM, penalidad de media tarifa tras 1 hora de retraso.</textarea>
               </div>
             </div>
           </div>

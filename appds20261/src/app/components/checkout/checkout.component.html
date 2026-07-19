@@ -1,18 +1,21 @@
-<div class="co-slide-panel">
-  <div class="co-header">
-    <div class="co-header-left">
-      <span class="material-symbols-outlined">logout</span>
-      <h2 class="co-header-title">CHECK-OUT</h2>
+@if (visible) {
+<div class="hs-overlay hs-overlay--animate" (click)="cerrar()">
+<div class="hs-slide-panel hs-slide-panel--wide hs-slide-panel--animate" (click)="$event.stopPropagation()">
+  <div class="hs-slide-panel__header">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="material-symbols-outlined" style="color:white">logout</span>
+      <h2 style="font-size:18px;font-weight:700;color:white;margin:0">CHECK-OUT</h2>
     </div>
-    <div class="co-header-right">
-      <button class="co-icon-btn"><span class="material-symbols-outlined">notifications</span></button>
-      <button class="co-icon-btn"><span class="material-symbols-outlined">settings</span></button>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="hs-topbar__icon-btn" (click)="irAIncidencias()" pTooltip="Ir a Incidencias"><span class="material-symbols-outlined">notifications</span></button>
+      <button class="hs-topbar__icon-btn" (click)="irAConfiguracion()" pTooltip="Configuración"><span class="material-symbols-outlined">settings</span></button>
+      <button class="hs-topbar__icon-btn" (click)="cerrar()"><span class="material-symbols-outlined">close</span></button>
     </div>
   </div>
 
   <p-toast position="top-center" />
 
-  <div class="co-body">
+  <div class="hs-slide-panel__body">
     <!-- Search -->
     <section class="co-search-section">
       <label class="co-label">BUSCAR HOSPEDAJE ACTIVO</label>
@@ -45,7 +48,7 @@
 
           @if (esExtension) {
             <div class="co-alert co-alert--warning">
-              <span class="material-symbols-outlined" style="color:#d97706;font-size:18px">warning</span>
+              <span class="material-symbols-outlined" style="color:var(--clr-warning);font-size:18px">warning</span>
               <div>
                 <p class="co-alert-title">STATUS: RIESGO DE OVERSTAY</p>
                 <p class="co-alert-desc">{{ nochesExtra }}h de extensi&oacute;n solicitada. La salida programada era {{ formatFechaDesdeStr(hospedajeEncontrado.fechaSalidaProgramada) }}.</p>
@@ -81,7 +84,7 @@
               }
               <div class="co-fin-row">
                 <span>Adelanto Pagado</span>
-                <span class="co-fin-value" style="color:#86efac">- S/ {{ (hospedajeEncontrado.totalPagado || 0).toFixed(2) }}</span>
+                <span class="co-fin-value" style="color:color-mix(in srgb,var(--clr-status-available) 80%,var(--clr-white))">- S/ {{ (hospedajeEncontrado.totalPagado || 0).toFixed(2) }}</span>
               </div>
             </div>
             <div class="co-fin-total">
@@ -118,43 +121,50 @@
             <div class="co-quick-actions-box">
               <p class="co-section-label" style="color:var(--clr-secondary);margin-bottom:8px">ACCIONES R&Aacute;PIDAS</p>
               <div class="co-quick-grid">
-                <button class="co-quick-btn" type="button">
+                <button class="co-quick-btn" type="button" (click)="imprimirFactura()" pTooltip="Imprimir Factura">
                   <span class="material-symbols-outlined">print</span>
                   <span>FACTURA</span>
                 </button>
-                <button class="co-quick-btn" type="button">
+                <button class="co-quick-btn" type="button" (click)="reportarSucio()" pTooltip="Reportar como Sucio">
                   <span class="material-symbols-outlined">cleaning_services</span>
                   <span>SUCIO</span>
                 </button>
-                <button class="co-quick-btn" type="button">
+                <button class="co-quick-btn" type="button" (click)="abrirModalConsumo()" pTooltip="Registrar Consumo">
                   <span class="material-symbols-outlined">inventory</span>
                   <span>MINIBAR</span>
                 </button>
               </div>
             </div>
+            @if (consumos.length > 0) {
+              <div style="background:var(--clr-surface-container-lowest);border:1px solid var(--clr-outline-variant);border-radius:8px;padding:12px">
+                <p style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-secondary);margin:0 0 8px">CONSUMOS REGISTRADOS</p>
+                <div style="max-height:120px;overflow-y:auto">
+                  <table style="width:100%;font-size:11px;border-collapse:collapse">
+                    <thead><tr style="border-bottom:1px solid var(--clr-outline-variant)"><th style="text-align:left;padding:2px 4px">Tipo</th><th style="text-align:left;padding:2px 4px">Desc.</th><th style="text-align:right;padding:2px 4px">Monto</th></tr></thead>
+                    <tbody>
+                      @for (c of consumos; track c.id) {
+                        <tr><td style="padding:2px 4px;font-size:10px;color:var(--clr-secondary)">{{ c.tipoConsumo }}</td><td style="padding:2px 4px">{{ c.descripcion }}</td><td style="padding:2px 4px;text-align:right;font-weight:600">S/ {{ (c.subtotal || 0).toFixed(2) }}</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
           </div>
 
           <div class="co-trans-right">
             <label class="co-label">PAGO DE EXTENSI&Oacute;N Y SALDO</label>
             <div class="co-monto-row">
               <span class="co-currency-symbol">S/</span>
-              <input class="co-input co-monto-input" type="text" [(ngModel)]="montoPago" placeholder="0.00" />
+              <p-inputNumber [(ngModel)]="montoPago" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" inputStyleClass="co-input co-monto-input" styleClass="w-full" />
             </div>
 
             <label class="co-label" style="margin-top:12px;display:block">M&Eacute;TODO DE PAGO</label>
             <div class="co-pm-grid">
-              <label class="co-pm-option">
-                <input type="radio" name="co-metodo" [(ngModel)]="metodoPago" value="EFECTIVO" class="co-pm-hidden" />
-                <div class="co-pm-box">EFECTIVO</div>
-              </label>
-              <label class="co-pm-option">
-                <input type="radio" name="co-metodo" [(ngModel)]="metodoPago" value="TARJETA" class="co-pm-hidden" />
-                <div class="co-pm-box">TARJETA</div>
-              </label>
-              <label class="co-pm-option">
-                <input type="radio" name="co-metodo" [(ngModel)]="metodoPago" value="YAPE" class="co-pm-hidden" />
-                <div class="co-pm-box">YAPE / PLIN</div>
-              </label>
+              <p-radioButton [(ngModel)]="metodoPago" name="co-metodo" value="EFECTIVO" inputId="co-efectivo" />
+              <label for="co-efectivo" class="co-pm-box">EFECTIVO</label>
+              <p-radioButton [(ngModel)]="metodoPago" name="co-metodo" value="YAPE" inputId="co-yape" />
+              <label for="co-yape" class="co-pm-box">YAPE</label>
             </div>
           </div>
         </div>
@@ -173,3 +183,11 @@
     }
   </div>
 </div>
+</div>
+}
+<app-consumo-modal
+  [visible]="showConsumoModal"
+  [hospedajeId]="hospedajeEncontrado?.id"
+  [editConsumo]="null"
+  (close)="showConsumoModal = false"
+  (saved)="onConsumoSaved()" />

@@ -1,21 +1,26 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { ClienteService } from '../../../observable/cliente.service';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from "primeng/toast";
+import { PaginatorModule } from 'primeng/paginator';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { PageResponse } from '../../../shared/models';
 
 @Component({
   selector: 'app-clientes',
   standalone: true,
-  imports: [ToastModule, FormsModule, ReactiveFormsModule, CommonModule],
+  imports: [ToastModule, PaginatorModule, FormsModule, ReactiveFormsModule, CommonModule],
   templateUrl: './clientes.html',
   styleUrl: './clientes.css',
 })
-export class Clientes implements OnInit {
+export class Clientes implements OnInit, OnDestroy {
   private clienteService = inject(ClienteService);
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
+  private router = inject(Router);
 
   clientes: any[] = [];
   loading = false;
@@ -30,6 +35,16 @@ export class Clientes implements OnInit {
   historialTab = '0';
   detailCliente: any = null;
 
+  /* Server-side pagination */
+  page = 0;
+  pageSize = 20;
+  totalRecords = 0;
+  sortField = '';
+  sortDir: 'asc' | 'desc' = 'asc';
+
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+
   clienteForm = this.fb.group({
     nombreCompleto: ['', Validators.required],
     telefono: ['', Validators.required],
@@ -37,17 +52,51 @@ export class Clientes implements OnInit {
     email: ['']
   });
 
-  ngOnInit(): void { this.loadClientes(); }
+  ngOnInit(): void {
+    this.loadClientes();
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => { this.page = 0; this.loadClientes(); });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.searchSubject.complete();
+  }
 
   loadClientes(): void {
     this.loading = true;
-    this.clienteService.listarTodos().subscribe({ next: res => { this.clientes = res.data || []; this.loading = false; }, error: () => this.loading = false });
+    this.clienteService.listarPaginado(this.page, this.pageSize, this.sortField || undefined, this.sortDir, this.searchTerm || undefined).subscribe({
+      next: (res: PageResponse<any>) => {
+        this.clientes = res.content;
+        this.totalRecords = res.totalElements;
+        this.loading = false;
+      },
+      error: () => this.loading = false
+    });
   }
 
-  search(): void {
-    if (this.searchTerm.length < 2) { this.loadClientes(); return; }
-    this.loading = true;
-    this.clienteService.buscar(this.searchTerm).subscribe({ next: res => { this.clientes = res.data || []; this.loading = false; }, error: () => this.loading = false });
+  onSearchInput(): void {
+    this.searchSubject.next(this.searchTerm);
+  }
+
+  onPageChange(event: any): void {
+    this.page = event.page;
+    this.pageSize = event.rows;
+    this.loadClientes();
+  }
+
+  toggleSort(field: string): void {
+    if (this.sortField === field) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDir = 'asc';
+    }
+    this.page = 0;
+    this.loadClientes();
   }
 
   showDialog(): void {
@@ -83,5 +132,20 @@ export class Clientes implements OnInit {
     this.historialVisible = true;
     this.clienteService.historialReservas(c.id).subscribe(res => this.historialReservas = res.data || []);
     this.clienteService.historialHospedajes(c.id).subscribe(res => this.historialHospedajes = res.data || []);
+  }
+
+  nuevaReservaDesdeCliente(c: any): void {
+    this.messageService.add({ severity: 'info', summary: 'Redirigiendo', detail: 'Abriendo nueva reserva...' });
+    this.router.navigate(['/reservas']);
+  }
+
+  contactarCliente(c: any): void {
+    if (c.telefono) {
+      window.open(`https://wa.me/${c.telefono.replace(/\s/g, '')}`, '_blank');
+    } else if (c.email) {
+      window.open(`mailto:${c.email}`);
+    } else {
+      this.messageService.add({ severity: 'warn', summary: 'Sin contacto', detail: 'El cliente no tiene teléfono ni email registrado' });
+    }
   }
 }

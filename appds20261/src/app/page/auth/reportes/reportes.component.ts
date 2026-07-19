@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReporteService } from '../../../observable/reporte.service';
 import { ToastModule } from 'primeng/toast';
+import { DatePickerModule } from 'primeng/datepicker';
 import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule],
+  imports: [CommonModule, FormsModule, ToastModule, DatePickerModule],
   providers: [MessageService],
   templateUrl: './reportes.component.html',
   styleUrls: ['./reportes.component.css']
@@ -25,6 +26,51 @@ export class ReportesComponent implements OnInit {
   noConcretadas: any = null;
   historialIncidencias: any[] = [];
   ranking: any[] = [];
+
+  /* Sort - Historial */
+  histSortField = '';
+  histSortDir: 'asc' | 'desc' = 'asc';
+
+  get sortedHistorial(): any[] {
+    let list = this.historialIncidencias;
+    if (this.histSortField) {
+      list = [...list].sort((a, b) => {
+        const va = (a[this.histSortField] || '').toString().toLowerCase();
+        const vb = (b[this.histSortField] || '').toString().toLowerCase();
+        return this.histSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      });
+    }
+    return list;
+  }
+
+  toggleSortHist(field: string): void {
+    if (this.histSortField === field) { this.histSortDir = this.histSortDir === 'asc' ? 'desc' : 'asc'; }
+    else { this.histSortField = field; this.histSortDir = 'asc'; }
+  }
+
+  /* Sort - Ranking */
+  rankSortField = '';
+  rankSortDir: 'asc' | 'desc' = 'asc';
+
+  get sortedRanking(): any[] {
+    let list = this.ranking;
+    if (this.rankSortField) {
+      list = [...list].sort((a, b) => {
+        let va = (a[this.rankSortField] || '').toString().toLowerCase();
+        let vb = (b[this.rankSortField] || '').toString().toLowerCase();
+        if (this.rankSortField === 'vecesReservada' || this.rankSortField === 'ingresoGenerado') {
+          return this.rankSortDir === 'asc' ? Number(a[this.rankSortField] || 0) - Number(b[this.rankSortField] || 0) : Number(b[this.rankSortField] || 0) - Number(a[this.rankSortField] || 0);
+        }
+        return this.rankSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      });
+    }
+    return list;
+  }
+
+  toggleSortRank(field: string): void {
+    if (this.rankSortField === field) { this.rankSortDir = this.rankSortDir === 'asc' ? 'desc' : 'asc'; }
+    else { this.rankSortField = field; this.rankSortDir = 'asc'; }
+  }
 
   ingresoInicio = '';
   ingresoFin = '';

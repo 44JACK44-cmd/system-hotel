@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../observable/auth.service';
@@ -11,6 +11,7 @@ import { AuthService } from '../../observable/auth.service';
   styleUrl: './header.component.css'
 })
 export class HeaderComponent implements OnInit, OnDestroy {
+  @Output() menuToggle = new EventEmitter<void>();
   private authService = inject(AuthService);
   private router = inject(Router);
 

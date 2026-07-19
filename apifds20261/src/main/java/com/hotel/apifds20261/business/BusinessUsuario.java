@@ -1,6 +1,7 @@
 package com.hotel.apifds20261.business;
 
 import com.hotel.apifds20261.dto.request.RequestUsuarioInsert;
+import com.hotel.apifds20261.dto.response.ResponsePage;
 import com.hotel.apifds20261.dto.response.UsuarioResponse;
 import com.hotel.apifds20261.entity.EntityUsuario;
 import com.hotel.apifds20261.staticdata.RolUsuario;
@@ -8,6 +9,10 @@ import com.hotel.apifds20261.exception.BusinessException;
 import com.hotel.apifds20261.exception.ResourceNotFoundException;
 import com.hotel.apifds20261.repository.RepositoryUsuario;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +33,18 @@ public class BusinessUsuario {
             list.add(toResponse(u));
         }
         return list;
+    }
+
+    public ResponsePage<UsuarioResponse> listarPaginado(String search, int page, int size, String sortField, String sortDir) {
+        Sort sort = Sort.by(sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortField == null || sortField.isBlank() ? "id" : sortField);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<EntityUsuario> pagina = usuarioRepository.findAllPaginated(search, pageable);
+        List<UsuarioResponse> list = new ArrayList<>();
+        for (EntityUsuario u : pagina.getContent()) {
+            list.add(toResponse(u));
+        }
+        return new ResponsePage<>(list, pagina.getNumber(), pagina.getSize(), pagina.getTotalElements(), pagina.getTotalPages());
     }
 
     public UsuarioResponse obtenerPorId(Long id) {

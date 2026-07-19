@@ -2,6 +2,7 @@ package com.hotel.apifds20261.controller;
 
 import com.hotel.apifds20261.business.BusinessUsuario;
 import com.hotel.apifds20261.dto.request.RequestUsuarioInsert;
+import com.hotel.apifds20261.dto.response.ResponsePage;
 import com.hotel.apifds20261.dto.response.ResponseUsuario;
 import com.hotel.apifds20261.dto.response.UsuarioResponse;
 import jakarta.validation.Valid;
@@ -24,6 +25,17 @@ public class UsuarioController {
         ResponseUsuario response = new ResponseUsuario();
         response.success();
         response.setListUsuario(list);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("getallpaginated")
+    public ResponseEntity<ResponsePage<UsuarioResponse>> actionGetAllPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(required = false) String search) {
+        ResponsePage<UsuarioResponse> response = usuarioBusiness.listarPaginado(search, page, size, sortField, sortDir);
         return ResponseEntity.ok(response);
     }
 

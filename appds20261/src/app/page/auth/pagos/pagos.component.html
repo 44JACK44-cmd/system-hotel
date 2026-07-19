@@ -2,10 +2,8 @@
 
   <div class="pag-page__header">
     <div>
-      <h1 class="text-display-lg" style="color:var(--clr-primary);margin:0">Gesti&oacute;n de Caja Diaria</h1>
-      <p class="text-body-md" style="color:var(--clr-on-surface-variant);margin:4px 0 0">
-        Control de ingresos, egresos y cierre de turno.
-      </p>
+      <h1 class="page-title">Gesti&oacute;n de Caja Diaria</h1>
+      <p class="page-subtitle">Control de ingresos, egresos y cierre de turno.</p>
     </div>
     <div class="flex" style="gap:12px;align-items:center">
       @if (!cajaActual) {
@@ -73,14 +71,14 @@
   </div>
 
   <div class="pag-main-grid">
-    <div class="hs-card" style="overflow:hidden;display:flex;flex-direction:column;height:500px">
+    <div class="hs-card" style="overflow:hidden;display:flex;flex-direction:column">
       <div class="pag-table-header">
         <h3 class="text-title-sm" style="color:var(--clr-primary);margin:0">Historial de Transacciones</h3>
         <div class="hs-field" style="max-width:260px;margin:0">
           <div class="hs-input-icon" style="margin:0">
             <span class="material-symbols-outlined">search</span>
             <input class="hs-input" type="text" placeholder="Buscar por ID, tipo, m&eacute;todo o referencia..."
-              [(ngModel)]="searchTerm" (input)="filter()" />
+              [(ngModel)]="searchTerm" (input)="onSearchInput()" />
           </div>
         </div>
       </div>
@@ -96,7 +94,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (p of filteredPagos; track p.id) {
+            @for (p of pagos; track p.id) {
               <tr>
                 <td class="text-data-tabular">{{ p.fechaPago | date:'HH:mm' }}</td>
                 <td>
@@ -135,8 +133,9 @@
           </tbody>
         </table>
       </div>
+      <p-paginator (onPageChange)="onPageChange($event)" [first]="page * pageSize" [rows]="pageSize" [totalRecords]="totalRecords" [rowsPerPageOptions]="[10,20,50,100]" />
       <div class="pag-table-footer">
-        Mostrando {{ filteredPagos.length }} de {{ pagos.length }} pago(s)
+        Mostrando {{ totalRecords }} pago(s) registrados
       </div>
     </div>
 
@@ -153,16 +152,11 @@
           </div>
           <div class="hs-field">
             <label class="hs-label">CATEGORÍA</label>
-            <select class="hs-select" [(ngModel)]="gastoCategoria">
-              <option value="Mantenimiento">Mantenimiento</option>
-              <option value="Servicios">Servicios</option>
-              <option value="Insumos">Insumos</option>
-              <option value="Otros">Otros</option>
-            </select>
+            <p-select [(ngModel)]="gastoCategoria" [options]="[{label:'Mantenimiento',value:'Mantenimiento'},{label:'Servicios',value:'Servicios'},{label:'Insumos',value:'Insumos'},{label:'Otros',value:'Otros'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar categoría" styleClass="w-full" appendTo="body" />
           </div>
           <div class="hs-field">
             <label class="hs-label">MONTO (S/)</label>
-            <input class="hs-input" type="number" [(ngModel)]="gastoMonto" placeholder="0.00" step="0.01" min="0.01" />
+            <p-inputNumber [(ngModel)]="gastoMonto" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.01" placeholder="0.00" inputStyleClass="hs-input" styleClass="w-full" />
           </div>
           <button class="hs-btn hs-btn-danger" style="width:100%;justify-content:center;padding:12px" (click)="registrarGasto()" [disabled]="loadingGasto">
             @if (loadingGasto) {
@@ -222,17 +216,13 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="hs-field">
             <label class="hs-label">Tipo</label>
-            <select class="hs-select" [(ngModel)]="pagoTipo">
-              <option value="ADELANTO">Adelanto</option>
-              <option value="SALDO">Saldo</option>
-              <option value="EXTENSION">Extensión</option>
-            </select>
+            <p-select [(ngModel)]="pagoTipo" [options]="[{label:'Adelanto',value:'ADELANTO'},{label:'Saldo',value:'SALDO'},{label:'Extensión',value:'EXTENSION'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo" styleClass="w-full" appendTo="body" />
           </div>
           <div class="hs-field">
             <label class="hs-label">Monto</label>
             <div class="hs-input-icon">
               <span class="material-symbols-outlined">payments</span>
-              <input class="hs-input" type="number" [(ngModel)]="pagoMonto" step="0.01" min="0.01" />
+              <p-inputNumber [(ngModel)]="pagoMonto" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.01" inputStyleClass="hs-input" styleClass="w-full" />
             </div>
           </div>
         </div>
@@ -240,10 +230,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="hs-field">
             <label class="hs-label">Método</label>
-            <select class="hs-select" [(ngModel)]="pagoMetodo">
-              <option value="EFECTIVO">Efectivo</option>
-              <option value="YAPE">Yape</option>
-            </select>
+            <p-select [(ngModel)]="pagoMetodo" [options]="[{label:'Efectivo',value:'EFECTIVO'},{label:'Yape',value:'YAPE'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar método" styleClass="w-full" appendTo="body" />
           </div>
           <div class="hs-field">
             <label class="hs-label">Referencia</label>
@@ -288,7 +275,7 @@
 
 @if (showCierreModal) {
   <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
-    <div class="absolute inset-0" style="background:rgba(0,32,70,0.25);backdrop-filter:blur(4px)" (click)="toggleCierreModal()"></div>
+    <div class="absolute" style="top:64px;left:0;right:0;bottom:0;background:rgba(0,32,70,0.25);backdrop-filter:blur(4px)" (click)="toggleCierreModal()"></div>
     <div class="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden" style="animation:fadeScaleIn 0.2s ease-out">
       <div class="p-6 border-b border-outline-variant flex justify-between items-center" style="background:var(--clr-surface-container-low)">
         <div>
@@ -322,19 +309,19 @@
             <span class="text-body-md" style="font-weight:700" [style.color]="balanceNeto >= 0 ? 'var(--clr-primary)' : 'var(--clr-error)'">S/ {{ balanceNeto.toFixed(2) }}</span>
           </div>
           @if (cierreMontoFisico !== null && Math.abs(cierreMontoFisico - totalEfectivo) > 0.01) {
-            <div class="p-4 rounded-lg flex items-center gap-3" style="background:#fef2f2;border:1px solid #fecaca">
-              <span class="material-symbols-outlined" style="color:#dc2626">warning</span>
+            <div class="p-4 rounded-lg flex items-center gap-3" style="background:color-mix(in srgb,var(--clr-error) 10%,transparent);border:1px solid color-mix(in srgb,var(--clr-error) 30%,transparent)">
+              <span class="material-symbols-outlined" style="color:var(--clr-error)">warning</span>
               <div>
-                <p class="text-sm" style="font-weight:700;color:#991b1b;margin:0">Diferencia detectada</p>
-                <p class="text-xs" style="color:#b91c1c;margin:2px 0 0">Diferencia: S/ {{ (totalEfectivo - cierreMontoFisico).toFixed(2) }}. Agregue una observaci&oacute;n.</p>
+                <p class="text-sm" style="font-weight:700;color:var(--clr-on-error-container);margin:0">Diferencia detectada</p>
+                <p class="text-xs" style="color:var(--clr-error);margin:2px 0 0">Diferencia: S/ {{ (totalEfectivo - cierreMontoFisico).toFixed(2) }}. Agregue una observaci&oacute;n.</p>
               </div>
             </div>
           } @else {
-            <div class="p-4 rounded-lg flex items-center gap-3" style="background:#f0fdf4;border:1px solid #bbf7d0">
-              <span class="material-symbols-outlined" style="color:#16a34a">check_circle</span>
+            <div class="p-4 rounded-lg flex items-center gap-3" style="background:color-mix(in srgb,var(--clr-status-available) 10%,transparent);border:1px solid color-mix(in srgb,var(--clr-status-available) 30%,transparent)">
+              <span class="material-symbols-outlined" style="color:var(--clr-status-available)">check_circle</span>
               <div>
-                <p class="text-sm" style="font-weight:700;color:#166534;margin:0">Caja cuadrada</p>
-                <p class="text-xs" style="color:#15803d;margin:2px 0 0">El monto f&iacute;sico coincide con el reporte del sistema.</p>
+                <p class="text-sm" style="font-weight:700;color:color-mix(in srgb,var(--clr-status-available) 80%,var(--clr-black));margin:0">Caja cuadrada</p>
+                <p class="text-xs" style="color:var(--clr-status-available);margin:2px 0 0">El monto f&iacute;sico coincide con el reporte del sistema.</p>
               </div>
             </div>
           }
@@ -357,7 +344,4 @@
   </div>
 }
 
-<style>
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes fadeScaleIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
-</style>
+

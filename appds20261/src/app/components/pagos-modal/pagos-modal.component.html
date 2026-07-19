@@ -13,17 +13,12 @@
   <div class="hs-slide-panel__body">
     <div class="hs-field">
       <label class="hs-label">TIPO DE PAGO</label>
-      <select class="hs-input" [(ngModel)]="tipo">
-        <option [ngValue]="null" disabled>Seleccionar tipo</option>
-        @for (t of tipos; track t) {
-          <option [ngValue]="t.value || t">{{ t.label || t }}</option>
-        }
-      </select>
+      <p-select [(ngModel)]="tipo" [options]="tipos" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo" styleClass="w-full" appendTo="body" />
     </div>
 
     <div class="hs-field">
       <label class="hs-label">MONTO</label>
-      <input class="hs-input" type="number" [(ngModel)]="monto" min="0.01" step="0.01" placeholder="S/ 0.00" />
+      <p-inputNumber [(ngModel)]="monto" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.01" placeholder="S/ 0.00" inputStyleClass="hs-input" styleClass="w-full" />
     </div>
 
     <div class="hs-field">

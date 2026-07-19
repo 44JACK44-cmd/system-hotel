@@ -1,24 +1,24 @@
 <div class="dash-page">
-  <div class="dash-quick-actions">
-    <button class="hs-quick-btn" (click)="showNuevaReserva = true" title="Nueva Reserva">
+  <div class="dash-actions-bar">
+    <button class="dash-action-btn" (click)="showNuevaReserva = true" pTooltip="Nueva Reserva" tooltipPosition="bottom">
       <span class="material-symbols-outlined">calendar_month</span>
-      <span class="label">Reservas</span>
+      <span>Nueva Reserva</span>
     </button>
-    <button class="hs-quick-btn" (click)="showCheckIn = true" title="Check-in">
+    <button class="dash-action-btn dash-action-btn--primary" (click)="showCheckIn = true" pTooltip="Check-in" tooltipPosition="bottom">
       <span class="material-symbols-outlined">key</span>
-      <span class="label">Check-in</span>
+      <span>Check-in</span>
     </button>
-    <button class="hs-quick-btn" (click)="showCheckOut = true" title="Check-out">
+    <button class="dash-action-btn dash-action-btn--danger" (click)="showCheckOut = true; selectedCheckOutId = null" pTooltip="Check-out" tooltipPosition="bottom">
       <span class="material-symbols-outlined">logout</span>
-      <span class="label">Check-out</span>
+      <span>Check-out</span>
     </button>
-    <button class="hs-quick-btn" (click)="showPagos = true" title="Pagos">
+    <button class="dash-action-btn" (click)="showPagos = true" pTooltip="Pagos" tooltipPosition="bottom">
       <span class="material-symbols-outlined">payments</span>
-      <span class="label">Pagos</span>
+      <span>Pagos / Caja</span>
     </button>
-    <button class="hs-quick-btn" (click)="irALimpieza()" title="Limpieza">
+    <button class="dash-action-btn" (click)="irALimpieza()" pTooltip="Limpieza" tooltipPosition="bottom">
       <span class="material-symbols-outlined">cleaning_services</span>
-      <span class="label">Limpieza</span>
+      <span>Limpieza</span>
     </button>
   </div>
 
@@ -30,63 +30,63 @@
       </h2>
       <div class="dash-legend">
         <div class="dash-legend__item">
-          <span class="dash-legend__dot" style="background:var(--clr-status-available)"></span>
+          <span class="dash-legend__dot dash-legend__dot--available"></span>
           <span>Disponible</span>
         </div>
         <div class="dash-legend__item">
-          <span class="dash-legend__dot" style="background:var(--clr-status-occupied)"></span>
+          <span class="dash-legend__dot dash-legend__dot--occupied"></span>
           <span>Ocupada</span>
         </div>
         <div class="dash-legend__item">
-          <span class="dash-legend__dot" style="background:var(--clr-status-dirty)"></span>
+          <span class="dash-legend__dot dash-legend__dot--dirty"></span>
           <span>Limpieza</span>
         </div>
         <div class="dash-legend__item">
-          <span class="dash-legend__dot" style="background:var(--clr-status-maintenance)"></span>
+          <span class="dash-legend__dot dash-legend__dot--maintenance"></span>
           <span>Mantenimiento</span>
         </div>
       </div>
     </div>
 
     <div class="dash-floors">
-      @for (piso of pisos; track piso.numero) {
-        <div class="dash-floor">
+      <ng-container *ngIf="pisos.length > 0; else emptyPisos">
+        <div class="dash-floor" *ngFor="let piso of pisos; trackBy: trackByPiso">
           <div class="dash-floor__label">
             <span>PISO {{ piso.numero }}</span>
           </div>
           <div class="dash-floor__rooms">
-            @for (hab of piso.habitaciones; track hab.numero) {
-              <div class="hs-room-card"
+            <div class="hs-room-card"
+                 *ngFor="let hab of piso.habitaciones; trackBy: trackByHab"
+                 [class.available]="hab.estado === 'DISPONIBLE'"
+                 [class.occupied]="hab.estado === 'OCUPADA'"
+                 [class.dirty]="hab.estado === 'LIMPIEZA'"
+                 [class.maintenance]="hab.estado === 'MANTENIMIENTO'">
+              <div class="hs-room-card__header"
                    [class.available]="hab.estado === 'DISPONIBLE'"
                    [class.occupied]="hab.estado === 'OCUPADA'"
                    [class.dirty]="hab.estado === 'LIMPIEZA'"
                    [class.maintenance]="hab.estado === 'MANTENIMIENTO'">
-                <div class="hs-room-card__header"
-                     [class.available]="hab.estado === 'DISPONIBLE'"
-                     [class.occupied]="hab.estado === 'OCUPADA'"
-                     [class.dirty]="hab.estado === 'LIMPIEZA'"
-                     [class.maintenance]="hab.estado === 'MANTENIMIENTO'">
-                  <span style="font-weight:800;font-size:14px">{{ hab.numero }}</span>
-                  <span class="material-symbols-outlined filled-icon" style="font-size:16px">
-                    {{ hab.estado === 'DISPONIBLE' ? 'check_circle' : hab.estado === 'OCUPADA' ? 'person' : hab.estado === 'LIMPIEZA' ? 'cleaning_services' : 'engineering' }}
-                  </span>
-                </div>
-                <div class="hs-room-card__body">
-                  <div class="text-label-caps" style="color:var(--clr-on-surface-variant);opacity:0.7;margin-bottom:2px;font-size:12px">{{ hab.tipo }}</div>
-                  <div class="text-title-sm" [style.color]="getRoomStatusColor(hab.estado)">
-                    {{ getHuespedNombre(hab) || hab.estado }}
-                  </div>
+                <span style="font-weight:800;font-size:14px">{{ hab.numero }}</span>
+                <span class="material-symbols-outlined filled-icon" style="font-size:16px">
+                  {{ hab.estado === 'DISPONIBLE' ? 'check_circle' : hab.estado === 'OCUPADA' ? 'person' : hab.estado === 'LIMPIEZA' ? 'cleaning_services' : 'engineering' }}
+                </span>
+              </div>
+              <div class="hs-room-card__body">
+                <div class="text-label-caps" style="color:var(--clr-on-surface-variant);opacity:0.7;margin-bottom:2px;font-size:12px">{{ hab.tipo }}</div>
+                <div class="text-title-sm" [style.color]="getRoomStatusColor(hab.estado)">
+                  {{ getHuespedNombre(hab) || hab.estado }}
                 </div>
               </div>
-            }
+            </div>
           </div>
         </div>
-      } @empty {
+      </ng-container>
+      <ng-template #emptyPisos>
         <div class="dash-empty">
           <span class="material-symbols-outlined" style="font-size:32px;opacity:0.4">bed</span>
           <span>Cargando habitaciones...</span>
         </div>
-      }
+      </ng-template>
     </div>
   </section>
 
@@ -100,33 +100,34 @@
         <span class="badge badge-info">{{ reservasDelDia.length }}</span>
       </div>
       <div class="hs-card-body" style="padding:0">
-        @if (reservasDelDia.length > 0) {
-          <table class="hs-table">
-            <thead>
+        <ng-container *ngIf="reservasDelDia.length > 0; else noReservas">
+          <div class="table-container" style="border:none;border-radius:0">
+          <p-table [value]="reservasDelDia" styleClass="hs-table">
+            <ng-template pTemplate="header">
               <tr>
                 <th>Cliente</th>
                 <th>Hab.</th>
                 <th>Estado</th>
               </tr>
-            </thead>
-            <tbody>
-              @for (r of reservasDelDia; track r.id) {
-                <tr>
-                  <td class="text-body-md">{{ r.clienteNombre }}</td>
-                  <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ r.habitacionNumero || '-' }}</td>
-                  <td>
-                    <span class="badge" [ngClass]="getReservaStatusClass(r.estado)">{{ r.estado }}</span>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        } @else {
+            </ng-template>
+            <ng-template pTemplate="body" let-r>
+              <tr>
+                <td class="text-body-md">{{ r.clienteNombre }}</td>
+                <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ r.habitacionNumero || '-' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getReservaStatusClass(r.estado)">{{ r.estado }}</span>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+          </div>
+        </ng-container>
+        <ng-template #noReservas>
           <div class="dash-empty-row">
             <span class="material-symbols-outlined">check_circle</span>
             No hay reservas para hoy
           </div>
-        }
+        </ng-template>
       </div>
     </div>
 
@@ -139,55 +140,52 @@
         <span class="badge badge-active">{{ hospedajesActivos.length }}</span>
       </div>
       <div class="hs-card-body" style="padding:0">
-        @if (hospedajesActivos.length > 0) {
-          <table class="hs-table">
-            <thead>
+        <ng-container *ngIf="hospedajesActivos.length > 0; else noHospedajes">
+          <div class="table-container" style="border:none;border-radius:0">
+          <p-table [value]="hospedajesActivos" styleClass="hs-table">
+            <ng-template pTemplate="header">
               <tr>
                 <th>Nombre</th>
                 <th>Hab.</th>
                 <th>Checkout</th>
                 <th>Acción</th>
               </tr>
-            </thead>
-            <tbody>
-              @for (h of hospedajesActivos; track h.id) {
-                <tr>
-                  <td class="text-body-md">{{ h.clienteNombre }}</td>
-                  <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ h.habitacionNumero }}</td>
-                  <td class="text-data-tabular">{{ h.fechaSalidaProgramada | date:'dd/MM HH:mm' }}</td>
-                  <td>
-                    <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="showCheckOut = true">
-                      CHECK-OUT
-                    </button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        } @else {
+            </ng-template>
+            <ng-template pTemplate="body" let-h>
+              <tr>
+                <td class="text-body-md">{{ h.clienteNombre }}</td>
+                <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ h.habitacionNumero }}</td>
+                <td class="text-data-tabular">{{ h.fechaSalidaProgramada | date:'dd/MM HH:mm' }}</td>
+                <td>
+                  <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="showCheckOut = true; selectedCheckOutId = h.id">
+                    CHECK-OUT
+                  </button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+          </div>
+        </ng-container>
+        <ng-template #noHospedajes>
           <div class="dash-empty-row">
             <span class="material-symbols-outlined">inbox</span>
             No hay huéspedes activos
           </div>
-        }
+        </ng-template>
       </div>
     </div>
   </div>
 </div>
 
-@if (showNuevaReserva) {
-  <app-nueva-reserva [visible]="showNuevaReserva"
-    (close)="showNuevaReserva = false; cargarDatos()"></app-nueva-reserva>
-}
-@if (showCheckIn) {
-  <app-checkin [visible]="showCheckIn"
-    (close)="showCheckIn = false; cargarDatos()"></app-checkin>
-}
-@if (showCheckOut) {
-  <app-checkout [visible]="showCheckOut"
-    (close)="showCheckOut = false; cargarDatos()"></app-checkout>
-}
-@if (showPagos) {
-  <app-pagos-modal [visible]="showPagos"
-    (close)="showPagos = false; cargarDatos()"></app-pagos-modal>
-}
+<app-nueva-reserva *ngIf="showNuevaReserva"
+  [visible]="showNuevaReserva"
+  (close)="showNuevaReserva = false; cargarDatos()"></app-nueva-reserva>
+<app-checkin *ngIf="showCheckIn"
+  [visible]="showCheckIn"
+  (close)="showCheckIn = false; cargarDatos()"></app-checkin>
+<app-checkout *ngIf="showCheckOut"
+  [visible]="showCheckOut" [hospedajeId]="selectedCheckOutId"
+  (close)="showCheckOut = false; selectedCheckOutId = null; cargarDatos()"></app-checkout>
+<app-pagos-modal *ngIf="showPagos"
+  [visible]="showPagos"
+  (close)="showPagos = false; cargarDatos()"></app-pagos-modal>

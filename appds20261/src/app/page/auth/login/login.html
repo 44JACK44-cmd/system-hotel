@@ -34,6 +34,7 @@
               id="login-username"
               class="hs-input"
               type="text"
+              pInputText
               formControlName="username"
               placeholder="Ingrese su usuario"
               autocomplete="username"
@@ -44,32 +45,14 @@
 
         <div class="hs-field">
           <label class="hs-label" for="login-password">CONTRASEÑA</label>
-          <div class="hs-input-icon">
-            <span class="material-symbols-outlined">lock</span>
-            <input
-              id="login-password"
-              class="hs-input"
-              [type]="showPassword ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="••••••••"
-              autocomplete="current-password"
-              [class.hs-input--error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-            />
-            <button
-              type="button"
-              class="login-form__toggle-pw"
-              (click)="showPassword = !showPassword"
-              [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
-              <span class="material-symbols-outlined">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
-            </button>
-          </div>
+          <p-password formControlName="password" [toggleMask]="true" inputStyleClass="hs-input" styleClass="w-full" placeholder="••••••••" />
         </div>
 
         <div class="login-form__options">
           <label class="login-form__remember">
-            <input type="checkbox" /> Recordarme
+            <p-checkbox formControlName="rememberMe" binary="true" /> Recordarme
           </label>
-          <a href="#" class="login-form__forgot">¿Olvidó su clave?</a>
+          <a (click)="forgotPassword()" class="login-form__forgot" style="cursor:pointer">¿Olvidó su clave?</a>
         </div>
 
         <button
@@ -102,214 +85,3 @@
   </div>
 </div>
 
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.login-page {
-  min-height: 100vh;
-  background: var(--clr-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  position: relative;
-  overflow: hidden;
-}
-.login-card__blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  pointer-events: none;
-  z-index: -1;
-}
-.login-card__blob--tl {
-  width: 128px; height: 128px;
-  background: rgba(0,32,70,0.10);
-  top: -24px; right: -24px;
-}
-.login-card__blob--br {
-  width: 192px; height: 192px;
-  background: rgba(5,93,182,0.10);
-  bottom: -40px; left: -40px;
-}
-
-.login-card {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 420px;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: 0 20px 50px -12px rgba(0,0,0,0.18);
-  border: 1px solid rgba(196,198,207,0.3);
-}
-
-.login-card__topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  background: var(--clr-primary);
-  padding: 16px 24px;
-  height: 64px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-}
-.login-card__hotel-name {
-  font-size: 20px;
-  font-weight: 900;
-  color: white;
-  letter-spacing: -0.02em;
-}
-.login-card__branch {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.75);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 2px;
-}
-.login-card__datetime { text-align: right; }
-.login-card__date {
-  font-size: 11px;
-  color: rgba(255,255,255,0.8);
-  font-weight: 600;
-  margin: 0;
-}
-.login-card__time {
-  font-size: 10px;
-  color: rgba(255,255,255,0.6);
-  font-weight: 500;
-  margin: 0;
-}
-
-.login-card__body {
-  background: var(--clr-surface-container-lowest);
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-.login-card__brand { text-align: center; }
-.login-card__icon-wrap {
-  width: 96px; height: 96px;
-  border-radius: 50%;
-  background: rgba(101,161,254,0.12);
-  border: 1px solid rgba(101,161,254,0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 12px;
-  color: var(--clr-secondary);
-}
-.login-card__title {
-  margin: 0 0 4px;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--clr-primary);
-}
-.login-card__subtitle {
-  margin: 0;
-  font-size: 13px;
-  color: var(--clr-on-surface-variant);
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.hs-input--error {
-  border-color: var(--clr-error) !important;
-}
-.hs-input-icon { position: relative; }
-.hs-input-icon > .material-symbols-outlined:first-child {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--clr-outline);
-  font-size: 18px;
-  pointer-events: none;
-}
-.hs-input-icon .hs-input { padding-left: 38px; padding-right: 38px; }
-.login-form__toggle-pw {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--clr-outline);
-  display: flex;
-  align-items: center;
-  padding: 4px;
-}
-.login-form__toggle-pw:hover { color: var(--clr-on-surface); }
-
-.login-form__options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-}
-.login-form__remember {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--clr-on-surface-variant);
-  cursor: pointer;
-  user-select: none;
-}
-.login-form__forgot {
-  color: var(--clr-secondary);
-  text-decoration: none;
-  font-size: 13px;
-}
-.login-form__forgot:hover { text-decoration: underline; }
-
-.login-form__submit {
-  width: 100%;
-  justify-content: center;
-  padding: 12px;
-  font-size: 14px;
-  letter-spacing: 0.08em;
-  background: var(--clr-secondary);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-}
-.login-form__submit:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-.login-form__submit:active { transform: scale(0.98); }
-.login-form__submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.login-form__spinner {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.login-card__footer {
-  text-align: center;
-  font-size: 11px;
-  color: var(--clr-outline);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  border-top: 1px solid var(--clr-surface-container-high);
-  padding-top: 16px;
-  margin-top: 4px;
-}
-.login-card__footer-icons {
-  display: flex;
-  gap: 16px;
-  color: var(--clr-outline);
-}
-.login-card__footer-icons .material-symbols-outlined {
-  font-size: 18px;
-  cursor: help;
-  transition: color 0.15s;
-}
-.login-card__footer-icons .material-symbols-outlined:hover { color: var(--clr-on-surface-variant); }
-</style>

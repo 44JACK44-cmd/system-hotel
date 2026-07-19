@@ -3,6 +3,7 @@ package com.hotel.apifds20261.business;
 import com.hotel.apifds20261.dto.request.RequestReservaInsert;
 import com.hotel.apifds20261.dto.request.RequestReservaUpdate;
 import com.hotel.apifds20261.dto.response.ReservaResponse;
+import com.hotel.apifds20261.dto.response.ResponsePage;
 import com.hotel.apifds20261.entity.*;
 import com.hotel.apifds20261.staticdata.*;
 import com.hotel.apifds20261.exception.BusinessException;
@@ -37,6 +38,19 @@ public class BusinessReserva {
             list.add(toResponse(r));
         }
         return list;
+    }
+
+    public ResponsePage<ReservaResponse> listarPaginado(String search, int page, int size, String sortField, String sortDir) {
+        org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(
+                sortDir.equalsIgnoreCase("desc") ? org.springframework.data.domain.Sort.Direction.DESC : org.springframework.data.domain.Sort.Direction.ASC,
+                sortField == null || sortField.isBlank() ? "id" : sortField);
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sort);
+        org.springframework.data.domain.Page<EntityReserva> pagina = reservaRepository.findAllPaginated(search, pageable);
+        List<ReservaResponse> list = new ArrayList<>();
+        for (EntityReserva r : pagina.getContent()) {
+            list.add(toResponse(r));
+        }
+        return new ResponsePage<>(list, pagina.getNumber(), pagina.getSize(), pagina.getTotalElements(), pagina.getTotalPages());
     }
 
     public List<ReservaResponse> listarDelDia() {

@@ -4,6 +4,7 @@ import com.hotel.apifds20261.dto.request.RequestClienteInsert;
 import com.hotel.apifds20261.dto.response.ClienteResponse;
 import com.hotel.apifds20261.dto.response.HospedajeResponse;
 import com.hotel.apifds20261.dto.response.ReservaResponse;
+import com.hotel.apifds20261.dto.response.ResponsePage;
 import com.hotel.apifds20261.entity.EntityCliente;
 import com.hotel.apifds20261.entity.EntityHospedaje;
 import com.hotel.apifds20261.entity.EntityReserva;
@@ -12,6 +13,10 @@ import com.hotel.apifds20261.repository.RepositoryCliente;
 import com.hotel.apifds20261.repository.RepositoryHospedaje;
 import com.hotel.apifds20261.repository.RepositoryReserva;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -36,6 +41,18 @@ public class BusinessCliente {
             list.add(toResponse(c));
         }
         return list;
+    }
+
+    public ResponsePage<ClienteResponse> listarPaginado(String search, int page, int size, String sortField, String sortDir) {
+        Sort sort = Sort.by(sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortField == null || sortField.isBlank() ? "id" : sortField);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<EntityCliente> pagina = clienteRepository.findAllPaginated(search, pageable);
+        List<ClienteResponse> list = new ArrayList<>();
+        for (EntityCliente c : pagina.getContent()) {
+            list.add(toResponse(c));
+        }
+        return new ResponsePage<>(list, pagina.getNumber(), pagina.getSize(), pagina.getTotalElements(), pagina.getTotalPages());
     }
 
     public ClienteResponse obtenerPorId(Long id) {

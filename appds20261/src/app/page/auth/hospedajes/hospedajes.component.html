@@ -6,6 +6,7 @@
     </div>
   </div>
   <p-toast />
+  <p-confirmDialog />
   <div class="hos-tabs">
     <button class="hos-tab" [class.hos-tab--active]="activeTab === 'activos'" (click)="activeTab='activos';loadActivos()">
       <span class="material-symbols-outlined">hotel</span>
@@ -42,7 +43,7 @@
     <div class="hos-toolbar">
       <div class="hos-search">
         <span class="material-symbols-outlined">search</span>
-        <input class="hos-search-input" type="text" [(ngModel)]="filterText" placeholder="Buscar por huésped o habitación..." />
+        <input class="hos-search-input" type="text" [(ngModel)]="filterText" (input)="onFilterInput()" placeholder="Buscar por huésped o habitación..." />
       </div>
       <div style="display:flex;gap:8px">
         <button class="hos-action-btn" (click)="loadActivos()" title="Actualizar"><span class="material-symbols-outlined">refresh</span></button>
@@ -51,20 +52,35 @@
     <div class="hos-layout">
       <div class="hos-main-table">
         <div class="hs-card" style="overflow:hidden">
-          <div style="overflow-x:auto">
+          <div class="hos-table-scroll">
             <table class="hs-table">
               <thead>
                 <tr>
-                  <th>Huésped</th>
-                  <th>Hab.</th>
+                  <th class="hos-th-sortable" (click)="toggleSort('clienteNombre')">
+                    Huésped
+                    @if (sortField === 'clienteNombre') {
+                      <span class="material-symbols-outlined hos-sort-icon hos-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                    }
+                  </th>
+                  <th class="hos-th-sortable" (click)="toggleSort('habitacionNumero')">
+                    Hab.
+                    @if (sortField === 'habitacionNumero') {
+                      <span class="material-symbols-outlined hos-sort-icon hos-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                    }
+                  </th>
                   <th>Ingreso</th>
                   <th>Salida Prog.</th>
-                  <th>Deuda</th>
+                  <th class="hos-th-sortable" (click)="toggleSort('deudaPendiente')">
+                    Deuda
+                    @if (sortField === 'deudaPendiente') {
+                      <span class="material-symbols-outlined hos-sort-icon hos-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                    }
+                  </th>
                   <th class="hos-th-actions">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                @for (h of filteredHospedajes; track h.id) {
+                @for (h of sortedHospedajes; track h.id) {
                   <tr class="hos-row" [class.hos-row--selected]="selectedHospedajeId === h.id" (click)="selectHospedaje(h.id)">
                     <td>
                       <div class="hos-guest-cell">
@@ -85,9 +101,9 @@
                     </td>
                     <td class="hos-td-actions">
                       <div class="hos-quick-actions">
-                        <button class="hos-action-btn-icon" title="Cargar Consumo" (click)="selectHospedaje(h.id); $event.stopPropagation()"><span class="material-symbols-outlined">add_shopping_cart</span></button>
-                        <button class="hos-action-btn-icon" title="Ver Factura" (click)="selectHospedaje(h.id); $event.stopPropagation()"><span class="material-symbols-outlined">description</span></button>
-                        <button class="hos-action-btn-icon" title="Check-out Anticipado" (click)="showCheckoutFor(h.id); $event.stopPropagation()"><span class="material-symbols-outlined">exit_to_app</span></button>
+                        <button class="hos-action-btn-icon" pTooltip="Cargar Consumo" (click)="selectHospedaje(h.id); $event.stopPropagation()"><span class="material-symbols-outlined">add_shopping_cart</span></button>
+                        <button class="hos-action-btn-icon" pTooltip="Ver Factura" (click)="verFacturaDeHospedaje(h); $event.stopPropagation()"><span class="material-symbols-outlined">description</span></button>
+                        <button class="hos-action-btn-icon" pTooltip="Check-out Anticipado" (click)="showCheckoutFor(h.id); $event.stopPropagation()"><span class="material-symbols-outlined">exit_to_app</span></button>
                       </div>
                     </td>
                   </tr>
@@ -112,65 +128,73 @@
             <span class="hos-detail-panel__title">Detalle del Hospedaje</span>
             <button class="hos-action-btn" (click)="clearSelection()"><span class="material-symbols-outlined">close</span></button>
           </div>
-          <div class="hos-detail-box">
-            <div class="hos-detail-row"><span class="hos-detail-label">Huésped</span><span class="hos-detail-value">{{ detailHospedaje.clienteNombre }}</span></div>
-            <div class="hos-detail-row"><span class="hos-detail-label">Habitación</span><span class="hos-detail-value">{{ detailHospedaje.habitacionNumero }} ({{ detailHospedaje.habitacionTipo }})</span></div>
-            <div class="hos-detail-row"><span class="hos-detail-label">Ingreso</span><span class="hos-detail-value">{{ formatFecha(detailHospedaje.fechaIngreso) }}</span></div>
-            <div class="hos-detail-row"><span class="hos-detail-label">Salida Prog.</span><span class="hos-detail-value">{{ formatFecha(detailHospedaje.fechaSalidaProgramada) }}</span></div>
-            <div class="hos-detail-row"><span class="hos-detail-label">Total Pagado</span><span class="hos-detail-value">S/ {{ (detailHospedaje.totalPagado || 0).toFixed(2) }}</span></div>
-            <div class="hos-detail-row"><span class="hos-detail-label">Deuda Pendiente</span><span class="hos-detail-value hos-debt-value">S/ {{ (detailHospedaje.deudaPendiente || 0).toFixed(2) }}</span></div>
-            <div class="hos-detail-row"><span class="hos-detail-label">Estado</span><span class="hos-detail-value" style="color:var(--clr-secondary)">{{ detailHospedaje.estado }}</span></div>
-          </div>
-          <div class="hos-section">
-            <p class="hos-section-title">Consumos</p>
-            <div class="hos-consumo-form">
-              <input class="hs-input" type="text" [(ngModel)]="consumoDescripcion" placeholder="Descripción (ej: Minibar, llamada...)" style="grid-column:1/-1" />
-              <input class="hs-input" type="number" [(ngModel)]="consumoCantidad" min="1" placeholder="Cant." />
-              <div class="hs-input-icon">
-                <span class="material-symbols-outlined" style="position:absolute;left:10px;top:8px;font-size:16px;color:var(--clr-outline)">payments</span>
-                <input class="hs-input" type="number" [(ngModel)]="consumoPrecio" min="0.01" step="0.01" placeholder="Precio" style="padding-left:30px" />
-              </div>
-              <button class="hs-btn hs-btn-primary hs-btn-sm" (click)="registrarConsumo()" [disabled]="loading"><span class="material-symbols-outlined" style="font-size:16px">add</span> Agregar</button>
+          <div class="hos-detail-body">
+            <div class="hos-detail-box">
+              <div class="hos-detail-row"><span class="hos-detail-label">Huésped</span><span class="hos-detail-value">{{ detailHospedaje.clienteNombre }}</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Habitación</span><span class="hos-detail-value">{{ detailHospedaje.habitacionNumero }} ({{ detailHospedaje.habitacionTipo }})</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Ingreso</span><span class="hos-detail-value">{{ formatFecha(detailHospedaje.fechaIngreso) }}</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Salida Prog.</span><span class="hos-detail-value">{{ formatFecha(detailHospedaje.fechaSalidaProgramada) }}</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Total Pagado</span><span class="hos-detail-value">S/ {{ (detailHospedaje.totalPagado || 0).toFixed(2) }}</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Deuda Pendiente</span><span class="hos-detail-value hos-debt-value">S/ {{ (detailHospedaje.deudaPendiente || 0).toFixed(2) }}</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Estado</span><span class="hos-detail-value" style="color:var(--clr-secondary)">{{ detailHospedaje.estado }}</span></div>
             </div>
-            @if (loadingConsumos) { <p class="hos-empty-text">Cargando consumos...</p> }
-            @if (!loadingConsumos && consumos.length === 0) { <p class="hos-empty-text">Sin consumos registrados.</p> }
-            @if (consumos.length > 0) {
-              <div style="max-height:200px;overflow-y:auto">
-                <table class="hs-table" style="font-size:12px">
-                  <thead><tr><th>Descripción</th><th style="text-align:center">Cant.</th><th style="text-align:right">P/U</th><th style="text-align:right">Subtotal</th><th style="text-align:center">Fecha</th></tr></thead>
-                  <tbody>
-                    @for (c of consumos; track c.id) {
-                      <tr><td>{{ c.descripcion }}</td><td style="text-align:center">{{ c.cantidad }}</td><td style="text-align:right">S/ {{ (c.precioUnitario || 0).toFixed(2) }}</td><td style="text-align:right;font-weight:600">S/ {{ (c.subtotal || 0).toFixed(2) }}</td><td style="text-align:center;font-size:11px">{{ formatFechaCorta(c.fechaRegistro) }}</td></tr>
-                    }
-                  </tbody>
-                </table>
+            <div class="hos-section">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <p class="hos-section-title" style="margin:0">Consumos</p>
+                <button class="hos-action-btn" (click)="abrirModalConsumo()" title="Registrar Consumo"><span class="material-symbols-outlined">add_shopping_cart</span></button>
               </div>
-            }
-          </div>
-          <div class="hos-section">
-            <p class="hos-section-title">Extender Estadía</p>
-            <div style="display:flex;gap:8px">
-              <input class="hs-input" type="datetime-local" [(ngModel)]="extensionFecha" style="flex:1" />
-              <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="extenderEstadia()" [disabled]="loadingExtension">
-                @if (loadingExtension) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;font-size:16px">sync</span> } @else { Extender }
-              </button>
+              @if (loadingConsumos) { <p class="hos-empty-text">Cargando consumos...</p> }
+              @if (!loadingConsumos && consumos.length === 0) { <p class="hos-empty-text">Sin consumos registrados.</p> }
+              @if (consumos.length > 0) {
+                <div class="hos-consumos-scroll">
+                  <table class="hs-table" style="font-size:11px">
+                    <thead><tr><th>Tipo</th><th>Descripción</th><th style="text-align:center">Cant.</th><th style="text-align:right">P/U</th><th style="text-align:right">Subtotal</th><th style="text-align:center">Usuario</th><th style="text-align:center">Fecha</th><th style="text-align:center">Acción</th></tr></thead>
+                    <tbody>
+                      @for (c of consumos; track c.id) {
+                        <tr>
+                          <td><span style="font-size:10px;font-weight:600;color:var(--clr-secondary)">{{ c.tipoConsumo }}</span></td>
+                          <td>{{ c.descripcion }}</td>
+                          <td style="text-align:center">{{ c.cantidad }}</td>
+                          <td style="text-align:right">S/ {{ (c.precioUnitario || 0).toFixed(2) }}</td>
+                          <td style="text-align:right;font-weight:600">S/ {{ (c.subtotal || 0).toFixed(2) }}</td>
+                          <td style="text-align:center;font-size:10px">{{ c.usuarioNombre }}</td>
+                          <td style="text-align:center;font-size:10px">{{ formatFechaCorta(c.fechaRegistro) }}</td>
+                          <td style="text-align:center">
+                            <button class="hos-action-btn" (click)="editarConsumo(c)" title="Editar" style="width:24px;height:24px"><span class="material-symbols-outlined" style="font-size:14px">edit</span></button>
+                            <button class="hos-action-btn" (click)="eliminarConsumo(c.id)" title="Eliminar" style="width:24px;height:24px"><span class="material-symbols-outlined" style="font-size:14px">delete</span></button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                <p style="font-size:12px;font-weight:700;text-align:right;color:var(--clr-secondary);margin:4px 0 0 0">Total Consumos: S/ {{ totalConsumos.toFixed(2) }}</p>
+              }
             </div>
-          </div>
-          <div class="hos-action-bar">
-            <button class="hos-checkout-btn" (click)="showCheckout()"><span class="material-symbols-outlined" style="font-size:18px">logout</span> Realizar Salida</button>
-          </div>
-          <div class="hos-section">
-            <p class="hos-section-title">Cambiar Habitación</p>
-            <div style="display:flex;gap:8px">
-              <select class="hs-select" [(ngModel)]="nuevaHabitacionId" style="flex:1">
-                <option [ngValue]="null">Seleccionar habitación disponible</option>
-                @for (h of habitacionesDisponibles; track h.id) {
-                  <option [ngValue]="h.id">{{ h.label }}</option>
-                }
-              </select>
-              <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="cambiarHabitacion()" [disabled]="loadingCambio">
-                @if (loadingCambio) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;font-size:16px">sync</span> } @else { Cambiar }
-              </button>
+            <div class="hos-section">
+              <p class="hos-section-title">Extender Estadía</p>
+              <div style="display:flex;gap:8px">
+                <input class="hs-input" type="datetime-local" [(ngModel)]="extensionFecha" style="flex:1" />
+                <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="extenderEstadia()" [disabled]="loadingExtension">
+                  @if (loadingExtension) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;font-size:16px">sync</span> } @else { Extender }
+                </button>
+              </div>
+              @if (costoExtensionPreview > 0) {
+                <p style="font-size:12px;color:var(--clr-error);margin:4px 0 0 0">Costo adicional estimado: S/ {{ costoExtensionPreview.toFixed(2) }}</p>
+              }
+            </div>
+            <div class="hos-action-bar">
+              <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="verFactura()"><span class="material-symbols-outlined" style="font-size:16px">print</span> Factura</button>
+              <button class="hos-checkout-btn" (click)="showCheckout()"><span class="material-symbols-outlined" style="font-size:18px">logout</span> Realizar Salida</button>
+            </div>
+            <div class="hos-section">
+              <p class="hos-section-title">Cambiar Habitación</p>
+              <div style="display:flex;gap:8px">
+                <p-select [(ngModel)]="nuevaHabitacionId" [options]="habitacionesDisponibles" optionLabel="label" optionValue="id" placeholder="Seleccionar habitación disponible" styleClass="w-full" appendTo="body" />
+                <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="cambiarHabitacion()" [disabled]="loadingCambio">
+                  @if (loadingCambio) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;font-size:16px">sync</span> } @else { Cambiar }
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -178,20 +202,36 @@
       @if (!detailHospedaje) {
         <div class="hos-widgets">
           <div class="hos-widget hos-widget--housekeeping">
-            <div class="hos-widget__decor"><span class="material-symbols-outlined" style="font-size:120px;opacity:.05">domain</span></div>
             <div class="hos-widget__body">
               <div class="hos-widget__header"><span class="material-symbols-outlined" style="color:var(--clr-error)">cleaning_services</span><h4 class="hos-widget__title">Tareas de Limpieza Pendientes</h4></div>
               <div class="hos-widget__list">
-                <div class="hos-widget__item"><div class="hos-widget__dot hos-widget__dot--urgent"></div><span>Hab. 405 (Suite) - Limpieza Profunda Solicitada</span><span class="hos-widget__time">Hace 15 min</span></div>
-                <div class="hos-widget__item"><div class="hos-widget__dot hos-widget__dot--normal"></div><span>Hab. 201 (Std) - Cambio de Toallas</span><span class="hos-widget__time">Hace 45 min</span></div>
+                @if (incidenciasLimpieza.length === 0) {
+                  <div class="hos-widget__item" style="opacity:0.6">
+                    <span class="material-symbols-outlined" style="font-size:18px">check_circle</span>
+                    <span>No hay tareas de limpieza pendientes</span>
+                  </div>
+                }
+                @for (inc of incidenciasLimpieza; track inc.id) {
+                  <div class="hos-widget__item">
+                    <div class="hos-widget__dot hos-widget__dot--urgent"></div>
+                    <span>Hab. {{ inc.habitacionNumero }} — {{ inc.motivo }}</span>
+                    <span class="hos-widget__time">{{ getTiempoTranscurrido(inc.fechaInicio) }}</span>
+                  </div>
+                }
               </div>
             </div>
           </div>
           <div class="hos-widget hos-widget--arrival">
             <div class="hos-widget__arrival-header"><span class="hos-widget__arrival-badge">Próximo Check-In</span><span class="material-symbols-outlined" style="opacity:.5">flight_land</span></div>
-            <h4 class="hos-widget__arrival-guest">Sarah Connor</h4>
-            <p class="hos-widget__arrival-eta">Llega en aprox. 45 min</p>
-            <div class="hos-widget__arrival-footer"><div><p class="hos-widget__arrival-label">Asignada</p><p class="hos-widget__arrival-room">Suite 501</p></div><button class="hos-widget__arrival-btn"><span class="material-symbols-outlined">arrow_forward</span></button></div>
+            @if (proximosCheckIns.length > 0) {
+              <h4 class="hos-widget__arrival-guest">{{ proximosCheckIns[0].clienteNombre }}</h4>
+              <p class="hos-widget__arrival-eta">Habitación {{ proximosCheckIns[0].habitacionNumero }} — {{ proximosCheckIns[0].fechaEntrada | date:'HH:mm' }}</p>
+              <div class="hos-widget__arrival-footer">
+                <div><p class="hos-widget__arrival-label">Reserva #{{ proximosCheckIns[0].id }}</p><p class="hos-widget__arrival-room">{{ proximosCheckIns[0].habitacionTipo }}</p></div>
+              </div>
+            } @else {
+              <p class="hos-widget__arrival-eta" style="margin-top:12px">Sin check-ins programados para hoy</p>
+            }
           </div>
         </div>
       }
@@ -201,9 +241,9 @@
     <div class="hos-form-card">
       <div class="hos-form-card__header"><span class="material-symbols-outlined">key</span> Ingreso desde Reserva</div>
       <div class="hs-field"><label class="hs-label">ID de Reserva</label><input class="hs-input" type="number" [(ngModel)]="checkInReservaId" placeholder="Ej: 123" /></div>
-      <div class="hs-field"><label class="hs-label">Monto Saldo (opcional)</label><input class="hs-input" type="number" [(ngModel)]="checkInMontoSaldo" step="0.01" min="0" /></div>
+      <div class="hs-field"><label class="hs-label">Monto Saldo (opcional)</label><p-inputNumber [(ngModel)]="checkInMontoSaldo" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" inputStyleClass="hs-input" styleClass="w-full" /></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="hs-field"><label class="hs-label">Método</label><select class="hs-select" [(ngModel)]="checkInMetodo"><option value="EFECTIVO">Efectivo</option><option value="YAPE">Yape</option></select></div>
+        <div class="hs-field"><label class="hs-label">Método</label><p-select [(ngModel)]="checkInMetodo" [options]="[{label:'Efectivo',value:'EFECTIVO'},{label:'Yape',value:'YAPE'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar método" styleClass="w-full" appendTo="body" /></div>
       </div>
       <button class="hs-btn hs-btn-primary" style="align-self:flex-start" [disabled]="loadingCheckIn" (click)="doCheckIn()">
         @if (loadingCheckIn) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
@@ -214,14 +254,17 @@
   @if (activeTab === 'directo') {
     <div class="hos-form-card">
       <div class="hos-form-card__header"><span class="material-symbols-outlined">add_box</span> Ingreso Directo (sin reserva)</div>
-      <div class="hs-field"><label class="hs-label">Cliente</label><select class="hs-select" [(ngModel)]="directoClienteId"><option [ngValue]="null">Seleccionar cliente</option>@for (c of clientes; track c.id) { <option [ngValue]="c.id">{{ c.nombreCompleto }}</option> }</select></div>
-      <div class="hs-field"><label class="hs-label">Habitación</label><select class="hs-select" [(ngModel)]="directoHabitacionId"><option [ngValue]="null">Seleccionar habitación</option>@for (h of habitacionesDisponibles; track h.id) { <option [ngValue]="h.id">{{ h.label }}</option> }</select></div>
+      <div class="hs-field"><label class="hs-label">Cliente</label><p-select [(ngModel)]="directoClienteId" [options]="clientes" optionLabel="nombreCompleto" optionValue="id" placeholder="Seleccionar cliente" styleClass="w-full" appendTo="body" /></div>
+      <div class="hs-field"><label class="hs-label">Habitación</label><p-select [(ngModel)]="directoHabitacionId" [options]="habitacionesDisponibles" optionLabel="label" optionValue="id" placeholder="Seleccionar habitación" styleClass="w-full" appendTo="body" /></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="hs-field"><label class="hs-label">Noches</label><input class="hs-input" type="number" [(ngModel)]="directoNoches" min="1" /></div>
-        <div class="hs-field"><label class="hs-label">Monto Pagado</label><input class="hs-input" type="number" [(ngModel)]="directoMontoPago" step="0.01" min="0" /></div>
+        <div class="hs-field"><label class="hs-label">Monto Pagado</label><p-inputNumber [(ngModel)]="directoMontoPago" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" inputStyleClass="hs-input" styleClass="w-full" /></div>
       </div>
+      @if (costoDirectoTotal > 0) {
+        <p style="font-size:13px;color:var(--clr-secondary);margin-top:4px">Total estimado: S/ {{ costoDirectoTotal.toFixed(2) }} | Deuda: S/ {{ (costoDirectoTotal - directoMontoPago).toFixed(2) }}</p>
+      }
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="hs-field"><label class="hs-label">Método</label><select class="hs-select" [(ngModel)]="directoMetodo"><option value="EFECTIVO">Efectivo</option><option value="YAPE">Yape</option></select></div>
+        <div class="hs-field"><label class="hs-label">Método</label><p-select [(ngModel)]="directoMetodo" [options]="[{label:'Efectivo',value:'EFECTIVO'},{label:'Yape',value:'YAPE'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar método" styleClass="w-full" appendTo="body" /></div>
       </div>
       <button class="hs-btn hs-btn-primary" style="align-self:flex-start" [disabled]="loadingDirecto" (click)="doCheckInDirecto()">
         @if (loadingDirecto) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
@@ -230,11 +273,10 @@
     </div>
   }
 </div>
-@if (showCheckoutPanel && selectedHospedajeId) {
-  <div class="hos-overlay" (click)="closeCheckout()">
-    <div class="hos-overlay-content" (click)="$event.stopPropagation()">
-      <app-checkout [visible]="showCheckoutPanel" [hospedajeId]="selectedHospedajeId" (close)="closeCheckout()" />
-    </div>
-  </div>
-}
-<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+<app-checkout [visible]="showCheckoutPanel" [hospedajeId]="selectedHospedajeId" (close)="closeCheckout()" />
+<app-consumo-modal
+  [visible]="showConsumoModal"
+  [hospedajeId]="selectedHospedajeId"
+  [editConsumo]="editConsumo"
+  (close)="showConsumoModal = false"
+  (saved)="onConsumoSaved()" />

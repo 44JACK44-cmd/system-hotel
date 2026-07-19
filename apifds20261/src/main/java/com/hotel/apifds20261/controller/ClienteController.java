@@ -6,6 +6,7 @@ import com.hotel.apifds20261.dto.response.ClienteResponse;
 import com.hotel.apifds20261.dto.response.HospedajeResponse;
 import com.hotel.apifds20261.dto.response.ReservaResponse;
 import com.hotel.apifds20261.dto.response.ResponseCliente;
+import com.hotel.apifds20261.dto.response.ResponsePage;
 import com.hotel.apifds20261.dto.response.ResponseReserva;
 import com.hotel.apifds20261.dto.response.ResponseHospedaje;
 import jakarta.validation.Valid;
@@ -28,6 +29,17 @@ public class ClienteController {
         ResponseCliente response = new ResponseCliente();
         response.success();
         response.setListCliente(list);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("getallpaginated")
+    public ResponseEntity<ResponsePage<ClienteResponse>> actionGetAllPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(required = false) String search) {
+        ResponsePage<ClienteResponse> response = clienteBusiness.listarPaginado(search, page, size, sortField, sortDir);
         return ResponseEntity.ok(response);
     }
 

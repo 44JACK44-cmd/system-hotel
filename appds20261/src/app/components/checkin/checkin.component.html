@@ -1,24 +1,24 @@
 @if (visible) {
-<div class="ci-overlay" (click)="cerrar()">
-<div class="ci-slide-panel" (click)="$event.stopPropagation()">
-  <div class="ci-header">
-    <div class="ci-header-left">
-      <div class="ci-icon-box">
-        <span class="material-symbols-outlined">login</span>
+<div class="hs-overlay hs-overlay--animate" (click)="cerrar()">
+<div class="hs-slide-panel hs-slide-panel--wide hs-slide-panel--animate" (click)="$event.stopPropagation()">
+  <div class="hs-slide-panel__header">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;background:var(--clr-primary-container);color:var(--clr-white);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <span class="material-symbols-outlined" style="font-size:18px">login</span>
       </div>
       <div>
-        <h2 class="ci-header-title">CHECK-IN</h2>
-        <p class="ci-header-sub">Confirmar llegada y procesar pago para la reserva</p>
+        <h2 style="font-size:18px;font-weight:700;color:var(--clr-white);margin:0">CHECK-IN</h2>
+        <p style="font-size:13px;color:var(--clr-outline);margin:0">Confirmar llegada y procesar pago para la reserva</p>
       </div>
     </div>
-    <button class="ci-close-btn" (click)="cerrar()">
+    <button class="hs-topbar__icon-btn" (click)="cerrar()">
       <span class="material-symbols-outlined">close</span>
     </button>
   </div>
 
   <p-toast position="top-center" />
 
-  <div class="ci-body">
+  <div class="hs-slide-panel__body">
     <div class="ci-content">
       <div class="ci-left-col">
         <!-- Search -->
@@ -94,7 +94,7 @@
               <label class="ci-field-label">Monto a pagar</label>
               <div class="ci-monto-row">
                 <span class="ci-monto-symbol">S/</span>
-                <input class="ci-input ci-monto-input" type="text" [(ngModel)]="montoSaldo" placeholder="0.00" />
+                <p-inputNumber [(ngModel)]="montoSaldo" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" inputStyleClass="ci-input ci-monto-input" styleClass="w-full" />
               </div>
             </div>
             <div class="ci-field">
@@ -120,16 +120,7 @@
                     <span class="material-symbols-outlined ci-pm-check">check_circle</span>
                   </div>
                 </label>
-                <label class="ci-pm-card" [class.ci-pm-card--active]="metodoPago === 'TARJETA'">
-                  <input type="radio" name="ci-metodo" [(ngModel)]="metodoPago" value="TARJETA" class="ci-pm-radio" />
-                  <div class="ci-pm-radio-circle">
-                    <div class="ci-pm-radio-dot"></div>
-                  </div>
-                  <div class="ci-pm-label-row">
-                    <span class="ci-pm-label">TARJETA</span>
-                    <span class="material-symbols-outlined ci-pm-check">check_circle</span>
-                  </div>
-                </label>
+                
               </div>
             </div>
           </div>
@@ -155,27 +146,7 @@
       </div>
     </div>
 
-    <!-- Stats Bar -->
-    @if (reservaEncontrada) {
-      <div class="ci-stats">
-        <div class="ci-stat-item">
-          <span class="ci-stat-label">Ocupaci&oacute;n</span>
-          <span class="ci-stat-value" style="color:var(--clr-primary)">84%</span>
-        </div>
-        <div class="ci-stat-item">
-          <span class="ci-stat-label">Sucias</span>
-          <span class="ci-stat-value" style="color:var(--clr-error)">4</span>
-        </div>
-        <div class="ci-stat-item">
-          <span class="ci-stat-label">Llegadas Hoy</span>
-          <span class="ci-stat-value" style="color:var(--clr-secondary)">12</span>
-        </div>
-        <div class="ci-stat-item">
-          <span class="ci-stat-label">Salidas Pend.</span>
-          <span class="ci-stat-value" style="color:var(--clr-primary)">2</span>
-        </div>
-      </div>
-    }
+
   </div>
 </div>
 </div>

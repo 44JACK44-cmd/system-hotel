@@ -16,17 +16,33 @@
       <div class="hs-card" style="padding:16px">
         <div class="hs-input-icon">
           <span class="material-symbols-outlined">search</span>
-          <input class="hs-input" type="text" placeholder="Buscar por nombre, DNI, correo o teléfono..." [(ngModel)]="searchTerm" (input)="search()" />
+          <input class="hs-input" type="text" placeholder="Buscar por nombre, DNI, correo o teléfono..." [(ngModel)]="searchTerm" (input)="onSearchInput()" />
         </div>
       </div>
       <p-toast />
-      <div class="hs-card" style="overflow:hidden">
+      <div class="hs-card" style="overflow:hidden;display:flex;flex-direction:column">
+        <div class="cli-table-scroll">
         <table class="hs-table cli-table">
           <thead>
             <tr>
-              <th>Huésped</th>
-              <th>Estado</th>
-              <th>Lealtad</th>
+              <th class="cli-th-sortable" (click)="toggleSort('nombreCompleto')">
+                Huésped
+                @if (sortField === 'nombreCompleto') {
+                  <span class="material-symbols-outlined cli-sort-icon cli-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                }
+              </th>
+              <th class="cli-th-sortable" (click)="toggleSort('estado')">
+                Estado
+                @if (sortField === 'estado') {
+                  <span class="material-symbols-outlined cli-sort-icon cli-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                }
+              </th>
+              <th class="cli-th-sortable" (click)="toggleSort('lealtad')">
+                Lealtad
+                @if (sortField === 'lealtad') {
+                  <span class="material-symbols-outlined cli-sort-icon cli-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                }
+              </th>
               <th>Última Estancia</th>
               <th style="text-align:right">Acciones</th>
             </tr>
@@ -44,13 +60,13 @@
                   </div>
                 </td>
                 <td>
-                  @if (c.estado === 'Hospedado') { <span class="cli-status-badge badge-active">Hospedado</span> }
-                  @else if (c.estado === 'Reserva') { <span class="cli-status-badge badge-pending">Reserva</span> }
-                  @else { <span class="cli-status-badge cli-status-registrado">Registrado</span> }
+                  @if (c.estado === 'Hospedado') { <span class="cli-status-badge" style="background:color-mix(in srgb,var(--clr-status-available) 20%,transparent);color:var(--clr-status-available)">Hospedado</span> }
+                  @else if (c.estado === 'Reserva') { <span class="cli-status-badge" style="background:color-mix(in srgb,var(--clr-warning) 25%,transparent);color:color-mix(in srgb,var(--clr-warning) 80%,var(--clr-black))">Reserva</span> }
+                  @else { <span class="cli-status-badge" style="background:color-mix(in srgb,var(--clr-on-surface-variant) 12%,transparent);color:var(--clr-on-surface-variant)">Registrado</span> }
                 </td>
                 <td>
                   <div class="cli-loyalty">
-                    @if (c.lealtad === 'VIP') { <span class="material-symbols-outlined" style="color:#d4a017;font-size:16px;font-variation-settings:'FILL' 1">workspace_premium</span> }
+                    @if (c.lealtad === 'VIP') { <span class="material-symbols-outlined" style="color:var(--clr-warning);font-size:16px;font-variation-settings:'FILL' 1">workspace_premium</span> }
                     @else if (c.lealtad === 'Frecuente') { <span class="material-symbols-outlined" style="color:var(--clr-secondary);font-size:16px;font-variation-settings:'FILL' 1">star</span> }
                     @else if (c.lealtad === 'Regular') { <span class="material-symbols-outlined" style="color:var(--clr-on-surface-variant);font-size:16px;font-variation-settings:'FILL' 1">star</span> }
                     @else { <span class="material-symbols-outlined" style="color:var(--clr-outline-variant);font-size:16px">person_outline</span> }
@@ -74,27 +90,25 @@
             }
           </tbody>
         </table>
-        <div class="cli-table-footer">Mostrando {{ clientes.length }} cliente(s)</div>
+        </div>
+        <p-paginator (onPageChange)="onPageChange($event)" [first]="page * pageSize" [rows]="pageSize" [totalRecords]="totalRecords" [rowsPerPageOptions]="[10,20,50,100]" />
+        <div class="cli-table-footer">Mostrando {{ totalRecords }} cliente(s) registrados</div>
       </div>
     </div>
     @if (detailCliente) {
       <aside class="cli-detail-panel">
         <div class="cli-detail-cover">
-          <div class="cli-detail-cover__img"></div>
-          <div class="cli-detail-cover__gradient"></div>
-          <div class="cli-detail-cover__content">
-            <div class="cli-detail-avatar">{{ detailCliente.nombreCompleto | slice:0:2 }}</div>
-            <div>
-              <h2 class="cli-detail-name">{{ detailCliente.nombreCompleto }}</h2>
-              <p class="cli-detail-subtitle">{{ detailCliente.lealtad }} • ID: {{ detailCliente.id }}</p>
-            </div>
+          <div class="cli-detail-avatar">{{ detailCliente.nombreCompleto | slice:0:2 }}</div>
+          <div style="flex:1">
+            <h2 class="cli-detail-name">{{ detailCliente.nombreCompleto }}</h2>
+            <p class="cli-detail-subtitle">{{ detailCliente.lealtad }} • ID: {{ detailCliente.id }}</p>
           </div>
           <button class="cli-detail-close" (click)="detailCliente = null"><span class="material-symbols-outlined">close</span></button>
         </div>
         <div class="cli-detail-body">
           <div class="cli-detail-actions">
-            <button class="cli-btn-primary"><span class="material-symbols-outlined">add_box</span> Nueva Reserva</button>
-            <button class="cli-btn-outline"><span class="material-symbols-outlined">mail</span> Contactar</button>
+            <button class="cli-btn-primary" (click)="nuevaReservaDesdeCliente(detailCliente)"><span class="material-symbols-outlined">add_box</span> Nueva Reserva</button>
+            <button class="cli-btn-outline" (click)="contactarCliente(detailCliente)"><span class="material-symbols-outlined">mail</span> Contactar</button>
           </div>
           <section class="cli-section">
             <h3 class="cli-section-title">Información Personal</h3>
@@ -105,15 +119,6 @@
               <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">calendar_month</span><div><p class="cli-info-label">Registrado desde</p><p class="cli-info-value">{{ detailCliente.createdAt | date:'dd/MM/yyyy' }}</p></div></div>
               <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">meeting_room</span><div><p class="cli-info-label">Estado actual</p><p class="cli-info-value">{{ detailCliente.estado }}</p></div></div>
               <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">hotel</span><div><p class="cli-info-label">Estancias completadas</p><p class="cli-info-value">{{ detailCliente.totalEstancias || 0 }}</p></div></div>
-            </div>
-          </section>
-          <section class="cli-section">
-            <h3 class="cli-section-title">Preferencias y Salud</h3>
-            <div class="cli-pref-grid">
-              <div class="cli-pref-card"><span class="material-symbols-outlined cli-pref-icon">bed</span><p class="cli-pref-label">Cama / Almohada</p><p class="cli-pref-desc">Almohada de Plumas, Firmeza Media</p></div>
-              <div class="cli-pref-card cli-pref-card--alert"><span class="material-symbols-outlined" style="color:var(--clr-error);font-size:20px">medical_services</span><p class="cli-pref-label" style="color:var(--clr-error)">Alergias</p><p class="cli-pref-desc" style="color:var(--clr-on-error-container)">Frutos Secos, Penicilina</p></div>
-              <div class="cli-pref-card"><span class="material-symbols-outlined cli-pref-icon">restaurant</span><p class="cli-pref-label">Dieta</p><p class="cli-pref-desc">Vegetariana, Sin Gluten</p></div>
-              <div class="cli-pref-card"><span class="material-symbols-outlined cli-pref-icon">thermostat</span><p class="cli-pref-label">Habitación</p><p class="cli-pref-desc">22°C, Piso Alto, Lejos de Elevador</p></div>
             </div>
           </section>
           <section class="cli-section">
@@ -139,13 +144,14 @@
               </div>
             } @else { <p class="cli-empty-text">Sin estancias registradas.</p> }
           </section>
-          <section class="cli-section">
-            <h3 class="cli-section-title">Notas de Recepción</h3>
-            <div class="cli-notes-card">
-              "Huésped corporativa frecuente. Prefiere check-in temprano. Siempre solicita late check-out a las 14:00 si hay disponibilidad."
-              <div style="margin-top:8px;text-align:right;font-style:normal"><span class="cli-note-author">— Maria G., Recepción</span></div>
-            </div>
-          </section>
+          @if (detailCliente.observaciones) {
+            <section class="cli-section">
+              <h3 class="cli-section-title">Notas de Recepción</h3>
+              <div class="cli-notes-card">
+                "{{ detailCliente.observaciones }}"
+              </div>
+            </section>
+          }
         </div>
       </aside>
     }
@@ -235,4 +241,3 @@
     </div>
   </div>
 }
-<style>@keyframes spin { to { transform: rotate(360deg); } }</style>

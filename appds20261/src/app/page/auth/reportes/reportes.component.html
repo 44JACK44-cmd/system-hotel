@@ -12,9 +12,9 @@
         <div class="rep-filter-item">
           <span class="material-symbols-outlined rep-filter-icon">calendar_today</span>
           <span class="rep-filter-label">Ingresos</span>
-          <input class="rep-date-input" type="date" [(ngModel)]="ingresoInicio" />
+          <p-datepicker [(ngModel)]="ingresoInicio" dateFormat="yy-mm-dd" inputStyleClass="rep-date-input" styleClass="w-full" appendTo="body" />
           <span class="rep-filter-sep">—</span>
-          <input class="rep-date-input" type="date" [(ngModel)]="ingresoFin" />
+          <p-datepicker [(ngModel)]="ingresoFin" dateFormat="yy-mm-dd" inputStyleClass="rep-date-input" styleClass="w-full" appendTo="body" />
           <button class="rep-filter-btn" (click)="loadIngresos()">
             <span class="material-symbols-outlined">refresh</span>
           </button>
@@ -22,7 +22,7 @@
         <div class="rep-filter-divider"></div>
         <div class="rep-filter-item">
           <span class="rep-filter-label">Ocup</span>
-          <input class="rep-date-input" type="date" [(ngModel)]="ocupacionFecha" />
+          <p-datepicker [(ngModel)]="ocupacionFecha" dateFormat="yy-mm-dd" inputStyleClass="rep-date-input" styleClass="w-full" appendTo="body" />
           <button class="rep-filter-btn" (click)="loadOcupacion()">
             <span class="material-symbols-outlined">refresh</span>
           </button>
@@ -30,9 +30,9 @@
         <div class="rep-filter-divider"></div>
         <div class="rep-filter-item">
           <span class="rep-filter-label">NC</span>
-          <input class="rep-date-input rep-date-input--sm" type="date" [(ngModel)]="noConcretadasInicio" />
+          <p-datepicker [(ngModel)]="noConcretadasInicio" dateFormat="yy-mm-dd" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="w-full" appendTo="body" />
           <span class="rep-filter-sep">—</span>
-          <input class="rep-date-input rep-date-input--sm" type="date" [(ngModel)]="noConcretadasFin" />
+          <p-datepicker [(ngModel)]="noConcretadasFin" dateFormat="yy-mm-dd" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="w-full" appendTo="body" />
           <button class="rep-filter-btn" (click)="loadNoConcretadas()">
             <span class="material-symbols-outlined">refresh</span>
           </button>
@@ -115,7 +115,7 @@
         <span class="rep-kpi-label">Reservas Hoy</span>
         <span class="material-symbols-outlined rep-kpi-icon">event_available</span>
       </div>
-      <div class="rep-kpi-value" style="font-size:30px;font-weight:700;color:#002046">
+      <div class="rep-kpi-value" style="font-size:30px;font-weight:700;color:var(--clr-primary)">
         {{ noConcretadas?.canceladas || 0 }}
       </div>
       <div class="rep-kpi-trend" style="color:var(--clr-on-surface-variant)">
@@ -289,12 +289,13 @@
           </button>
         </div>
       </div>
+      <div class="rep-hist-scroll">
       <table class="hs-table">
         <thead>
-          <tr><th>Habitación</th><th>Tipo</th><th>Motivo</th><th>Inicio</th><th>Duración</th></tr>
+          <tr><th class="rep-th-sortable" (click)="toggleSortHist('habitacion')">Habitación @if (histSortField === 'habitacion') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortHist('tipo')">Tipo @if (histSortField === 'tipo') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortHist('motivo')">Motivo @if (histSortField === 'motivo') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th>Inicio</th><th>Duración</th></tr>
         </thead>
         <tbody>
-          @for (i of historialIncidencias; track $index) {
+          @for (i of sortedHistorial; track $index) {
             <tr>
               <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ i.habitacion }}</td>
               <td><span class="badge" [ngClass]="i.tipo === 'LIMPIEZA' ? 'badge-dirty' : 'badge-maintenance'">{{ i.tipo }}</span></td>
@@ -309,6 +310,7 @@
           }
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- Ranking de Habitaciones -->
@@ -329,12 +331,13 @@
           </button>
         </div>
       </div>
+      <div class="rep-rank-scroll">
       <table class="hs-table">
         <thead>
-          <tr><th>#</th><th>Habitación</th><th>Tipo</th><th>Veces Reservada</th><th>Ingreso Generado</th></tr>
+          <tr><th class="rep-th-sortable" (click)="toggleSortRank('numero')"># @if (rankSortField === 'numero') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortRank('numero')">Habitación @if (rankSortField === 'numero') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortRank('tipo')">Tipo @if (rankSortField === 'tipo') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortRank('vecesReservada')">Veces Reservada @if (rankSortField === 'vecesReservada') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th class="rep-th-sortable" (click)="toggleSortRank('ingresoGenerado')">Ingreso Generado @if (rankSortField === 'ingresoGenerado') {<span class="material-symbols-outlined rep-sort-icon rep-sort-icon--active">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th></tr>
         </thead>
         <tbody>
-          @for (r of ranking; track $index; let i = $index) {
+          @for (r of sortedRanking; track $index; let i = $index) {
             <tr>
               <td class="text-data-tabular" style="font-weight:700;color:var(--clr-on-surface-variant)">{{ i + 1 }}</td>
               <td class="text-data-tabular" style="font-weight:700;color:var(--clr-primary)">{{ r.numero }}</td>
@@ -349,6 +352,7 @@
           }
         </tbody>
       </table>
+      </div>
     </div>
 
   </div>

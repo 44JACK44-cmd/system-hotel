@@ -45,23 +45,22 @@
       <div class="room-section__controls">
         <div class="search-box">
           <span class="material-symbols-outlined search-box__icon">search</span>
-          <input class="search-box__input" placeholder="Buscar hab..." type="text"/>
+          <input class="search-box__input" placeholder="Buscar hab..." type="text" [(ngModel)]="searchTerm" (input)="onSearchInput()"/>
         </div>
-        <button class="filter-btn"><span class="material-symbols-outlined" style="font-size:16px">filter_list</span> Filtrar</button>
       </div>
     </div>
     <div class="room-grid">
       @for (hab of habitaciones; track hab.id) {
         @let activeInc = getActiveIncidentForRoom(hab);
         <div class="room-card">
-          <div class="room-indicator" [style.background]="activeInc?.tipo === 'LIMPIEZA' ? 'var(--clr-secondary-container)' : hab.estado === 'DISPONIBLE' ? '#22c55e' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'"></div>
+          <div class="room-indicator" [style.background]="activeInc?.tipo === 'LIMPIEZA' ? 'var(--clr-secondary-container)' : hab.estado === 'DISPONIBLE' ? 'var(--clr-status-available)' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'"></div>
           <div class="room-card__body">
             <div class="room-card__top">
               <h3 class="room-card__number">Hab. {{ hab.numero }}</h3>
               @if (activeInc?.tipo === 'LIMPIEZA') {
                 <span class="room-badge room-badge--cleaning">Limpiando</span>
               } @else {
-                <span class="room-badge" [style.color]="hab.estado === 'DISPONIBLE' ? '#16a34a' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'" [style.borderColor]="hab.estado === 'DISPONIBLE' ? '#16a34a' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'">
+                <span class="room-badge" [style.color]="hab.estado === 'DISPONIBLE' ? 'var(--clr-status-available)' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'" [style.borderColor]="hab.estado === 'DISPONIBLE' ? 'var(--clr-status-available)' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'">
                   {{ hab.estado === 'DISPONIBLE' ? 'Limpia' : hab.estado === 'OCUPADA' ? 'Sucia' : 'Manten.' }}
                 </span>
               }
@@ -74,11 +73,11 @@
                   <span class="staff-name">En curso...</span>
                 </div>
               } @else if (hab.estado === 'OCUPADA') {
-                <button class="room-btn room-btn--primary">ASIGNAR</button>
+                <button class="room-btn room-btn--primary" (click)="asignarLimpieza(hab)">ASIGNAR</button>
               } @else if (hab.estado !== 'DISPONIBLE') {
-                <button class="room-btn room-btn--tertiary">VER REPORTE</button>
+                <button class="room-btn room-btn--tertiary" (click)="verReporte(activeInc)">VER REPORTE</button>
               } @else {
-                <button class="room-btn room-btn--outline">DETALLES</button>
+                <button class="room-btn room-btn--outline" (click)="verDetalles(hab)">DETALLES</button>
               }
             </div>
           </div>
@@ -91,26 +90,41 @@
       <h3 class="inc-table-card__title"><span class="material-symbols-outlined" style="color:var(--clr-error);font-size:18px">warning</span> INCIDENCIAS ACTIVAS</h3>
       <span class="badge badge-error">{{ incidenciasActivas.length }}</span>
     </div>
-    <div style="overflow-x:auto">
+    <div class="inc-table-scroll">
       <table class="hs-table">
         <thead>
           <tr>
-            <th>Habitación</th>
-            <th>Tipo</th>
+            <th class="inc-th-sortable" (click)="toggleSort('habitacionNumero')">
+              Habitación
+              @if (sortField === 'habitacionNumero') {
+                <span class="material-symbols-outlined inc-sort-icon inc-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+              }
+            </th>
+            <th class="inc-th-sortable" (click)="toggleSort('tipo')">
+              Tipo
+              @if (sortField === 'tipo') {
+                <span class="material-symbols-outlined inc-sort-icon inc-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+              }
+            </th>
             <th>Motivo</th>
-            <th>Inicio</th>
+            <th class="inc-th-sortable" (click)="toggleSort('fechaInicio')">
+              Inicio
+              @if (sortField === 'fechaInicio') {
+                <span class="material-symbols-outlined inc-sort-icon inc-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+              }
+            </th>
             <th style="text-align:right">Acción</th>
           </tr>
         </thead>
         <tbody>
-          @for (inc of incidenciasActivas; track inc.id) {
+          @for (inc of paginatedIncidencias; track inc.id) {
             <tr class="hover-row">
               <td style="font-weight:700;color:var(--clr-primary)">{{ inc.habitacionNumero }}</td>
               <td><span class="badge" [ngClass]="inc.tipo === 'LIMPIEZA' ? 'badge-dirty' : 'badge-maintenance'">{{ inc.tipo }}</span></td>
               <td>{{ inc.motivo }}</td>
               <td>{{ inc.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</td>
               <td style="text-align:right">
-                <button class="hs-btn hs-btn-sm" style="background:var(--clr-status-available);color:#fff" (click)="finalizar(inc)">
+                <button class="hs-btn hs-btn-sm" style="background:var(--clr-status-available);color:var(--clr-white)" (click)="finalizar(inc)">
                   <span class="material-symbols-outlined" style="font-size:16px">check_circle</span>
                   Finalizar
                 </button>
@@ -129,6 +143,7 @@
         </tbody>
       </table>
     </div>
+    <p-paginator (onPageChange)="onPageChange($event)" [first]="page * pageSize" [rows]="pageSize" [totalRecords]="totalRecords" [rowsPerPageOptions]="[5,10,20,50]" />
   </div>
   <div class="bottom-grid">
     <div class="inc-form-card">
@@ -139,24 +154,15 @@
       <form [formGroup]="incidenciaForm" style="display:flex;flex-direction:column;gap:14px">
         <div class="hs-field">
           <label class="hs-label">Habitación / Área</label>
-          <select class="hs-select" formControlName="habitacionId">
-            <option [ngValue]="null" disabled>Seleccionar habitación</option>
-            @for (h of habitaciones; track h.id) {
-              <option [ngValue]="h.id">{{ h.label }}</option>
-            }
-          </select>
+          <p-select formControlName="habitacionId" [options]="habitaciones" optionLabel="label" optionValue="id" placeholder="Seleccionar habitación" styleClass="w-full" appendTo="body" />
         </div>
         <div class="hs-field">
           <label class="hs-label">Tipo</label>
-          <select class="hs-select" formControlName="tipo">
-            @for (t of tipos; track t.value) {
-              <option [value]="t.value">{{ t.label }}</option>
-            }
-          </select>
+          <p-select formControlName="tipo" [options]="tipos" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo" styleClass="w-full" appendTo="body" />
         </div>
         <div class="hs-field">
           <label class="hs-label">Descripción del Problema</label>
-          <textarea class="hs-textarea" formControlName="motivo" rows="3" placeholder="Ej: Aire acondicionado no enfría..."></textarea>
+          <textarea class="hs-textarea" pTextarea formControlName="motivo" rows="3" placeholder="Ej: Aire acondicionado no enfría..."></textarea>
         </div>
         <div class="hs-field">
           <label class="hs-label">Fotos / Evidencia</label>
@@ -171,39 +177,18 @@
         </button>
       </form>
     </div>
-    <div class="staff-card">
-      <div class="staff-card__header">
-        <h3 class="staff-card__title">Seguimiento de Personal</h3>
-        <button class="hs-link-btn">Gestionar Turnos</button>
+    <div class="inc-form-card">
+      <div class="inc-form-card__header">
+        <span class="material-symbols-outlined" style="color:var(--clr-error)">cleaning_services</span>
+        <h3 class="inc-form-card__title">Acciones Rápidas</h3>
       </div>
-      <div class="staff-table-wrap">
-        <table class="hs-table">
-          <thead>
-            <tr>
-              <th>Personal</th>
-              <th>Tarea Actual</th>
-              <th>Inicio</th>
-              <th>Rendimiento</th>
-              <th style="text-align:right">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="hover-row">
-              <td><div class="staff-row"><div class="staff-avatar" style="background:var(--clr-secondary-fixed);color:var(--clr-secondary)">MG</div><div><p class="staff-name">María García</p><p class="staff-zone">Zona A - Planta 1</p></div></div></td>
-              <td><div class="staff-task"><span class="status-dot status-dot--active"></span>Limpieza Hab. 103</div></td>
-              <td class="text-data-tabular">10:15 AM</td>
-              <td><div class="progress-bar"><div class="progress-fill progress-fill--high" style="width:90%"></div></div><span class="perf-label perf-label--high">Excelente</span></td>
-              <td style="text-align:right"><button class="hs-icon-btn"><span class="material-symbols-outlined">more_vert</span></button></td>
-            </tr>
-            <tr class="hover-row">
-              <td><div class="staff-row"><div class="staff-avatar" style="background:var(--clr-primary-fixed);color:var(--clr-primary)">JR</div><div><p class="staff-name">Juan Rodríguez</p><p class="staff-zone">Mantenimiento Gen.</p></div></div></td>
-              <td><div class="staff-task"><span class="status-dot status-dot--maintenance"></span>Reparación Hab. 104</div></td>
-              <td class="text-data-tabular">09:40 AM</td>
-              <td><div class="progress-bar"><div class="progress-fill progress-fill--mid" style="width:60%"></div></div><span class="perf-label">Promedio</span></td>
-              <td style="text-align:right"><button class="hs-icon-btn"><span class="material-symbols-outlined">more_vert</span></button></td>
-            </tr>
-          </tbody>
-        </table>
+      <div style="display:flex;flex-direction:column;gap:8px;padding:16px">
+        <button class="hs-btn hs-btn-secondary" style="width:100%;justify-content:center" (click)="loadIncidencias()">
+          <span class="material-symbols-outlined" style="font-size:16px">refresh</span> Actualizar
+        </button>
+        <button class="hs-btn hs-btn-primary" style="width:100%;justify-content:center" (click)="incidenciaForm.reset({tipo:'LIMPIEZA'});">
+          <span class="material-symbols-outlined" style="font-size:16px">add</span> Nueva Incidencia
+        </button>
       </div>
     </div>
   </div>

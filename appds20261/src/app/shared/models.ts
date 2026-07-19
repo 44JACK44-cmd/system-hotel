@@ -199,6 +199,16 @@ export interface ResponseReporte {
   listReporte?: any[];
 }
 
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  type: string;
+  message: string;
+}
+
 export function toGenericResponse<T>(raw: any, dataField: string | ((raw: any) => T)): GenericResponse<T> {
   const data = typeof dataField === 'function' ? dataField(raw) : raw?.[dataField] ?? null;
   return {

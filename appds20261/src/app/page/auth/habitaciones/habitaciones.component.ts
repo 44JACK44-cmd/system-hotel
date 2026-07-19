@@ -61,6 +61,18 @@ export class HabitacionesComponent implements OnInit {
     precioNoche: [0, [Validators.required, Validators.min(0.01)]]
   });
 
+  get filterPisos(): any[] {
+    return [{ label: 'Todos los pisos', value: '' }, ...this.pisos.map(p => ({ label: `Piso ${p}`, value: p }))];
+  }
+  get filterEstados(): any[] {
+    return [
+      { label: 'Todos los estados', value: '' },
+      { label: 'Disponible', value: 'DISPONIBLE' },
+      { label: 'Ocupada', value: 'OCUPADA' },
+      { label: 'Sucia', value: 'LIMPIEZA' },
+      { label: 'Mantenimiento', value: 'MANTENIMIENTO' }
+    ];
+  }
   get filteredHabitaciones(): any[] {
     let result = [...this.habitaciones];
     if (this.filterPiso) {

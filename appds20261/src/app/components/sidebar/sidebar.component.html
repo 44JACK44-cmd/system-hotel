@@ -1,3 +1,4 @@
+<p-toast position="top-center" />
 <aside class="hs-sidebar hs-sidebar-wrapper">
   <div class="hs-sidebar__header">
     <span class="material-symbols-outlined hs-sidebar__hotel-icon" style="font-size:32px">hotel</span>
@@ -33,7 +34,7 @@
   </div>
 
   <div class="hs-sidebar__footer">
-    <a class="hs-sidebar__nav-item hs-sidebar__nav-item--sm" href="#">
+    <a class="hs-sidebar__nav-item hs-sidebar__nav-item--sm" (click)="centroAyuda()" style="cursor:pointer">
       <span class="material-symbols-outlined">help</span>
       <span class="hs-sidebar__nav-label">Centro de Ayuda</span>
     </a>

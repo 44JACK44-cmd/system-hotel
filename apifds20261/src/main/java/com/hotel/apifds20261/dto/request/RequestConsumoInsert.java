@@ -11,6 +11,8 @@ public class RequestConsumoInsert {
     @NotNull(message = "El hospedaje es obligatorio")
     private Long hospedajeId;
 
+    private String tipoConsumo;
+
     @NotBlank(message = "La descripcion es obligatoria")
     private String descripcion;
 
@@ -21,4 +23,6 @@ public class RequestConsumoInsert {
     @NotNull(message = "El precio unitario es obligatorio")
     @DecimalMin(value = "0.01", message = "El precio unitario debe ser mayor a cero")
     private BigDecimal precioUnitario;
+
+    private String observacion;
 }

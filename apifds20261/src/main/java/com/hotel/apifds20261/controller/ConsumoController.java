@@ -11,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("consumo")
@@ -44,6 +46,49 @@ public class ConsumoController {
         response.success();
         response.getListConsumo().add(item);
         response.listMessage.add("Consumo registrado exitosamente");
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("update/{id}")
+    public ResponseEntity<ResponseConsumo> actionUpdate(
+            @PathVariable Long id,
+            @Valid @RequestBody RequestConsumoInsert request,
+            @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        if (!jwtService.isTokenValid(token)) {
+            throw new BusinessException("Token invalido o expirado");
+        }
+        Long usuarioId = jwtService.getUserIdFromToken(token);
+        ConsumoResponse item = consumoBusiness.actualizar(id, request, usuarioId);
+        ResponseConsumo response = new ResponseConsumo();
+        response.success();
+        response.getListConsumo().add(item);
+        response.listMessage.add("Consumo actualizado exitosamente");
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<ResponseConsumo> actionDelete(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        if (!jwtService.isTokenValid(token)) {
+            throw new BusinessException("Token invalido o expirado");
+        }
+        consumoBusiness.eliminar(id);
+        ResponseConsumo response = new ResponseConsumo();
+        response.success();
+        response.listMessage.add("Consumo eliminado exitosamente");
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("total/{idHospedaje}")
+    public ResponseEntity<ResponseConsumo> actionTotal(@PathVariable Long idHospedaje) {
+        BigDecimal total = consumoBusiness.obtenerTotal(idHospedaje);
+        ResponseConsumo response = new ResponseConsumo();
+        response.success();
+        response.listMessage.add(total.toString());
+        response.listMessage.add("Total de consumos obtenido exitosamente");
         return ResponseEntity.ok(response);
     }
 }

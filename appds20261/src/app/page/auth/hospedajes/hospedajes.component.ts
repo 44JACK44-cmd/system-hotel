@@ -1,44 +1,56 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HospedajeService } from '../../../observable/hospedaje.service';
-import { ConsumoService } from '../../../observable/consumo.service';
+import { ConsumoService, ConsumoResponse } from '../../../observable/consumo.service';
 import { ClienteService } from '../../../observable/cliente.service';
 import { HabitacionService } from '../../../observable/habitacion.service';
+import { IncidenciaService } from '../../../observable/incidencia.service';
+import { ReservaService } from '../../../observable/reserva.service';
 import { CheckOutComponent } from '../../../components/checkout/checkout.component';
+import { ConsumoModalComponent } from '../../../components/consumo-modal/consumo-modal.component';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { SelectModule } from 'primeng/select';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { TooltipModule } from 'primeng/tooltip';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-hospedajes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, CheckOutComponent],
-  providers: [MessageService],
+  imports: [CommonModule, FormsModule, ToastModule, SelectModule, InputNumberModule, TooltipModule, ConfirmDialogModule, CheckOutComponent, ConsumoModalComponent],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './hospedajes.component.html',
   styleUrls: ['./hospedajes.component.css']
 })
-export class HospedajesComponent implements OnInit {
+export class HospedajesComponent implements OnInit, OnDestroy {
   private hospedajeService = inject(HospedajeService);
   private consumoService = inject(ConsumoService);
   private clienteService = inject(ClienteService);
   private habService = inject(HabitacionService);
+  private incidenciaService = inject(IncidenciaService);
+  private reservaService = inject(ReservaService);
   private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
 
   activeTab = 'activos';
   loading = false;
   hospedajes: any[] = [];
   clientes: any[] = [];
   habitacionesDisponibles: any[] = [];
+  totalHabitaciones = 0;
 
   selectedHospedajeId: number | null = null;
   detailHospedaje: any = null;
 
   showCheckoutPanel = false;
+  showConsumoModal = false;
+  editConsumo: ConsumoResponse | null = null;
 
-  consumoDescripcion = '';
-  consumoCantidad = 1;
-  consumoPrecio = 0;
-  consumos: any[] = [];
+  consumos: ConsumoResponse[] = [];
+  totalConsumos = 0;
   loadingConsumos = false;
 
   extensionFecha = '';
@@ -60,26 +72,79 @@ export class HospedajesComponent implements OnInit {
   loadingDirecto = false;
 
   filterText = '';
+  filteredHospedajes: any[] = [];
+  incidenciasLimpieza: any[] = [];
+  proximosCheckIns: any[] = [];
 
-  get filteredHospedajes(): any[] {
-    if (!this.filterText.trim()) return this.hospedajes;
-    const t = this.filterText.toLowerCase();
-    return this.hospedajes.filter(h =>
-      (h.clienteNombre || '').toLowerCase().includes(t) ||
-      (h.habitacionNumero || '').toLowerCase().includes(t)
-    );
+  /* Sort */
+  sortField = '';
+  sortDir: 'asc' | 'desc' = 'asc';
+
+  get sortedHospedajes(): any[] {
+    let list = this.filteredHospedajes;
+    if (this.sortField) {
+      list = [...list].sort((a, b) => {
+        let va: string, vb: string;
+        if (this.sortField === 'deudaPendiente') {
+          va = String(a[this.sortField] || 0);
+          vb = String(b[this.sortField] || 0);
+        } else {
+          va = (a[this.sortField] || '').toString().toLowerCase();
+          vb = (b[this.sortField] || '').toString().toLowerCase();
+        }
+        return this.sortDir === 'asc' ? va.localeCompare(vb, undefined, { numeric: true }) : vb.localeCompare(va, undefined, { numeric: true });
+      });
+    }
+    return list;
   }
+
+  toggleSort(field: string): void {
+    if (this.sortField === field) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDir = 'asc';
+    }
+  }
+
+  private filterSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
     this.loadActivos();
     this.loadClientes();
     this.loadHabitaciones();
+    this.loadIncidenciasLimpieza();
+    this.loadProximosCheckIns();
+    this.filterSubject.pipe(
+      debounceTime(200),
+      distinctUntilChanged()
+    ).subscribe(() => this.applyFilter());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.filterSubject.complete();
+  }
+
+  onFilterInput(): void {
+    this.filterSubject.next(this.filterText);
+  }
+
+  applyFilter(): void {
+    if (!this.filterText.trim()) { this.filteredHospedajes = [...this.hospedajes]; return; }
+    const t = this.filterText.toLowerCase();
+    this.filteredHospedajes = this.hospedajes.filter(h =>
+      (h.clienteNombre || '').toLowerCase().includes(t) ||
+      (h.habitacionNumero || '').toLowerCase().includes(t)
+    );
   }
 
   loadActivos(): void {
     this.loading = true;
     this.hospedajeService.listarActivos().subscribe({
-      next: res => { this.hospedajes = res.data || []; this.loading = false; },
+      next: res => { this.hospedajes = res.data || []; this.filteredHospedajes = [...this.hospedajes]; this.loading = false; },
       error: () => this.loading = false
     });
   }
@@ -92,10 +157,40 @@ export class HospedajesComponent implements OnInit {
 
   loadHabitaciones(): void {
     this.habService.listarActivas().subscribe(res => {
-      this.habitacionesDisponibles = (res.data || [])
+      const todas = res.data || [];
+      this.totalHabitaciones = todas.length;
+      this.habitacionesDisponibles = todas
         .filter((h: any) => h.estado === 'DISPONIBLE')
         .map((h: any) => ({ ...h, label: `${h.numero} - ${h.tipo} - S/${h.precioNoche}` }));
     });
+  }
+
+  loadIncidenciasLimpieza(): void {
+    this.incidenciaService.listarActivas().subscribe({
+      next: res => {
+        this.incidenciasLimpieza = (res.data || []).filter((i: any) => i.tipo === 'LIMPIEZA');
+      }
+    });
+  }
+
+  loadProximosCheckIns(): void {
+    this.reservaService.listarDelDia().subscribe({
+      next: res => {
+        this.proximosCheckIns = (res.data || []).filter((r: any) => r.estado === 'CONFIRMADA');
+      }
+    });
+  }
+
+  getTiempoTranscurrido(fecha: string): string {
+    if (!fecha) return '';
+    const ahora = new Date().getTime();
+    const inicio = new Date(fecha).getTime();
+    const diffMin = Math.floor((ahora - inicio) / 60000);
+    if (diffMin < 1) return 'Ahora';
+    if (diffMin < 60) return `Hace ${diffMin} min`;
+    const horas = Math.floor(diffMin / 60);
+    if (horas < 24) return `Hace ${horas}h`;
+    return `Hace ${Math.floor(horas / 24)}d`;
   }
 
   selectHospedaje(id: number): void {
@@ -112,9 +207,7 @@ export class HospedajesComponent implements OnInit {
     this.selectedHospedajeId = null;
     this.detailHospedaje = null;
     this.consumos = [];
-    this.consumoDescripcion = '';
-    this.consumoCantidad = 1;
-    this.consumoPrecio = 0;
+    this.totalConsumos = 0;
     this.extensionFecha = '';
     this.nuevaHabitacionId = null;
   }
@@ -125,40 +218,52 @@ export class HospedajesComponent implements OnInit {
 
   closeCheckout(): void {
     this.showCheckoutPanel = false;
-    this.loadActivos();
+    this.selectedHospedajeId = null;
   }
 
   loadConsumos(hospedajeId: number): void {
     this.loadingConsumos = true;
     this.consumoService.listarPorHospedaje(hospedajeId).subscribe({
-      next: res => { this.consumos = res.data || []; this.loadingConsumos = false; },
+      next: res => {
+        this.consumos = res.data || [];
+        this.totalConsumos = this.consumos.reduce((s, c) => s + (c.subtotal || 0), 0);
+        this.loadingConsumos = false;
+      },
       error: () => this.loadingConsumos = false
     });
   }
 
-  registrarConsumo(): void {
-    if (!this.selectedHospedajeId || !this.consumoDescripcion.trim() || this.consumoCantidad < 1 || this.consumoPrecio <= 0) {
-      this.messageService.add({ severity: 'warn', summary: 'Validación', detail: 'Complete todos los campos del consumo' });
-      return;
-    }
-    this.loading = true;
-    this.consumoService.registrar({
-      hospedajeId: this.selectedHospedajeId,
-      descripcion: this.consumoDescripcion.trim(),
-      cantidad: this.consumoCantidad,
-      precioUnitario: this.consumoPrecio
-    }).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Consumo registrado' });
-        this.loading = false;
-        this.consumoDescripcion = '';
-        this.consumoCantidad = 1;
-        this.consumoPrecio = 0;
-        this.loadConsumos(this.selectedHospedajeId!);
-        this.selectHospedaje(this.selectedHospedajeId!);
-      },
-      error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al registrar consumo' }); }
+  abrirModalConsumo(): void {
+    this.editConsumo = null;
+    this.showConsumoModal = true;
+  }
+
+  editarConsumo(c: ConsumoResponse): void {
+    this.editConsumo = c;
+    this.showConsumoModal = true;
+  }
+
+  eliminarConsumo(id: number): void {
+    this.confirmationService.confirm({
+      message: '¿Eliminar este consumo?',
+      header: 'Confirmar',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.consumoService.eliminar(id).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Consumo eliminado' });
+            this.loadConsumos(this.selectedHospedajeId!);
+            if (this.selectedHospedajeId) this.selectHospedaje(this.selectedHospedajeId);
+          },
+          error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al eliminar consumo' })
+        });
+      }
     });
+  }
+
+  onConsumoSaved(): void {
+    this.loadConsumos(this.selectedHospedajeId!);
+    if (this.selectedHospedajeId) this.selectHospedaje(this.selectedHospedajeId);
   }
 
   extenderEstadia(): void {
@@ -265,6 +370,46 @@ export class HospedajesComponent implements OnInit {
     this.showCheckoutPanel = true;
   }
 
+  verFacturaDeHospedaje(h: any): void {
+    if (!h) return;
+    const total = (h.totalPagado || 0) + (h.deudaPendiente || 0);
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(`<html><head><title>Factura #${h.id}</title><style>body{font-family:monospace;padding:40px;max-width:400px;margin:auto}hr{border:none;border-top:1px dashed #000}h2{text-align:center}.total{font-size:1.3em;font-weight:bold;text-align:right}</style></head><body>`);
+    win.document.write(`<h2>FACTURA</h2><p>Hospedaje #${h.id}</p><hr>`);
+    win.document.write(`<p><strong>Huésped:</strong> ${h.clienteNombre}</p>`);
+    win.document.write(`<p><strong>Habitación:</strong> ${h.habitacionNumero}</p>`);
+    win.document.write(`<p><strong>Ingreso:</strong> ${this.formatFecha(h.fechaIngreso)}</p>`);
+    win.document.write(`<p><strong>Total:</strong> S/ ${total.toFixed(2)}</p>`);
+    win.document.write(`<p><strong>Pagado:</strong> S/ ${(h.totalPagado || 0).toFixed(2)}</p>`);
+    win.document.write(`<p><strong>Deuda:</strong> S/ ${(h.deudaPendiente || 0).toFixed(2)}</p><hr>`);
+    win.document.write('<div style="text-align:center;margin-top:40px;color:#666">Gracias por su preferencia</div>');
+    win.document.write('</body></html>');
+    win.document.close();
+    win.print();
+  }
+
+  verFactura(): void {
+    if (!this.detailHospedaje) return;
+    const h = this.detailHospedaje;
+    const win = window.open('', '_blank');
+    if (!win) return;
+    const total = (h.totalPagado || 0) + (h.deudaPendiente || 0);
+    win.document.write(`<html><head><title>Factura #${h.id}</title><style>body{font-family:monospace;padding:40px;max-width:400px;margin:auto}hr{border:none;border-top:1px dashed #000}h2{text-align:center}.total{font-size:1.3em;font-weight:bold;text-align:right}</style></head><body>`);
+    win.document.write(`<h2>FACTURA</h2><p>Hospedaje #${h.id}</p><hr>`);
+    win.document.write(`<p><strong>Huésped:</strong> ${h.clienteNombre}</p>`);
+    win.document.write(`<p><strong>Habitación:</strong> ${h.habitacionNumero} - ${h.habitacionTipo}</p>`);
+    win.document.write(`<p><strong>Ingreso:</strong> ${this.formatFecha(h.fechaIngreso)}</p>`);
+    win.document.write(`<p><strong>Salida Prog.:</strong> ${this.formatFecha(h.fechaSalidaProgramada)}</p><hr>`);
+    win.document.write(`<p><strong>Total:</strong> S/ ${total.toFixed(2)}</p>`);
+    win.document.write(`<p><strong>Pagado:</strong> S/ ${(h.totalPagado || 0).toFixed(2)}</p>`);
+    win.document.write(`<p><strong>Deuda:</strong> S/ ${(h.deudaPendiente || 0).toFixed(2)}</p><hr>`);
+    win.document.write('<div style="text-align:center;margin-top:40px;color:#666">Gracias por su preferencia</div>');
+    win.document.write('</body></html>');
+    win.document.close();
+    win.print();
+  }
+
   getScheduledCheckouts(): number {
     return this.hospedajes.filter(h => {
       if (!h.fechaSalidaProgramada) return false;
@@ -279,7 +424,25 @@ export class HospedajesComponent implements OnInit {
   }
 
   getOccupancyRate(): number {
-    return Math.round(65 + Math.random() * 25);
+    if (this.totalHabitaciones === 0) return 0;
+    return Math.round((this.hospedajes.length / this.totalHabitaciones) * 100);
+  }
+
+  get costoDirectoTotal(): number {
+    const hab = this.habitacionesDisponibles.find(h => h.id === this.directoHabitacionId);
+    if (!hab || !this.directoNoches) return 0;
+    return (hab.precioNoche || 0) * this.directoNoches;
+  }
+
+  get costoExtensionPreview(): number {
+    if (!this.extensionFecha || !this.detailHospedaje) return 0;
+    const actual = new Date(this.detailHospedaje.fechaSalidaProgramada);
+    const nueva = new Date(this.extensionFecha);
+    if (nueva <= actual) return 0;
+    const diffMs = nueva.getTime() - actual.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    const precio = this.detailHospedaje.habitacionPrecio || 0;
+    return Math.max(0, diffDays) * precio;
   }
 
   formatFechaCorta(d: string): string {

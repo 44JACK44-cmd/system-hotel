@@ -8,12 +8,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ConsumoResponse {
     private Long id;
+    private String idConsumo;
     private Long hospedajeId;
     private Long usuarioId;
     private String usuarioNombre;
+    private String tipoConsumo;
     private String descripcion;
     private Integer cantidad;
     private BigDecimal precioUnitario;
     private BigDecimal subtotal;
+    private String observacion;
     private LocalDateTime fechaRegistro;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

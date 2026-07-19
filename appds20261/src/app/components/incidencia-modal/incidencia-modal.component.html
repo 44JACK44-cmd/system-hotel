@@ -13,27 +13,17 @@
   <div class="hs-slide-panel__body">
     <div class="hs-field">
       <label class="hs-label">HABITACIÓN</label>
-      <select class="hs-input" [(ngModel)]="habitacionId">
-        <option [ngValue]="null" disabled>Seleccionar habitación</option>
-        @for (h of habitaciones; track h) {
-          <option [ngValue]="h.id || h.value || h">{{ h.label || h }}</option>
-        }
-      </select>
+      <p-select [(ngModel)]="habitacionId" [options]="habitaciones" optionLabel="label" optionValue="id" placeholder="Seleccionar habitación" styleClass="w-full" appendTo="body" />
     </div>
 
     <div class="hs-field">
       <label class="hs-label">TIPO</label>
-      <select class="hs-input" [(ngModel)]="tipo">
-        <option [ngValue]="null" disabled>Seleccionar tipo</option>
-        @for (t of tipos; track t) {
-          <option [ngValue]="t.value || t">{{ t.label || t }}</option>
-        }
-      </select>
+      <p-select [(ngModel)]="tipo" [options]="tipos" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo" styleClass="w-full" appendTo="body" />
     </div>
 
     <div class="hs-field">
       <label class="hs-label">MOTIVO</label>
-      <textarea class="hs-input" [(ngModel)]="motivo" rows="3" placeholder="Describa el motivo..."></textarea>
+      <textarea class="hs-input" pTextarea [(ngModel)]="motivo" rows="3" placeholder="Describa el motivo..."></textarea>
     </div>
   </div>
 

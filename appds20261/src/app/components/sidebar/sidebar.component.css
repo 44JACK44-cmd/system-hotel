@@ -119,3 +119,11 @@
   flex-direction: column;
   gap: 2px;
 }
+
+@media (max-width: 1024px) {
+  .hs-sidebar { width: 200px; min-width: 200px; }
+  .hs-sidebar__header { padding: 16px 12px 4px; }
+  .hs-sidebar__nav-item { padding: 10px 12px; }
+  .hs-sidebar__quick { padding: 0 12px 10px; }
+  .hs-sidebar__section-label { padding: 12px 12px 4px; }
+}

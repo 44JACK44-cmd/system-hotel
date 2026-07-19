@@ -1,21 +1,26 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PagoService } from '../../../observable/pago.service';
 import { EgresoService } from '../../../observable/egreso.service';
 import { CajaService } from '../../../observable/caja.service';
 import { ToastModule } from 'primeng/toast';
+import { SelectModule } from 'primeng/select';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { PaginatorModule } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { PageResponse } from '../../../shared/models';
 
 @Component({
   selector: 'app-pagos',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule],
+  imports: [CommonModule, FormsModule, ToastModule, SelectModule, InputNumberModule, PaginatorModule],
   providers: [MessageService],
   templateUrl: './pagos.component.html',
   styleUrls: ['./pagos.component.css']
 })
-export class PagosComponent implements OnInit {
+export class PagosComponent implements OnInit, OnDestroy {
   private pagoService = inject(PagoService);
   private egresoService = inject(EgresoService);
   private cajaService = inject(CajaService);
@@ -23,11 +28,21 @@ export class PagosComponent implements OnInit {
 
   Math = Math;
   pagos: any[] = [];
-  filteredPagos: any[] = [];
+  allPagos: any[] = [];
   egresos: any[] = [];
   loading = false;
   dialogVisible = false;
   searchTerm = '';
+
+  /* Server-side pagination */
+  page = 0;
+  pageSize = 20;
+  totalRecords = 0;
+  sortField = '';
+  sortDir: 'asc' | 'desc' = 'asc';
+
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
   cajaActual: any = null;
   showCierreModal = false;
@@ -49,17 +64,29 @@ export class PagosComponent implements OnInit {
   loadingPago = false;
 
   ngOnInit(): void {
-    this.loadPagos();
-    this.loadEgresos();
+    this.loadAllPagos();
+    this.loadAllEgresos();
     this.loadCaja();
+    this.loadPagos();
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => { this.page = 0; this.loadPagos(); });
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.searchSubject.complete();
+  }
+
+  /* Stats computed from full data */
   get totalEfectivo(): number {
-    return this.pagos.filter(p => p.metodo === 'EFECTIVO').reduce((s, p) => s + (p.monto || 0), 0);
+    return this.allPagos.filter(p => p.metodo === 'EFECTIVO').reduce((s, p) => s + (p.monto || 0), 0);
   }
 
   get totalYape(): number {
-    return this.pagos.filter(p => p.metodo === 'YAPE').reduce((s, p) => s + (p.monto || 0), 0);
+    return this.allPagos.filter(p => p.metodo === 'YAPE').reduce((s, p) => s + (p.monto || 0), 0);
   }
 
   get totalIngresos(): number {
@@ -83,17 +110,27 @@ export class PagosComponent implements OnInit {
     return map[tipo] || 'badge-info';
   }
 
-  loadPagos(): void {
-    this.loading = true;
+  loadAllPagos(): void {
     this.pagoService.listarTodos().subscribe({
-      next: res => { this.pagos = res.data || []; this.filteredPagos = [...this.pagos]; this.loading = false; },
-      error: () => this.loading = false
+      next: res => { this.allPagos = res.data || []; }
     });
   }
 
-  loadEgresos(): void {
+  loadAllEgresos(): void {
     this.egresoService.listarTodos().subscribe({
       next: res => this.egresos = res.data || []
+    });
+  }
+
+  loadPagos(): void {
+    this.loading = true;
+    this.pagoService.listarPaginado(this.page, this.pageSize, this.sortField || undefined, this.sortDir, this.searchTerm || undefined).subscribe({
+      next: (res: PageResponse<any>) => {
+        this.pagos = res.content;
+        this.totalRecords = res.totalElements;
+        this.loading = false;
+      },
+      error: () => this.loading = false
     });
   }
 
@@ -103,16 +140,25 @@ export class PagosComponent implements OnInit {
     });
   }
 
-  filter(): void {
-    const term = this.searchTerm.toLowerCase().trim();
-    if (!term) { this.filteredPagos = [...this.pagos]; return; }
-    this.filteredPagos = this.pagos.filter(p =>
-      (p.id?.toString() || '').includes(term) ||
-      (p.tipo || '').toLowerCase().includes(term) ||
-      (p.metodo || '').toLowerCase().includes(term) ||
-      (p.referencia || '').toLowerCase().includes(term) ||
-      (p.usuarioNombre || '').toLowerCase().includes(term)
-    );
+  onSearchInput(): void {
+    this.searchSubject.next(this.searchTerm);
+  }
+
+  onPageChange(event: any): void {
+    this.page = event.page;
+    this.pageSize = event.rows;
+    this.loadPagos();
+  }
+
+  toggleSort(field: string): void {
+    if (this.sortField === field) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDir = 'asc';
+    }
+    this.page = 0;
+    this.loadPagos();
   }
 
   registrarGasto(): void {
@@ -131,7 +177,7 @@ export class PagosComponent implements OnInit {
         this.loadingGasto = false;
         this.gastoConcepto = '';
         this.gastoMonto = 0;
-        this.loadEgresos();
+        this.loadAllEgresos();
       },
       error: (err) => { this.loadingGasto = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al registrar gasto' }); }
     });
@@ -167,6 +213,7 @@ export class PagosComponent implements OnInit {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Pago registrado' });
         this.dialogVisible = false;
         this.loadingPago = false;
+        this.loadAllPagos();
         this.loadPagos();
       },
       error: (err) => { this.loadingPago = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al registrar pago' }); }

@@ -1,13 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { AuthService } from '../../../observable/auth.service';
-import { Card } from "primeng/card";
-import { Divider } from "primeng/divider";
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-access-denied',
   standalone: true,
-  imports: [Card, Divider, RouterModule],
+  imports: [RouterModule],
   templateUrl: './access-denied.html',
   styleUrl: './access-denied.css',
 })

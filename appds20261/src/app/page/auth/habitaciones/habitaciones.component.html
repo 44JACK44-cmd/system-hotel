@@ -19,22 +19,11 @@
     <div class="hab-filter-grid">
       <div class="hs-field">
         <label class="hs-label">PISO</label>
-        <select class="hs-select" [(ngModel)]="filterPiso" (change)="applyFilter()">
-          <option value="">Todos los pisos</option>
-          @for (p of pisos; track p) {
-            <option [value]="p">Piso {{ p }}</option>
-          }
-        </select>
+        <p-select [(ngModel)]="filterPiso" (ngModelChange)="applyFilter()" [options]="filterPisos" optionLabel="label" optionValue="value" placeholder="Todos los pisos" styleClass="w-full" appendTo="body" />
       </div>
       <div class="hs-field">
         <label class="hs-label">ESTADO</label>
-        <select class="hs-select" [(ngModel)]="filterEstado" (change)="applyFilter()">
-          <option value="">Todos los estados</option>
-          <option value="DISPONIBLE">Disponible</option>
-          <option value="OCUPADA">Ocupada</option>
-          <option value="LIMPIEZA">Sucia</option>
-          <option value="MANTENIMIENTO">Mantenimiento</option>
-        </select>
+        <p-select [(ngModel)]="filterEstado" (ngModelChange)="applyFilter()" [options]="filterEstados" optionLabel="label" optionValue="value" placeholder="Todos los estados" styleClass="w-full" appendTo="body" />
       </div>
       <div class="hs-field hab-search-field">
         <label class="hs-label">B&Uacute;SQUEDA R&Aacute;PIDA</label>
@@ -76,17 +65,17 @@
               <div class="hab-action-group">
                 @if (isAdmin) {
                   <button class="hab-action-btn hab-action-btn--edit"
-                    (click)="editHabitacion(h)" title="Editar">
+                    (click)="editHabitacion(h)" pTooltip="Editar">
                     <span class="material-symbols-outlined">edit</span>
                   </button>
                 }
                 <button class="hab-action-btn hab-action-btn--status"
-                  (click)="showEstadoDialog(h)" title="Cambiar Estado">
+                  (click)="showEstadoDialog(h)" pTooltip="Cambiar Estado">
                   <span class="material-symbols-outlined">swap_horiz</span>
                 </button>
                 @if (isAdmin) {
                   <button class="hab-action-btn hab-action-btn--delete"
-                    (click)="deleteHabitacion(h)" title="Desactivar">
+                    (click)="deleteHabitacion(h)" pTooltip="Desactivar">
                     <span class="material-symbols-outlined">delete</span>
                   </button>
                 }
@@ -129,29 +118,20 @@
           </div>
           <div class="hs-field">
             <label class="hs-label">Piso</label>
-            <select class="hs-select" formControlName="piso">
-              @for (p of pisosOpt; track p.value) {
-                <option [value]="p.value">{{ p.label }}</option>
-              }
-            </select>
+            <p-select formControlName="piso" [options]="pisosOpt" optionLabel="label" optionValue="value" placeholder="Seleccionar piso" styleClass="w-full" appendTo="body" />
           </div>
         </div>
 
         <div class="hs-field">
           <label class="hs-label">Tipo de Habitaci&oacute;n</label>
-          <select class="hs-select" formControlName="tipo">
-            @for (t of tipos; track t.value) {
-              <option [value]="t.value">{{ t.label }}</option>
-            }
-          </select>
+          <p-select formControlName="tipo" [options]="tipos" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo" styleClass="w-full" appendTo="body" />
         </div>
 
         <div class="hs-field">
           <label class="hs-label">Precio Base por Noche (S/)</label>
           <div class="hs-input-icon">
             <span class="material-symbols-outlined">payments</span>
-            <input class="hs-input" type="number" formControlName="precioNoche"
-              placeholder="0.00" min="0" step="0.01" />
+            <p-inputNumber formControlName="precioNoche" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" inputStyleClass="hs-input" styleClass="w-full" />
           </div>
         </div>
 
@@ -213,6 +193,4 @@
   </div>
 }
 
-<style>
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style>
+
