@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://system-hotel-production.up.railway.app'
+  apiUrl: 'https://system-hotel-production.up.railway.app/api'
 };

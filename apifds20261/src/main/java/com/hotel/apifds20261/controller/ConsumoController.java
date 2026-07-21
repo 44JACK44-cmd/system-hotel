@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("consumo")
+@RequestMapping("/api/consumo")
 @RequiredArgsConstructor
 public class ConsumoController {
 

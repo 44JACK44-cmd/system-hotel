@@ -37,13 +37,13 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers(HttpMethod.GET, "/habitacion/**").hasAnyRole("ADMIN", "RECEPCIONISTA")
-                .requestMatchers("/habitacion/**").hasRole("ADMIN")
-                .requestMatchers("/usuario/**").hasRole("ADMIN")
-                .requestMatchers("/reporte/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/habitacion/**").hasAnyRole("ADMIN", "RECEPCIONISTA")
+                .requestMatchers("/api/habitacion/**").hasRole("ADMIN")
+                .requestMatchers("/api/usuario/**").hasRole("ADMIN")
+                .requestMatchers("/api/reporte/**").hasRole("ADMIN")
                 .anyRequest().hasAnyRole("ADMIN", "RECEPCIONISTA")
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -70,7 +70,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/api/**", config);
         return source;
     }
 }

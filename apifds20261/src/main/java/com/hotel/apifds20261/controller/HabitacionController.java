@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("habitacion")
+@RequestMapping("/api/habitacion")
 @RequiredArgsConstructor
 public class HabitacionController {
 

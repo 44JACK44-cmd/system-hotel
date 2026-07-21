@@ -16,7 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("reserva")
+@RequestMapping("/api/reserva")
 @RequiredArgsConstructor
 public class ReservaController {
 
