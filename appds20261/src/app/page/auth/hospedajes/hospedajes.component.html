@@ -176,6 +176,7 @@
               <div style="display:flex;gap:8px">
                 <div class="hos-datepicker-wrap">
                   <p-datepicker [(ngModel)]="extensionFecha" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="hs-input" styleClass="custom-datepicker" placeholder="Seleccionar fecha" />
+                </div>
                 <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="extenderEstadia()" [disabled]="loadingExtension">
                   @if (loadingExtension) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;font-size:16px">sync</span> } @else { Extender }
                 </button>
