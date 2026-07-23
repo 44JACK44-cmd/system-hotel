@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PagoService } from '../../../observable/pago.service';
@@ -27,6 +27,8 @@ export class PagosComponent implements OnInit, OnDestroy {
   private cajaService = inject(CajaService);
   private messageService = inject(MessageService);
   private layoutState = inject(LayoutStateService);
+  private cdr = inject(ChangeDetectorRef);
+  private appRef = inject(ApplicationRef);
 
   Math = Math;
   pagos: any[] = [];
@@ -114,13 +116,13 @@ export class PagosComponent implements OnInit, OnDestroy {
 
   loadAllPagos(): void {
     this.pagoService.listarTodos().subscribe({
-      next: res => { this.allPagos = res.data || []; }
+      next: res => { this.allPagos = res.data || []; this.cdr.detectChanges(); this.appRef.tick(); }
     });
   }
 
   loadAllEgresos(): void {
     this.egresoService.listarTodos().subscribe({
-      next: res => this.egresos = res.data || []
+      next: res => { this.egresos = res.data || []; this.cdr.detectChanges(); this.appRef.tick(); }
     });
   }
 
@@ -131,6 +133,8 @@ export class PagosComponent implements OnInit, OnDestroy {
         this.pagos = res.content;
         this.totalRecords = res.totalElements;
         this.loading = false;
+        this.cdr.detectChanges();
+        this.appRef.tick();
       },
       error: () => this.loading = false
     });
@@ -138,7 +142,7 @@ export class PagosComponent implements OnInit, OnDestroy {
 
   loadCaja(): void {
     this.cajaService.obtenerActual().subscribe({
-      next: res => this.cajaActual = res.data
+      next: res => { this.cajaActual = res.data; this.cdr.detectChanges(); this.appRef.tick(); }
     });
   }
 

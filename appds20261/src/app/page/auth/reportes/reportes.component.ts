@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReporteService } from '../../../observable/reporte.service';
@@ -18,6 +18,8 @@ import { MessageService } from 'primeng/api';
 export class ReportesComponent implements OnInit {
   private reporteService = inject(ReporteService);
   private messageService = inject(MessageService);
+  private cdr = inject(ChangeDetectorRef);
+  private appRef = inject(ApplicationRef);
 
   loading = false;
   ingresos: any = null;
@@ -108,13 +110,15 @@ export class ReportesComponent implements OnInit {
     this.loadIngresosMetodo();
     this.loadOcupacion();
     this.loadNoConcretadas();
+    this.loadIncidencias();
+    this.loadRanking();
   }
 
   loadIngresos(): void {
     if (!this.ingresoInicio || !this.ingresoFin) return;
     this.loading = true;
     this.reporteService.ingresos(this.toDateStr(this.ingresoInicio), this.toDateStr(this.ingresoFin)).subscribe({
-      next: (res) => { this.ingresos = res.data; this.loading = false; },
+      next: (res) => { this.ingresos = res.data; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
       error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar ingresos' }); }
     });
   }
@@ -133,6 +137,8 @@ export class ReportesComponent implements OnInit {
           }]
         };
         this.loading = false;
+        this.cdr.detectChanges();
+        this.appRef.tick();
       },
       error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar metodo' }); }
     });
@@ -142,7 +148,7 @@ export class ReportesComponent implements OnInit {
     if (!this.ocupacionFecha) return;
     this.loading = true;
     this.reporteService.ocupacion(this.toDateStr(this.ocupacionFecha)).subscribe({
-      next: (res) => { this.ocupacion = res.data; this.loading = false; },
+      next: (res) => { this.ocupacion = res.data; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
       error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar ocupacion' }); }
     });
   }
@@ -151,7 +157,7 @@ export class ReportesComponent implements OnInit {
     if (!this.noConcretadasInicio || !this.noConcretadasFin) return;
     this.loading = true;
     this.reporteService.reservasNoConcretadas(this.toDateStr(this.noConcretadasInicio), this.toDateStr(this.noConcretadasFin)).subscribe({
-      next: (res) => { this.noConcretadas = res.data; this.loading = false; },
+      next: (res) => { this.noConcretadas = res.data; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
       error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar no concretadas' }); }
     });
   }
@@ -159,7 +165,7 @@ export class ReportesComponent implements OnInit {
   loadIncidencias(): void {
     this.loading = true;
     this.reporteService.historialIncidencias().subscribe({
-      next: (res) => { this.historialIncidencias = res.data || []; this.loading = false; },
+      next: (res) => { this.historialIncidencias = res.data || []; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
       error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar incidencias' }); }
     });
   }
@@ -167,7 +173,7 @@ export class ReportesComponent implements OnInit {
   loadRanking(): void {
     this.loading = true;
     this.reporteService.rankingHabitaciones().subscribe({
-      next: (res) => { this.ranking = res.data || []; this.loading = false; },
+      next: (res) => { this.ranking = res.data || []; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
       error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar ranking' }); }
     });
   }

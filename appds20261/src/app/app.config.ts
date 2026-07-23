@@ -119,7 +119,7 @@ export const appConfig: ApplicationConfig = {
       inputVariant: 'outlined'
     }),
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ZoneHttpInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ZoneHttpInterceptor, multi: true }, // PRUEBA A — restaurado
     MessageService
   ]
 };

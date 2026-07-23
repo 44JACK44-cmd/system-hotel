@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HabitacionService } from '../../../observable/habitacion.service';
@@ -30,6 +30,8 @@ export class HabitacionesComponent implements OnInit, OnDestroy {
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
 
+  private cdr = inject(ChangeDetectorRef);
+  private appRef = inject(ApplicationRef);
   private authService = inject(AuthService);
   private layoutState = inject(LayoutStateService);
   habitaciones: any[] = [];
@@ -126,6 +128,8 @@ export class HabitacionesComponent implements OnInit, OnDestroy {
       });
       this.pisos = Object.keys(this.mapa).map(Number).sort();
       this.loading = false;
+      this.cdr.detectChanges();
+      this.appRef.tick();
     }, error: () => this.loading = false });
   }
 

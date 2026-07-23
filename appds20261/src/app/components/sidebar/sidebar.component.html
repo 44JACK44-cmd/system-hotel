@@ -15,8 +15,8 @@
       @for (item of filteredMenu; track item.route) {
         <a [routerLink]="item.route"
            class="hs-sidebar__nav-item"
-           [class.sidebar-nav-active]="isActive(item.route)"
-           (click)="handleNavClick(item.route)">
+           routerLinkActive="sidebar-nav-active"
+           [routerLinkActiveOptions]="{ exact: true }">
           <span class="material-symbols-outlined">{{ item.icon }}</span>
           <span class="hs-sidebar__nav-label">{{ item.label }}</span>
         </a>

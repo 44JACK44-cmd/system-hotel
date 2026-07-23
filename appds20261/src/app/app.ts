@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterOutlet, Event, NavigationEnd, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from './components/header/header.component';
@@ -9,6 +9,8 @@ import { LayoutStateService } from './services/layout-state.service';
 import { Subscription } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+
+const T = () => performance.now().toFixed(2);
 
 interface MenuItem {
   label: string;
@@ -64,10 +66,12 @@ export class App implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isPublicPage = this.checkPublicUrl();
+    console.log(`[APP] ${T()} ngOnInit() — URL inicial: ${this.router.url}, inAngularZone=${NgZone.isInAngularZone()}`);
     this.routerSub = this.router.events.pipe(
       filter((e: Event): e is NavigationEnd => e instanceof NavigationEnd)
-    ).subscribe(() => {
+    ).subscribe((e: NavigationEnd) => {
       this.isPublicPage = this.checkPublicUrl();
+      console.log(`[APP] ${T()} NavigationEnd — url: ${e.url}, urlAfterRedirects: ${e.urlAfterRedirects}, isPublicPage: ${this.isPublicPage}, overlayActive: ${this.layoutState.overlayActive()}, mobileDrawerOpen: ${this.mobileDrawerOpen}, inAngularZone=${NgZone.isInAngularZone()}`);
     });
   }
 

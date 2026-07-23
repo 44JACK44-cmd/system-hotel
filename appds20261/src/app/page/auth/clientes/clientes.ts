@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
 import { ClienteService } from '../../../observable/cliente.service';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -23,6 +23,8 @@ export class Clientes implements OnInit, OnDestroy {
   private messageService = inject(MessageService);
   private router = inject(Router);
   private layoutState = inject(LayoutStateService);
+  private cdr = inject(ChangeDetectorRef);
+  private appRef = inject(ApplicationRef);
 
   clientes: any[] = [];
   loading = false;
@@ -75,6 +77,8 @@ export class Clientes implements OnInit, OnDestroy {
         this.clientes = res.content;
         this.totalRecords = res.totalElements;
         this.loading = false;
+        this.cdr.detectChanges();
+        this.appRef.tick();
       },
       error: () => this.loading = false
     });

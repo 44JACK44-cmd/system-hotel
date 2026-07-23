@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HospedajeService } from '../../../observable/hospedaje.service';
@@ -35,6 +35,8 @@ export class HospedajesComponent implements OnInit, OnDestroy {
   private reservaService = inject(ReservaService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
+  private cdr = inject(ChangeDetectorRef);
+  private appRef = inject(ApplicationRef);
 
   activeTab = 'activos';
   loading = false;
@@ -145,14 +147,14 @@ export class HospedajesComponent implements OnInit, OnDestroy {
   loadActivos(): void {
     this.loading = true;
     this.hospedajeService.listarActivos().subscribe({
-      next: res => { this.hospedajes = res.data || []; this.filteredHospedajes = [...this.hospedajes]; this.loading = false; },
+      next: res => { this.hospedajes = res.data || []; this.filteredHospedajes = [...this.hospedajes]; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
       error: () => this.loading = false
     });
   }
 
   loadClientes(): void {
     this.clienteService.listarTodos().subscribe({
-      next: res => this.clientes = res.data || []
+      next: res => { this.clientes = res.data || []; this.cdr.detectChanges(); this.appRef.tick(); }
     });
   }
 
@@ -163,6 +165,8 @@ export class HospedajesComponent implements OnInit, OnDestroy {
       this.habitacionesDisponibles = todas
         .filter((h: any) => h.estado === 'DISPONIBLE')
         .map((h: any) => ({ ...h, label: `${h.numero} - ${h.tipo} - S/${h.precioNoche}` }));
+      this.cdr.detectChanges();
+      this.appRef.tick();
     });
   }
 
@@ -170,6 +174,8 @@ export class HospedajesComponent implements OnInit, OnDestroy {
     this.incidenciaService.listarActivas().subscribe({
       next: res => {
         this.incidenciasLimpieza = (res.data || []).filter((i: any) => i.tipo === 'LIMPIEZA');
+        this.cdr.detectChanges();
+        this.appRef.tick();
       }
     });
   }
@@ -178,6 +184,8 @@ export class HospedajesComponent implements OnInit, OnDestroy {
     this.reservaService.listarDelDia().subscribe({
       next: res => {
         this.proximosCheckIns = (res.data || []).filter((r: any) => r.estado === 'CONFIRMADA');
+        this.cdr.detectChanges();
+        this.appRef.tick();
       }
     });
   }

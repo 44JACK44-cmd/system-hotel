@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -27,6 +27,8 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private layoutState = inject(LayoutStateService);
+  private cdr = inject(ChangeDetectorRef);
+  private appRef = inject(ApplicationRef);
 
   usuarios: any[] = [];
   stats = { total: 0, activos: 0, admins: 0, recepcionistas: 0 };
@@ -90,6 +92,8 @@ export class UsuariosComponent implements OnInit, OnDestroy {
           admins: all.filter((u: any) => u.rol === 'ADMIN').length,
           recepcionistas: all.filter((u: any) => u.rol === 'RECEPCIONISTA').length
         };
+        this.cdr.detectChanges();
+        this.appRef.tick();
       }
     });
   }
@@ -101,6 +105,8 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         this.usuarios = res.content;
         this.totalRecords = res.totalElements;
         this.loading = false;
+        this.cdr.detectChanges();
+        this.appRef.tick();
       },
       error: () => { this.loading = false; }
     });

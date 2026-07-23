@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -24,6 +24,8 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
   private habService = inject(HabitacionService);
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
+  private cdr = inject(ChangeDetectorRef);
+  private appRef = inject(ApplicationRef);
 
   incidencias: any[] = [];
   habitaciones: any[] = [];
@@ -129,7 +131,7 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
   loadIncidencias(): void {
     this.loading = true;
     this.incidenciaService.listarActivas().subscribe({
-      next: res => { this.incidencias = res.data || []; this.totalRecords = this.incidenciasActivas.length; this.page = 0; this.loading = false; },
+      next: res => { this.incidencias = res.data || []; this.totalRecords = this.incidenciasActivas.length; this.page = 0; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
       error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar incidencias' }); }
     });
   }
@@ -139,6 +141,8 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
       next: res => {
         this.habitaciones = (res.data || [])
           .map((h: any) => ({ ...h, label: `${h.numero} - ${h.tipo} (${h.estado})` }));
+        this.cdr.detectChanges();
+        this.appRef.tick();
       },
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar habitaciones' })
     });

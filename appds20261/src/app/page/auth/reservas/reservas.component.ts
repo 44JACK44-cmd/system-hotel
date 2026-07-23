@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReservaService } from '../../../observable/reserva.service';
@@ -34,6 +34,8 @@ export class ReservasComponent implements OnInit, OnDestroy {
   private confirmationService = inject(ConfirmationService);
   private authService = inject(AuthService);
   private layoutState = inject(LayoutStateService);
+  private cdr = inject(ChangeDetectorRef);
+  private appRef = inject(ApplicationRef);
 
   reservas: any[] = [];
   searchTerm = '';
@@ -93,6 +95,8 @@ export class ReservasComponent implements OnInit, OnDestroy {
         this.reservas = res.content;
         this.totalRecords = res.totalElements;
         this.loading = false;
+        this.cdr.detectChanges();
+        this.appRef.tick();
       },
       error: () => this.loading = false
     });
@@ -123,11 +127,13 @@ export class ReservasComponent implements OnInit, OnDestroy {
     this.habService.listarActivas().subscribe(res => {
       this.habitaciones = (res.data || []).filter((h: any) => h.estado === 'DISPONIBLE')
         .map((h: any) => ({ ...h, label: `${h.numero} - ${h.tipo} - S/${h.precioNoche}` }));
+      this.cdr.detectChanges();
+      this.appRef.tick();
     });
   }
 
   loadClientes(): void {
-    this.clienteService.listarTodos().subscribe(res => this.clientes = res.data || []);
+    this.clienteService.listarTodos().subscribe(res => { this.clientes = res.data || []; this.cdr.detectChanges(); this.appRef.tick(); });
   }
 
   closeDialog(): void {

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit } from '@angular/core';
 import { AuthService } from '../../../observable/auth.service';
 import { ReporteService } from '../../../observable/reporte.service';
 import { RouterModule } from '@angular/router';
@@ -14,6 +14,8 @@ import { CommonModule } from '@angular/common';
 export class Admin implements OnInit {
   private authService = inject(AuthService);
   private reporteService = inject(ReporteService);
+  private cdr = inject(ChangeDetectorRef);
+  private appRef = inject(ApplicationRef);
 
   mesActual = '';
   loading = false;
@@ -49,7 +51,7 @@ export class Admin implements OnInit {
       error: () => {}
     });
     this.reporteService.ocupacion(today).subscribe({
-      next: res => { this.ocupacion = res.data; this.loading = false; },
+      next: res => { this.ocupacion = res.data; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
       error: () => this.loading = false
     });
   }

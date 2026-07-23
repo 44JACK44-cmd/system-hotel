@@ -68,16 +68,22 @@ export class Login implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.loginForm.invalid) return;
     this.loading = true;
+    console.log(`[LOGIN] ${performance.now().toFixed(2)} onSubmit() — loading=true, inAngularZone=${NgZone.isInAngularZone()}`);
     this.authService.login(this.loginForm.value as any).subscribe({
       next: () => {
+        console.log(`[LOGIN] ${performance.now().toFixed(2)} subscribe.next() — login EXITOSO, inAngularZone=${NgZone.isInAngularZone()}`);
         const rol = this.authService.getRol();
         this.zone.run(() => {
-          this.router.navigate([rol === 'ADMIN' ? '/admin/dashboard' : '/recepcion/dashboard']);
+          console.log(`[LOGIN] ${performance.now().toFixed(2)} DENTRO de zone.run() — router.navigate() a punto de ejecutarse, inAngularZone=${NgZone.isInAngularZone()}`);
+          this.router.navigate([rol === 'ADMIN' ? '/admin/dashboard' : '/recepcion/dashboard']).then(() => {
+            console.log(`[LOGIN] ${performance.now().toFixed(2)} router.navigate() PROMESA RESUELTA — navegación completada`);
+          });
         });
       },
       error: (err) => {
         this.loading = false;
         const msg = err.error?.message || 'Credenciales incorrectas';
+        console.log(`[LOGIN] ${performance.now().toFixed(2)} subscribe.error() — ${msg}`);
         this.messageService.add({ severity: 'error', summary: 'Error de acceso', detail: msg });
       }
     });

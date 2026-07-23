@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Component, inject, ChangeDetectorRef, ApplicationRef, OnDestroy } from '@angular/core';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../observable/auth.service';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { filter, Subject, takeUntil } from 'rxjs';
 
 interface MenuItem {
   label: string;
@@ -19,17 +20,35 @@ interface MenuItem {
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   private messageService = inject(MessageService);
+  private cdr = inject(ChangeDetectorRef);
+  private appRef = inject(ApplicationRef);
+  private destroy$ = new Subject<void>();
+
+  constructor() {
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.cdr.detectChanges();
+      this.appRef.tick();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   get rolLabel(): string {
     return this.authService.isAdmin() ? 'Vista Administrador' : 'Vista Recepcionista';
   }
 
   get quickCheckInRoute(): string {
-    return this.authService.isAdmin() ? '/recepcion/dashboard' : '/recepcion/dashboard';
+    return '/recepcion/dashboard';
   }
 
   get filteredMenu(): MenuItem[] {
@@ -58,19 +77,7 @@ export class SidebarComponent {
     ];
   }
 
-  isActive(route: string): boolean {
-    return this.router.isActive(route, {
-      paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored'
-    }) || this.router.isActive(route, {
-      paths: 'subset', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored'
-    });
-  }
-
   goTo(route: string): void {
-    this.router.navigate([route]);
-  }
-
-  handleNavClick(route: string): void {
     this.router.navigate([route]);
   }
 

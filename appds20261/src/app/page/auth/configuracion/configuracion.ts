@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, ApplicationRef, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConfiguracionService } from '../../../observable/configuracion.service';
 import { HabitacionService } from '../../../observable/habitacion.service';
@@ -28,7 +28,9 @@ export class Configuracion implements OnInit {
 
   constructor(
     private configSvc: ConfiguracionService,
-    private habSvc: HabitacionService
+    private habSvc: HabitacionService,
+    private cdr: ChangeDetectorRef,
+    private appRef: ApplicationRef
   ) {}
 
   ngOnInit() {
@@ -63,6 +65,8 @@ export class Configuracion implements OnInit {
           this.habitaciones = res.data;
         }
         this.loading = false;
+        this.cdr.detectChanges();
+        this.appRef.tick();
       },
       error: () => { this.loading = false; }
     });
