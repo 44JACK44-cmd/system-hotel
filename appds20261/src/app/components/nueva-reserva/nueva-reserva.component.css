@@ -8,7 +8,7 @@
   max-width: 560px;
   background: var(--clr-surface-container-lowest);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 4px 24px color-mix(in srgb, var(--clr-on-surface) 15%, transparent);
   border: 1px solid var(--clr-outline-variant);
   display: flex;
@@ -22,6 +22,7 @@
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 .nr-header-title {
   color: var(--clr-white);
@@ -197,32 +198,24 @@
   line-height: 24px;
   margin: 0;
 }
-.nr-fechas-row {
+.nr-dates-row {
   display: flex;
-  align-items: center;
   gap: 12px;
 }
-.nr-date-wrap {
+.nr-field {
   flex: 1;
   position: relative;
 }
-.nr-date-wrap .nr-input {
-  padding-right: 36px;
+.nr-date-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+.nr-date-input-wrapper .nr-input {
+  padding-right: 2.5rem;
   cursor: pointer;
 }
-.nr-date-icon {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: var(--clr-outline);
-  font-size: 18px;
-}
 .nr-date-sep {
-  color: var(--clr-outline);
-  font-weight: 600;
-  flex-shrink: 0;
+  display: none;
 }
 .nr-adelanto-row {
   display: flex;
@@ -310,6 +303,7 @@
   border-top: 1px solid var(--clr-outline-variant);
   background: var(--clr-surface-container-low);
   flex-shrink: 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 .nr-btn {
   flex: 1;
@@ -367,12 +361,9 @@
   .nr-grid-2 {
     grid-template-columns: 1fr;
   }
-  .nr-fechas-row {
+  .nr-dates-row {
     flex-direction: column;
     gap: 8px;
-  }
-  .nr-date-sep {
-    display: none;
   }
   .nr-adelanto-row {
     flex-direction: column;

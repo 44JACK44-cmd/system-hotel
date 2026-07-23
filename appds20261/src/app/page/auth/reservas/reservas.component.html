@@ -155,11 +155,15 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="hs-field">
             <label class="hs-label">Fecha Entrada</label>
-            <p-datepicker formControlName="fechaEntrada" dateFormat="yy-mm-dd HH:mm" inputStyleClass="hs-input" styleClass="w-full" appendTo="body" [showTime]="true" hourFormat="24" />
+            <div class="res-datepicker-wrap">
+              <p-datepicker formControlName="fechaEntrada" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="hs-input" styleClass="custom-datepicker" />
+            </div>
           </div>
           <div class="hs-field">
             <label class="hs-label">Fecha Salida</label>
-            <p-datepicker formControlName="fechaSalida" dateFormat="yy-mm-dd HH:mm" inputStyleClass="hs-input" styleClass="w-full" appendTo="body" [showTime]="true" hourFormat="24" />
+            <div class="res-datepicker-wrap">
+              <p-datepicker formControlName="fechaSalida" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="hs-input" styleClass="custom-datepicker" />
+            </div>
           </div>
         </div>
 

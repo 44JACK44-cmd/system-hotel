@@ -115,6 +115,65 @@
   --duration-normal: 150ms;
 }
 
+/* ---------- Dark theme overrides ---------- */
+:root.dark {
+  --clr-background:                #121212;
+  --clr-on-background:             #e3e2e6;
+  --clr-surface:                   #1e1e1e;
+  --clr-surface-dim:               #1a1a1a;
+  --clr-surface-bright:            #2a2a2a;
+  --clr-surface-container-lowest:  #141414;
+  --clr-surface-container-low:     #1a1a1a;
+  --clr-surface-container:         #222222;
+  --clr-surface-container-high:    #2a2a2a;
+  --clr-surface-container-highest: #333333;
+  --clr-surface-variant:           #2a2a2a;
+  --clr-on-surface:                #e3e2e6;
+  --clr-on-surface-variant:        #c4c6cf;
+  --clr-inverse-surface:           #e3e2e6;
+  --clr-inverse-on-surface:        #1a1b1e;
+  --clr-surface-tint:              #aec7f7;
+
+  --clr-outline:                   #8b8d93;
+  --clr-outline-variant:           #44474e;
+
+  --clr-primary-container:         #2e476f;
+  --clr-on-primary-container:      #d6e3ff;
+  --clr-primary-fixed:             #1b365d;
+  --clr-primary-fixed-dim:         #2e476f;
+  --clr-on-primary-fixed:          #d6e3ff;
+  --clr-on-primary-fixed-variant:  #aec7f7;
+  --clr-inverse-primary:           #002046;
+
+  --clr-secondary-container:       #00468c;
+  --clr-on-secondary-container:    #d6e3ff;
+
+  --clr-tertiary:                  #c4c7c9;
+  --clr-tertiary-container:        #333638;
+  --clr-on-tertiary:               #1a1b1e;
+  --clr-on-tertiary-container:     #e0e3e5;
+
+  --clr-status-available:          #4caf50;
+  --clr-status-occupied:           #f44336;
+  --clr-status-dirty:              #ffb300;
+  --clr-status-maintenance:        #757575;
+
+  --clr-error:                     #ffb4ab;
+  --clr-on-error:                  #690005;
+  --clr-error-container:           #93000a;
+  --clr-on-error-container:        #ffdad6;
+
+  --clr-white:                     #ffffff;
+  --clr-black:                     #000000;
+  --clr-primary-dark:              #000000;
+
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg:   0 4px 16px rgba(0,0,0,0.45);
+  --shadow-xl:   0 8px 32px rgba(0,0,0,0.5);
+  --shadow-slide: -4px 0 32px rgba(0,0,0,0.5);
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {

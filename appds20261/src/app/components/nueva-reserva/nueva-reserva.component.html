@@ -47,13 +47,16 @@
             <p class="nr-saldo-value">S/ {{ saldoPendiente.toFixed(2) }}</p>
           </div>
         </div>
-        <div class="nr-fechas-row">
-          <div class="nr-date-wrap">
-            <p-datepicker [(ngModel)]="reservaData.fechaEntrada" name="fechaEntrada" (ngModelChange)="recalcular()" dateFormat="yy-mm-dd HH:mm" inputStyleClass="nr-input" styleClass="w-full" placeholder="Fecha entrada" appendTo="body" [showTime]="true" hourFormat="24" />
+        <div class="nr-dates-row">
+          <div class="nr-field">
+            <div class="nr-date-input-wrapper">
+              <p-datepicker [(ngModel)]="reservaData.fechaEntrada" name="fechaEntrada" (ngModelChange)="recalcular()" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="nr-input" styleClass="custom-datepicker" placeholder="Fecha entrada" />
+            </div>
           </div>
-          <span class="nr-date-sep">-</span>
-          <div class="nr-date-wrap">
-            <p-datepicker [(ngModel)]="reservaData.fechaSalida" name="fechaSalida" (ngModelChange)="recalcular()" dateFormat="yy-mm-dd HH:mm" inputStyleClass="nr-input" styleClass="w-full" placeholder="Fecha salida" appendTo="body" [showTime]="true" hourFormat="24" />
+          <div class="nr-field">
+            <div class="nr-date-input-wrapper">
+              <p-datepicker [(ngModel)]="reservaData.fechaSalida" name="fechaSalida" (ngModelChange)="recalcular()" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="nr-input" styleClass="custom-datepicker" placeholder="Fecha salida" />
+            </div>
           </div>
         </div>
       </section>

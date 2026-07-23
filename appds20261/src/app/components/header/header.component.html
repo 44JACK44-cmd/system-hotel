@@ -15,6 +15,9 @@
       <button class="hs-topbar__icon-btn" title="Notificaciones" aria-label="Notificaciones">
         <span class="material-symbols-outlined">notifications</span>
       </button>
+      <button class="hs-topbar__icon-btn" (click)="toggleTheme()" aria-label="Cambiar tema">
+        <span class="material-symbols-outlined">{{ isDark() ? 'light_mode' : 'dark_mode' }}</span>
+      </button>
       <button class="hs-topbar__icon-btn" title="Ayuda" aria-label="Ayuda">
         <span class="material-symbols-outlined">help</span>
       </button>

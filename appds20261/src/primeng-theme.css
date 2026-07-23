@@ -433,3 +433,43 @@
   --p-divider-border-color: var(--clr-surface-container-highest);
 
 }
+
+/* === custom-datepicker (all systems) === */
+
+/* -- Calendar icon visibility -- */
+.custom-datepicker .p-datepicker-dropdown {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #666666 !important;
+  background: transparent !important;
+  border: none !important;
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+.custom-datepicker .p-datepicker-dropdown .p-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  color: inherit;
+}
+
+/* -- DatePicker panel positioning -- */
+.custom-datepicker .p-datepicker-panel {
+  left: 0 !important;
+  right: auto !important;
+  top: 100% !important;
+  margin-top: 4px;
+  min-width: 100% !important;
+  max-width: 320px;
+  max-height: min(80vh, 420px);
+  overflow-y: auto;
+  z-index: 1200 !important;
+}
+
+/* -- Input padding for icon space -- */
+.custom-datepicker .p-inputtext {
+  padding-right: 2.5rem !important;
+}

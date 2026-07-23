@@ -668,3 +668,9 @@
 @media(max-width:640px) {
   .hos-main-table .hs-table-scroll { max-height:400px; }
 }
+
+.hos-datepicker-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}

@@ -174,7 +174,8 @@
             <div class="hos-section">
               <p class="hos-section-title">Extender Estadía</p>
               <div style="display:flex;gap:8px">
-                <p-datepicker [(ngModel)]="extensionFecha" dateFormat="yy-mm-dd HH:mm" inputStyleClass="hs-input" styleClass="w-full" style="flex:1;min-width:0" placeholder="Seleccionar fecha" appendTo="body" [showTime]="true" hourFormat="24" />
+                <div class="hos-datepicker-wrap">
+                  <p-datepicker [(ngModel)]="extensionFecha" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="hs-input" styleClass="custom-datepicker" placeholder="Seleccionar fecha" />
                 <button class="hs-btn hs-btn-secondary hs-btn-sm" (click)="extenderEstadia()" [disabled]="loadingExtension">
                   @if (loadingExtension) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;font-size:16px">sync</span> } @else { Extender }
                 </button>

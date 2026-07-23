@@ -2,6 +2,7 @@ import { Component, inject, OnInit, OnDestroy, signal, Output, EventEmitter } fr
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../observable/auth.service';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-header',
@@ -14,7 +15,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   @Output() menuToggle = new EventEmitter<void>();
   private authService = inject(AuthService);
   private router = inject(Router);
+  private themeService = inject(ThemeService);
 
+  isDark = this.themeService.isDark;
   fechaHoraActual = signal<string>('');
   nombreUsuario = '';
   rolLabel = '';
@@ -44,6 +47,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
       hour: '2-digit', minute: '2-digit', hour12: true
     });
     this.fechaHoraActual.set(`${fecha}  •  ${hora}`);
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggle();
   }
 
   logout(): void {

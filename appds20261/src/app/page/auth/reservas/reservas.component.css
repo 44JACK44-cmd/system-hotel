@@ -74,4 +74,8 @@
 .res-sort-icon { font-size: 14px; vertical-align: middle; margin-left: 4px; opacity: 0.4; }
 .res-sort-icon--active { opacity: 1; color: var(--clr-primary); }
 
+.res-datepicker-wrap {
+  position: relative;
+}
+
 
