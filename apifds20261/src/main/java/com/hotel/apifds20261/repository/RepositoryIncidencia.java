@@ -49,4 +49,6 @@ public interface RepositoryIncidencia extends JpaRepository<EntityIncidenciaHabi
            "OR LOWER(i.tipo) LIKE LOWER(CONCAT('%',:search,'%')) " +
            "OR LOWER(i.motivo) LIKE LOWER(CONCAT('%',:search,'%')))")
     Page<EntityIncidenciaHabitacion> findAllPaginated(@Param("search") String search, Pageable pageable);
+
+    long countByUsuarioId(Long usuarioId);
 }

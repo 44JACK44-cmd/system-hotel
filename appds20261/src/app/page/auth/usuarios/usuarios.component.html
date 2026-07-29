@@ -71,6 +71,8 @@
               <span class="material-symbols-outlined usr-sort-icon usr-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
             }
           </th>
+          <th>Email</th>
+          <th>Tel&eacute;fono</th>
           <th>&Uacute;ltimo Acceso</th>
           <th>Estado</th>
           <th style="text-align:right">Acciones</th>
@@ -95,6 +97,12 @@
             <td data-label="Rol">
               <span class="badge" [style.background]="u.rol === 'ADMIN' ? 'var(--clr-primary-container)' : 'var(--clr-secondary-fixed)'" [style.color]="u.rol === 'ADMIN' ? 'var(--clr-on-primary-container)' : 'var(--clr-on-secondary-fixed)'">{{ u.rol === 'ADMIN' ? 'Administrador' : 'Recepcionista' }}</span>
             </td>
+            <td data-label="Email" class="text-data-tabular" style="color:var(--clr-on-surface-variant)">
+              {{ u.email || '&mdash;' }}
+            </td>
+            <td data-label="Tel&eacute;fono" class="text-data-tabular" style="color:var(--clr-on-surface-variant)">
+              {{ u.telefono || '&mdash;' }}
+            </td>
             <td data-label="Último Acceso" class="text-data-tabular" style="color:var(--clr-on-surface-variant)">
               @if (u.ultimoAcceso) {
                 {{ u.ultimoAcceso | date:'dd/MM/yy HH:mm' }}
@@ -111,14 +119,20 @@
               </div>
             </td>
             <td data-label="Acciones" style="text-align:right;white-space:nowrap">
-              <button style="width:32px;height:32px;border-radius:8px;border:1px solid var(--clr-outline-variant);background:transparent;color:var(--clr-on-surface-variant);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s" (mouseenter)="$any($event.currentTarget).style.borderColor='var(--aura-gold)'" (mouseleave)="$any($event.currentTarget).style.borderColor='var(--clr-outline-variant)'" (click)="editUser(u)" title="Editar">
+              <button style="width:32px;height:32px;border-radius:8px;border:1px solid var(--clr-outline-variant);background:transparent;color:var(--clr-on-surface-variant);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;margin-right:4px" (mouseenter)="$any($event.currentTarget).style.borderColor='var(--aura-gold)'" (mouseleave)="$any($event.currentTarget).style.borderColor='var(--clr-outline-variant)'" (click)="editUser(u)" title="Editar">
                 <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button style="width:32px;height:32px;border-radius:8px;border:1px solid var(--clr-outline-variant);background:transparent;color:var(--clr-on-surface-variant);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;margin-right:4px" (mouseenter)="$any($event.currentTarget).style.borderColor='var(--aura-gold)'" (mouseleave)="$any($event.currentTarget).style.borderColor='var(--clr-outline-variant)'" (click)="resetPassword(u)" title="Restablecer contraseña">
+                <span class="material-symbols-outlined">key</span>
+              </button>
+              <button style="width:32px;height:32px;border-radius:8px;border:1px solid var(--clr-outline-variant);background:transparent;color:var(--clr-error);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s" (mouseenter)="$any($event.currentTarget).style.borderColor='var(--clr-error)'" (mouseleave)="$any($event.currentTarget).style.borderColor='var(--clr-outline-variant)'" (click)="deleteUser(u)" title="Eliminar (desactivar)">
+                <span class="material-symbols-outlined">delete</span>
               </button>
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="5" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+            <td colspan="7" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
               No hay usuarios registrados.
             </td>
           </tr>
@@ -135,7 +149,6 @@
   }
 
 
-
   @if (dialogVisible) {
     <div class="hs-overlay" (click)="closeDialog()"></div>
     <div class="hs-slide-panel">
@@ -149,7 +162,7 @@
         <button style="width:32px;height:32px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s" (click)="closeDialog()" (mouseenter)="$any($event.currentTarget).style.background='rgba(255,255,255,0.2)'" (mouseleave)="$any($event.currentTarget).style.background='rgba(255,255,255,0.1)'"><span class="material-symbols-outlined" style="font-size:18px">close</span></button>
       </div>
 
-      <div class="hs-slide-panel__body">
+      <div class="hs-slide-panel__body" style="max-height:calc(100vh - 200px);overflow-y:auto;padding:16px 20px;">
         <form [formGroup]="userForm" style="display:flex;flex-direction:column;gap:16px">
           <div class="premium-field">
             <label>Nombre Completo</label>
@@ -168,28 +181,96 @@
           </div>
 
           <div class="premium-field">
-            <label>{{ editing ? 'Contrase&ntilde;a (dejar vac&iacute;o para mantener)' : 'Contrase&ntilde;a' }}</label>
+            <label>Correo Electr&oacute;nico</label>
+            <div style="position:relative">
+              <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">email</span>
+              <input class="premium-input" type="email" formControlName="email" placeholder="usuario@ejemplo.com" style="padding-left:32px" />
+            </div>
+          </div>
+
+          <div class="premium-field">
+            <label>Tel&eacute;fono</label>
+            <div style="position:relative">
+              <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">phone</span>
+              <input class="premium-input" type="tel" formControlName="telefono" placeholder="+51 999 999 999" style="padding-left:32px" />
+            </div>
+          </div>
+
+          <div class="premium-field">
+            <label>{{ editing ? 'Nueva Contrase&ntilde;a (dejar vac&iacute;o para mantener)' : 'Contrase&ntilde;a' }}</label>
             <div style="position:relative">
               <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">lock</span>
-              <input class="premium-input" type="password" formControlName="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" style="padding-left:32px" />
+              <input class="premium-input" [type]="showNewPassword ? 'text' : 'password'" formControlName="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" style="padding-left:32px;padding-right:44px" (input)="onPasswordInput()" />
+              <button type="button" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--clr-on-surface-variant);cursor:pointer;padding:4px" (click)="toggleNewPasswordVisibility()" title="{{ showNewPassword ? 'Ocultar' : 'Mostrar' }} contraseña">
+                <span class="material-symbols-outlined">{{ showNewPassword ? 'visibility_off' : 'visibility' }}</span>
+              </button>
             </div>
+            @if (passwordError) {
+              <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">{{ passwordError }}</small>
+            }
+          </div>
+
+          <div class="premium-field">
+            <label>Confirmar Contrase&ntilde;a</label>
+            <div style="position:relative">
+              <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">lock_outline</span>
+              <input class="premium-input" [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword" placeholder="Repita la contraseña" style="padding-left:32px;padding-right:44px" (input)="onConfirmPasswordInput()" />
+              <button type="button" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--clr-on-surface-variant);cursor:pointer;padding:4px" (click)="toggleConfirmPasswordVisibility()" title="{{ showConfirmPassword ? 'Ocultar' : 'Mostrar' }} contraseña">
+                <span class="material-symbols-outlined">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+            </div>
+            @if (confirmPasswordError) {
+              <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">{{ confirmPasswordError }}</small>
+            }
           </div>
 
           <div class="premium-field">
             <label>Rol</label>
             <p-select formControlName="rol" [options]="roles" optionLabel="label" optionValue="value" placeholder="Seleccionar rol" styleClass="w-full" appendTo="body" />
           </div>
+
+          <div class="premium-field">
+            <label>Estado</label>
+            <p-toggleswitch formControlName="activo" style="width:60px" />
+            <span style="margin-left:8px;font-size:13px;color:var(--clr-on-surface-variant)">{{ userForm.get('activo')?.value ? 'Activo' : 'Inactivo' }}</span>
+          </div>
+
+          @if (editing && editingId) {
+            <div class="premium-card" style="padding:12px 16px;background:color-mix(in srgb,var(--clr-primary) 6%,transparent);border:1px solid var(--clr-primary-container)">
+              <h4 style="margin:0 0 8px;font-size:13px;font-weight:700;color:var(--clr-primary);text-transform:uppercase;letter-spacing:0.05em">Información de Auditoría</h4>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;font-size:12px;color:var(--clr-on-surface-variant)">
+                <div><strong>Creado:</strong> {{ formatDate(usuarios.find(u => u.id === editingId)?.createdAt) }}</div>
+                <div><strong>Última modificación:</strong> {{ formatDate(usuarios.find(u => u.id === editingId)?.updatedAt) }}</div>
+                <div><strong>Último acceso:</strong> {{ formatDate(usuarios.find(u => u.id === editingId)?.ultimoAcceso) }}</div>
+                <div><strong>Creado por:</strong> {{ usuarios.find(u => u.id === editingId)?.createdBy || '&mdash;' }}</div>
+                <div><strong>Modificado por:</strong> {{ usuarios.find(u => u.id === editingId)?.updatedBy || '&mdash;' }}</div>
+              </div>
+            </div>
+          }
         </form>
       </div>
 
-      <div class="hs-slide-panel__footer" style="border-top:1px solid var(--clr-outline-variant);padding:16px 20px;display:flex;gap:10px">
-        <button class="premium-btn" style="flex:1;background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);justify-content:center;padding:12px" (click)="closeDialog()">
+      <div class="hs-slide-panel__footer" style="border-top:1px solid var(--clr-outline-variant);padding:16px 20px;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="premium-btn" style="background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);justify-content:center;padding:12px;min-width:120px" (click)="closeDialog()">
           Cancelar
         </button>
-        <button class="premium-btn" style="flex:1;justify-content:center;padding:12px"
+        @if (editing) {
+          <button class="premium-btn" style="background:var(--clr-warning-container);color:var(--clr-on-warning-container);border:none;justify-content:center;padding:12px;min-width:150px" (click)="resetPassword({id: editingId, nombreCompleto: userForm.get('nombreCompleto')?.value})" [disabled]="loadingAction">
+            @if (loadingAction && actionButtonText === 'Restablecer') {
+              <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;margin-right:8px">sync</span>
+            }
+            <span class="material-symbols-outlined" style="margin-right:8px">key</span>
+            Restablecer Contraseña
+          </button>
+          <button class="premium-btn" style="background:var(--clr-error-container);color:var(--clr-on-error-container);border:none;justify-content:center;padding:12px;min-width:120px" (click)="deleteUser({id: editingId, nombreCompleto: userForm.get('nombreCompleto')?.value})" [disabled]="loading">
+            <span class="material-symbols-outlined" style="margin-right:8px">delete</span>
+            Eliminar
+          </button>
+        }
+        <button class="premium-btn" style="justify-content:center;padding:12px;min-width:160px"
           [disabled]="userForm.invalid || loading" (click)="save()">
           @if (loading) {
-            <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+            <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;margin-right:8px">sync</span>
           }
           {{ editing ? 'Guardar Cambios' : 'Crear Usuario' }}
         </button>
@@ -197,5 +278,3 @@
     </div>
   }
 </div>
-
-

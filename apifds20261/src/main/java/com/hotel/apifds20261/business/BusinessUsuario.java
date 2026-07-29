@@ -1,11 +1,13 @@
 package com.hotel.apifds20261.business;
 
 import com.hotel.apifds20261.dto.request.RequestUsuarioInsert;
+import com.hotel.apifds20261.dto.request.RequestUsuarioUpdate;
 import com.hotel.apifds20261.dto.response.ResponsePage;
 import com.hotel.apifds20261.dto.response.SuggestionResponse;
 import com.hotel.apifds20261.dto.response.UsuarioResponse;
 import com.hotel.apifds20261.entity.EntityCaja;
 import com.hotel.apifds20261.entity.EntityHospedaje;
+import com.hotel.apifds20261.entity.EntityPago;
 import com.hotel.apifds20261.entity.EntityReserva;
 import com.hotel.apifds20261.entity.EntityUsuario;
 import com.hotel.apifds20261.staticdata.RolUsuario;
@@ -13,6 +15,7 @@ import com.hotel.apifds20261.exception.BusinessException;
 import com.hotel.apifds20261.exception.ResourceNotFoundException;
 import com.hotel.apifds20261.repository.RepositoryCaja;
 import com.hotel.apifds20261.repository.RepositoryHospedaje;
+import com.hotel.apifds20261.repository.RepositoryPago;
 import com.hotel.apifds20261.repository.RepositoryReserva;
 import com.hotel.apifds20261.repository.RepositoryUsuario;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +41,7 @@ public class BusinessUsuario {
     private final RepositoryHospedaje hospedajeRepository;
     private final RepositoryReserva reservaRepository;
     private final RepositoryCaja cajaRepository;
+    private final RepositoryPago pagoRepository;
 
     public List<UsuarioResponse> listarTodos() {
         List<EntityUsuario> entities = usuarioRepository.findAll();
@@ -110,6 +115,72 @@ public class BusinessUsuario {
     }
 
     @Transactional
+    public UsuarioResponse actualizarCompleto(Long id, RequestUsuarioUpdate request, Long currentUserId) {
+        EntityUsuario usuario = buscarOExcepcion(id);
+
+        // Validar username único
+        if (!usuario.getUsername().equals(request.getUsername()) &&
+                usuarioRepository.existsByUsername(request.getUsername())) {
+            throw new BusinessException("El username ya esta en uso");
+        }
+
+        // Validar email único
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            usuarioRepository.findByEmail(request.getEmail().trim()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new BusinessException("El correo electrónico ya está registrado");
+                }
+            });
+        }
+
+        // Validación de rol: no permitir dejar el sistema sin administradores
+        RolUsuario nuevoRol = RolUsuario.valueOf(request.getRol());
+        if (usuario.getRol() == RolUsuario.ADMIN && nuevoRol != RolUsuario.ADMIN) {
+            long adminCount = usuarioRepository.countByRolAndActivoTrue(RolUsuario.ADMIN);
+            if (adminCount <= 1) {
+                throw new BusinessException("No se puede cambiar el rol del único administrador del sistema");
+            }
+        }
+
+        // Validación: no permitir quitar permisos al admin autenticado si es el único
+        if (usuario.getId().equals(currentUserId) && usuario.getRol() == RolUsuario.ADMIN && nuevoRol != RolUsuario.ADMIN) {
+            long adminCount = usuarioRepository.countByRolAndActivoTrue(RolUsuario.ADMIN);
+            if (adminCount <= 1) {
+                throw new BusinessException("No puede cambiar su propio rol siendo el único administrador");
+            }
+        }
+
+        // Validación de contraseña
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            if (request.getConfirmPassword() == null || request.getConfirmPassword().isBlank()) {
+                throw new BusinessException("Debe confirmar la nueva contraseña");
+            }
+            if (!request.getPassword().equals(request.getConfirmPassword())) {
+                throw new BusinessException("Las contraseñas no coinciden");
+            }
+            usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        usuario.setNombreCompleto(request.getNombreCompleto());
+        usuario.setUsername(request.getUsername());
+        usuario.setEmail(request.getEmail());
+        usuario.setTelefono(request.getTelefono());
+        usuario.setRol(nuevoRol);
+        usuario.setActivo(request.isActivo());
+
+        // Validación al desactivar: no dejar sin administradores
+        if (usuario.getActivo() && !request.isActivo() && usuario.getRol() == RolUsuario.ADMIN) {
+            long adminCount = usuarioRepository.countByRolAndActivoTrue(RolUsuario.ADMIN);
+            if (adminCount <= 1) {
+                throw new BusinessException("No se puede desactivar el último administrador del sistema");
+            }
+            validarUsuarioSinOperacionesActivas(id);
+        }
+
+        return toResponse(usuarioRepository.save(usuario));
+    }
+
+    @Transactional
     public void cambiarEstado(Long id) {
         EntityUsuario usuario = buscarOExcepcion(id);
         boolean seraDesactivado = usuario.getActivo();
@@ -127,16 +198,56 @@ public class BusinessUsuario {
     }
 
     @Transactional
-    public void eliminar(Long id) {
+    public void eliminar(Long id, Long currentUserId) {
         EntityUsuario usuario = buscarOExcepcion(id);
+
+        // Validación 1: No es administrador principal (último admin)
         if (usuario.getRol() == RolUsuario.ADMIN) {
             long adminCount = usuarioRepository.countByRolAndActivoTrue(RolUsuario.ADMIN);
             if (adminCount <= 1) {
                 throw new BusinessException("No se puede eliminar el último administrador del sistema");
             }
         }
-        validarUsuarioSinOperacionesActivas(id);
+
+        // Validación 2: No es el usuario autenticado
+        if (usuario.getId().equals(currentUserId)) {
+            throw new BusinessException("No puede eliminarse a sí mismo");
+        }
+
+        // Validación 3-7: No tiene historial (reservas, hospedajes, pagos, incidencias, caja)
+        validarUsuarioSinHistorial(id);
+
+        // Desactivar en lugar de eliminar (soft delete)
         usuario.setActivo(false);
+        usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void resetPasswordByAdmin(Long id, String newPassword, String confirmPassword, Long currentUserId) {
+        EntityUsuario usuario = buscarOExcepcion(id);
+
+        // Validación: no puede restablecer su propia contraseña si es el único admin
+        if (usuario.getId().equals(currentUserId) && usuario.getRol() == RolUsuario.ADMIN) {
+            long adminCount = usuarioRepository.countByRolAndActivoTrue(RolUsuario.ADMIN);
+            if (adminCount <= 1) {
+                throw new BusinessException("No puede restablecer su propia contraseña siendo el único administrador");
+            }
+        }
+
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new BusinessException("La nueva contraseña es obligatoria");
+        }
+        if (confirmPassword == null || confirmPassword.isBlank()) {
+            throw new BusinessException("Debe confirmar la nueva contraseña");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            throw new BusinessException("Las contraseñas no coinciden");
+        }
+        if (newPassword.length() < 6 || newPassword.length() > 100) {
+            throw new BusinessException("La contraseña debe tener entre 6 y 100 caracteres");
+        }
+
+        usuario.setPassword(passwordEncoder.encode(newPassword));
         usuarioRepository.save(usuario);
     }
 
@@ -155,6 +266,38 @@ public class BusinessUsuario {
         boolean tieneCajaAbierta = cajasAbiertas.stream().anyMatch(c -> c.getUsuario().getId().equals(usuarioId));
         if (tieneCajaAbierta) {
             throw new BusinessException("No se puede desactivar el usuario: tiene una caja abierta. Cierre la caja primero.");
+        }
+    }
+
+    private void validarUsuarioSinHistorial(Long usuarioId) {
+        // Verificar reservas
+        long reservasCount = reservaRepository.countByUsuarioId(usuarioId);
+        if (reservasCount > 0) {
+            throw new BusinessException("Este usuario posee información histórica (reservas). Debe desactivarse en lugar de eliminarse.");
+        }
+
+        // Verificar hospedajes
+        long hospedajesCount = hospedajeRepository.countByUsuarioId(usuarioId);
+        if (hospedajesCount > 0) {
+            throw new BusinessException("Este usuario posee información histórica (hospedajes). Debe desactivarse en lugar de eliminarse.");
+        }
+
+        // Verificar pagos
+        long pagosCount = pagoRepository.countByUsuarioId(usuarioId);
+        if (pagosCount > 0) {
+            throw new BusinessException("Este usuario posee información histórica (pagos). Debe desactivarse en lugar de eliminarse.");
+        }
+
+        // Verificar incidencias
+        long incidenciasCount = usuarioRepository.countIncidenciasByUsuarioId(usuarioId);
+        if (incidenciasCount > 0) {
+            throw new BusinessException("Este usuario posee información histórica (incidencias). Debe desactivarse en lugar de eliminarse.");
+        }
+
+        // Verificar movimientos de caja
+        long cajaCount = cajaRepository.countByUsuarioId(usuarioId);
+        if (cajaCount > 0) {
+            throw new BusinessException("Este usuario posee información histórica (movimientos de caja). Debe desactivarse en lugar de eliminarse.");
         }
     }
 
@@ -178,6 +321,9 @@ public class BusinessUsuario {
         r.setActivo(u.getActivo());
         r.setTema(u.getTema());
         r.setCreatedAt(u.getCreatedAt());
+        r.setUpdatedAt(u.getUpdatedAt());
+        r.setCreatedBy(u.getCreatedBy());
+        r.setUpdatedBy(u.getUpdatedBy());
         r.setUltimoAcceso(u.getUltimoAcceso());
         return r;
     }
@@ -212,7 +358,7 @@ public class BusinessUsuario {
 
     public void actualizarUltimoAcceso(Long id) {
         EntityUsuario usuario = buscarOExcepcion(id);
-        usuario.setUltimoAcceso(java.time.LocalDateTime.now());
+        usuario.setUltimoAcceso(LocalDateTime.now());
         usuarioRepository.save(usuario);
     }
 

@@ -31,4 +31,9 @@ public interface RepositoryUsuario extends JpaRepository<EntityUsuario, Long> {
 
     Optional<EntityUsuario> findByEmail(String email);
     long countByRolAndActivoTrue(RolUsuario rol);
+
+    boolean existsByUsernameAndIdNot(String username, Long id);
+    boolean existsByEmailAndIdNot(String email, Long id);
+
+    long countIncidenciasByUsuarioId(Long usuarioId);
 }

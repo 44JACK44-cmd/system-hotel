@@ -27,6 +27,9 @@ export interface UsuarioResponse {
   activo: boolean;
   tema: string;
   createdAt: string;
+  updatedAt: string;
+  createdBy: number;
+  updatedBy: number;
   ultimoAcceso: string;
 }
 

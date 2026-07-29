@@ -31,8 +31,17 @@ public class EntityUsuario {
     @Column(nullable = false)
     private Boolean activo = true;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "created_by")
+    private Long createdBy;
+
+    @Column(name = "updated_by")
+    private Long updatedBy;
 
     @Column(name = "ultimo_acceso")
     private LocalDateTime ultimoAcceso;
@@ -54,4 +63,15 @@ public class EntityUsuario {
 
     @Column(length = 5)
     private String tema = "LIGHT";
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

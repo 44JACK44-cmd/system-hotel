@@ -72,4 +72,6 @@ public interface RepositoryReserva extends JpaRepository<EntityReserva, Long> {
     List<EntityReserva> searchConfirmadas(@Param("valor") String valor);
 
     List<EntityReserva> findByHabitacionIdAndEstado(Long habitacionId, EstadoReserva estado);
+
+    long countByUsuarioId(Long usuarioId);
 }

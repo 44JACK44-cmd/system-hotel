@@ -44,4 +44,6 @@ public interface RepositoryHospedaje extends JpaRepository<EntityHospedaje, Long
            "OR LOWER(h.habitacion.numero) LIKE LOWER(CONCAT('%',:valor,'%')) " +
            "OR CAST(h.id AS string) LIKE CONCAT('%',:valor,'%'))")
     List<EntityHospedaje> searchActivos(@Param("valor") String valor);
+
+    long countByUsuarioId(Long usuarioId);
 }

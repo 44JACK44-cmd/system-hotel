@@ -16,5 +16,8 @@ public class UsuarioResponse {
     private boolean activo;
     private String tema;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private Long createdBy;
+    private Long updatedBy;
     private LocalDateTime ultimoAcceso;
 }

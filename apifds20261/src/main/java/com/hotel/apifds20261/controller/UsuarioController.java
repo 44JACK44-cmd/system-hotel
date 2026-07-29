@@ -2,6 +2,7 @@ package com.hotel.apifds20261.controller;
 
 import com.hotel.apifds20261.business.BusinessUsuario;
 import com.hotel.apifds20261.dto.request.RequestUsuarioInsert;
+import com.hotel.apifds20261.dto.request.RequestUsuarioUpdate;
 import com.hotel.apifds20261.dto.response.ResponsePage;
 import com.hotel.apifds20261.dto.response.ResponseUsuario;
 import com.hotel.apifds20261.dto.response.SuggestionResponse;
@@ -80,6 +81,18 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("updatecompleto/{id}")
+    public ResponseEntity<ResponseUsuario> actionUpdateCompleto(
+            @PathVariable Long id, @Valid @RequestBody RequestUsuarioUpdate request,
+            @RequestHeader("X-User-Id") Long currentUserId) {
+        UsuarioResponse item = usuarioBusiness.actualizarCompleto(id, request, currentUserId);
+        ResponseUsuario response = new ResponseUsuario();
+        response.success();
+        response.getListUsuario().add(item);
+        response.listMessage.add("Usuario actualizado exitosamente");
+        return ResponseEntity.ok(response);
+    }
+
     @PatchMapping("togglestate/{id}")
     public ResponseEntity<ResponseUsuario> actionToggleState(@PathVariable Long id) {
         usuarioBusiness.cambiarEstado(id);
@@ -90,8 +103,9 @@ public class UsuarioController {
     }
 
     @DeleteMapping("delete/{id}")
-    public ResponseEntity<ResponseUsuario> actionDelete(@PathVariable Long id) {
-        usuarioBusiness.eliminar(id);
+    public ResponseEntity<ResponseUsuario> actionDelete(
+            @PathVariable Long id, @RequestHeader("X-User-Id") Long currentUserId) {
+        usuarioBusiness.eliminar(id, currentUserId);
         ResponseUsuario response = new ResponseUsuario();
         response.success();
         response.listMessage.add("Usuario desactivado exitosamente");
@@ -125,6 +139,19 @@ public class UsuarioController {
         ResponseUsuario response = new ResponseUsuario();
         response.success();
         response.listMessage.add("Contrasena cambiada exitosamente");
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("resetpassword/{id}")
+    public ResponseEntity<ResponseUsuario> actionResetPasswordByAdmin(
+            @PathVariable Long id, @RequestBody Map<String, String> body,
+            @RequestHeader("X-User-Id") Long currentUserId) {
+        String newPassword = body.get("newPassword");
+        String confirmPassword = body.get("confirmPassword");
+        usuarioBusiness.resetPasswordByAdmin(id, newPassword, confirmPassword, currentUserId);
+        ResponseUsuario response = new ResponseUsuario();
+        response.success();
+        response.listMessage.add("Contraseña restablecida exitosamente");
         return ResponseEntity.ok(response);
     }
 

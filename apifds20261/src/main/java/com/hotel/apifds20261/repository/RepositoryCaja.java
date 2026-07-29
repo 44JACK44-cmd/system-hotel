@@ -20,4 +20,6 @@ public interface RepositoryCaja extends JpaRepository<EntityCaja, Long> {
     @EntityGraph(attributePaths = {"usuario"})
     @Query("SELECT c FROM EntityCaja c ORDER BY c.fechaApertura DESC")
     List<EntityCaja> findAllByOrderByFechaAperturaDesc();
+
+    long countByUsuarioId(Long usuarioId);
 }

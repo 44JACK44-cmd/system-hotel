@@ -32,4 +32,6 @@ public interface RepositoryPago extends JpaRepository<EntityPago, Long> {
            "OR LOWER(p.metodo) LIKE LOWER(CONCAT('%',:search,'%')) " +
            "OR LOWER(p.referencia) LIKE LOWER(CONCAT('%',:search,'%')))")
     Page<EntityPago> findAllPaginated(@Param("search") String search, Pageable pageable);
+
+    long countByUsuarioId(Long usuarioId);
 }
