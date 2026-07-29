@@ -1,0 +1,98 @@
+<div class="login-page">
+  <p-toast position="top-center" />
+
+  <div class="login-bg" [style.background-image]="'url(images/hero-bg.jpg)'">
+    <div class="login-bg__scrim"></div>
+    <div class="login-bg__gradient"></div>
+  </div>
+
+  <div class="login-content">
+    <div class="login-header" [class.revealed]="headerRevealed">
+      <div class="login-logo">
+        <img [src]="cfg().logo || 'images/logo.png'" alt="{{ cfg().nombre || 'Hotel' }} Logo" class="login-logo__img" />
+      </div>
+      <h1 class="login-title">Bienvenido a {{ cfg().nombre || 'Hotel' }}</h1>
+      <p class="login-subtitle">{{ cfg().eslogan || 'Sistema de Gestión Hotelera' }}</p>
+    </div>
+
+    <div class="login-card" [class.revealed]="formRevealed">
+      <div class="login-card__inner">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+          <div class="login-field">
+            <label class="login-label" for="login-username">Usuario</label>
+            <div class="login-input-wrap">
+              <input
+                id="login-username"
+                class="login-input"
+                type="text"
+                formControlName="username"
+                placeholder=" "
+                autocomplete="username"
+                aria-label="Nombre de usuario"
+                maxlength="50"
+                pInputText
+              />
+            </div>
+            @if (loginForm.get('username')?.invalid && loginForm.get('username')?.touched) {
+              <small class="login-error">El usuario es obligatorio</small>
+            }
+          </div>
+
+          <div class="login-field">
+            <label class="login-label" for="login-password">Contraseña</label>
+            <div class="login-input-wrap login-input-wrap--password">
+              <input
+                id="login-password"
+                class="login-input"
+                [type]="showPassword ? 'text' : 'password'"
+                formControlName="password"
+                placeholder=" "
+                autocomplete="current-password"
+                aria-label="Contraseña"
+                maxlength="100"
+                minlength="6"
+                pInputText
+              />
+              <button
+                type="button"
+                class="login-pw-toggle"
+                (click)="showPassword = !showPassword"
+                [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                tabindex="-1"
+              >
+                <span class="material-symbols-outlined">
+                  {{ showPassword ? 'visibility_off' : 'visibility' }}
+                </span>
+              </button>
+            </div>
+            @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+              <small class="login-error">La contraseña es obligatoria</small>
+            }
+          </div>
+
+          <div class="login-actions">
+            <button
+              class="login-btn"
+              type="submit"
+              [disabled]="loginForm.invalid || loading"
+              pRipple>
+              @if (!loading) {
+                <span>Iniciar Sesión</span>
+              } @else {
+                <span class="login-btn__loading">
+                  <i class="pi pi-spin pi-spinner" style="font-size: 1.1rem"></i>
+                  Verificando...
+                </span>
+              }
+            </button>
+            <a (click)="forgotPassword()" class="login-forgot" role="button" tabindex="0">¿Olvidó su clave?</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="login-footer" [class.revealed]="footerRevealed">
+      <p>@if (cfg().ciudad) { {{ cfg().nombre || 'Hotel' }} — {{ cfg().ciudad }} } @else { Sistema de Gestión Hotelera }</p>
+    </div>
+  </div>
+</div>

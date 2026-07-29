@@ -1,0 +1,145 @@
+@if (visible) {
+<div class="hs-overlay hs-overlay--animate" (click)="cerrar()">
+<div class="hs-slide-panel hs-slide-panel--wide hs-slide-panel--animate" (click)="$event.stopPropagation()">
+  <div class="hs-slide-panel__header">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;background:var(--clr-primary-container);color:var(--clr-white);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <span class="material-symbols-outlined" style="font-size:18px">login</span>
+      </div>
+      <div>
+        <h2 style="font-size:18px;font-weight:700;color:var(--clr-white);margin:0">CHECK-IN</h2>
+        <p style="font-size:13px;color:var(--clr-outline);margin:0">Confirmar llegada y procesar pago para la reserva</p>
+      </div>
+    </div>
+    <button class="hs-topbar__icon-btn" (click)="cerrar()">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  <p-toast position="top-center" />
+
+  <div class="hs-slide-panel__body">
+    <div class="ci-content">
+      <div class="ci-left-col">
+        <!-- Search with autocomplete -->
+        <div class="ci-glass-panel">
+          <label class="ci-label">BUSCAR RESERVA</label>
+          <div class="ci-search-row">
+            <p-autocomplete [(ngModel)]="selectedReserva" [suggestions]="searchResults"
+              (completeMethod)="buscarReserva($event)" (onSelect)="onSelect($event)"
+              optionLabel="displayLabel" [dropdown]="false" [minQueryLength]="2"
+              placeholder="Nombre de cliente, DNI, teléfono o habitación..."
+              inputStyleClass="ci-input ci-search-input" styleClass="w-full"
+              [maxlength]="100" autocomplete="off" />
+          </div>
+        </div>
+
+        <!-- Reservation Details -->
+        @if (selectedReserva) {
+          <div class="ci-reservation-card">
+            <div class="ci-reservation-header">
+              <span class="ci-reservation-title">DATOS DE LA RESERVA</span>
+              <span class="ci-reservation-badge">{{ selectedReserva.estado }}</span>
+            </div>
+            <div class="ci-reservation-body">
+              <div class="ci-r-field ci-r-field--full">
+                <span class="ci-r-label">Cliente</span>
+                <p class="ci-r-value ci-r-value--name">{{ selectedReserva.clienteNombre }}</p>
+              </div>
+              <div class="ci-r-field">
+                <span class="ci-r-label">Habitaci&oacute;n</span>
+                <div class="ci-r-value-row">
+                  <span class="ci-r-dot"></span>
+                  <p class="ci-r-value">{{ selectedReserva.habitacionNumero }} - {{ selectedReserva.habitacionTipo }}</p>
+                </div>
+              </div>
+              <div class="ci-r-field">
+                <span class="ci-r-label">Reserva</span>
+                <p class="ci-r-value">#{{ selectedReserva.id }}</p>
+              </div>
+              <div class="ci-r-field">
+                <span class="ci-r-label">Fechas</span>
+                <div class="ci-r-value-row">
+                  <span class="material-symbols-outlined ci-r-cal-icon">calendar_today</span>
+                  <p class="ci-r-value">{{ formatFecha(selectedReserva.fechaEntrada) }} al {{ formatFecha(selectedReserva.fechaSalida) }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="ci-reservation-footer">
+              <div>
+                <span class="ci-r-label">Adelanto pagado</span>
+                <p class="ci-r-amount" style="color:var(--clr-secondary)">S/ {{ formatMonto(selectedReserva.montoAdelanto || 0) }}</p>
+              </div>
+              <div style="text-align:right">
+                <span class="ci-r-label">Saldo pendiente</span>
+                <p class="ci-r-amount" style="color:var(--clr-error)">S/ {{ formatMonto((selectedReserva.montoTotal || 0) - (selectedReserva.montoAdelanto || 0)) }}</p>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Right Column: Payment -->
+      <div class="ci-right-col">
+        @if (selectedReserva) {
+          <div class="ci-payment-panel">
+            <h3 class="ci-payment-title">PAGO DEL SALDO</h3>
+            <div class="ci-field">
+              <label class="ci-field-label">Monto a pagar</label>
+              <div class="ci-monto-row">
+                <span class="ci-monto-symbol">S/</span>
+                <p-inputnumber [(ngModel)]="montoSaldo" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" inputStyleClass="ci-input ci-monto-input" styleClass="w-full" />
+              </div>
+            </div>
+            <div class="ci-field">
+              <label class="ci-field-label">M&Eacute;TODOS DE PAGO</label>
+              <div class="ci-payment-methods">
+                <label class="ci-pm-card" [class.ci-pm-card--active]="metodoPago === 'YAPE'">
+                  <input type="radio" name="ci-metodo" [(ngModel)]="metodoPago" value="YAPE" class="ci-pm-radio" />
+                  <div class="ci-pm-radio-circle">
+                    <div class="ci-pm-radio-dot"></div>
+                  </div>
+                  <div class="ci-pm-label-row">
+                    <span class="ci-pm-label">YAPE</span>
+                    <span class="material-symbols-outlined ci-pm-check">check_circle</span>
+                  </div>
+                </label>
+                <label class="ci-pm-card" [class.ci-pm-card--active]="metodoPago === 'EFECTIVO'">
+                  <input type="radio" name="ci-metodo" [(ngModel)]="metodoPago" value="EFECTIVO" class="ci-pm-radio" />
+                  <div class="ci-pm-radio-circle">
+                    <div class="ci-pm-radio-dot"></div>
+                  </div>
+                  <div class="ci-pm-label-row">
+                    <span class="ci-pm-label">EFECTIVO</span>
+                    <span class="material-symbols-outlined ci-pm-check">check_circle</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (selectedReserva) {
+          <div class="ci-actions">
+            <button class="ci-btn ci-btn-cancel" (click)="cerrar()">CANCELAR</button>
+            <button class="ci-btn ci-btn-start"
+              [disabled]="!selectedReserva || selectedReserva.estado !== 'CONFIRMADA' || loading"
+              (click)="iniciarCheckIn()">
+              @if (loading) {
+                <span class="material-symbols-outlined" style="animation:ci-spin 1s linear infinite">sync</span>
+              }
+              <span>INICIAR</span>
+              <span class="material-symbols-outlined">play_arrow</span>
+            </button>
+          </div>
+          <p class="ci-disclaimer">
+            Al hacer clic en Iniciar, se confirmar&aacute; la entrega de llaves y el registro legal del hu&eacute;sped en el sistema nacional.
+          </p>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+}

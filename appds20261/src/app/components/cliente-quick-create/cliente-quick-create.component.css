@@ -1,0 +1,3 @@
+:host ::ng-deep .hs-slide-panel {
+  z-index: calc(var(--z-slide) + 1);
+}

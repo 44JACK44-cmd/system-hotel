@@ -1,0 +1,480 @@
+<div class="pag-page">
+
+  <div class="pag-page__header">
+    <div>
+      <h1 class="page-title">Gesti&oacute;n de Caja Diaria</h1>
+      <p class="page-subtitle">Control de ingresos, egresos y cierre de turno.</p>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      @if (!cajaActual) {
+        <button class="premium-btn" (click)="abrirCaja()">
+          <span class="material-symbols-outlined">lock_open</span>
+          Abrir Caja
+        </button>
+      }
+      <button class="premium-btn" style="background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="showDialog()">
+        <span class="material-symbols-outlined">add_circle</span>
+        Nuevo Pago
+      </button>
+      @if (cajaActual) {
+        <button class="premium-btn" type="button" (click)="toggleCierreModal()">
+          <span class="material-symbols-outlined">lock</span>
+          Cierre de Caja
+        </button>
+      }
+    </div>
+  </div>
+
+  <p-toast />
+
+  <div class="pag-kpi-grid">
+    <div class="premium-card" style="padding:16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:36px;height:36px;border-radius:10px;background:color-mix(in srgb,var(--clr-secondary) 15%,transparent);display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--clr-secondary);font-size:20px">payments</span>
+        </div>
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">EFECTIVO</span>
+      </div>
+      <p style="margin:0;font-size:22px;font-weight:700;color:var(--clr-on-surface)">S/ {{ totalEfectivo.toFixed(2) }}</p>
+      <p style="margin:2px 0 0;font-size:11px;color:var(--clr-on-surface-variant)">Ingresos del d&iacute;a</p>
+    </div>
+    <div class="premium-card" style="padding:16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:36px;height:36px;border-radius:10px;background:color-mix(in srgb,var(--clr-tertiary) 15%,transparent);display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--clr-tertiary);font-size:20px">qr_code_2</span>
+        </div>
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">YAPE</span>
+      </div>
+      <p style="margin:0;font-size:22px;font-weight:700;color:var(--clr-on-surface)">S/ {{ totalYape.toFixed(2) }}</p>
+      <p style="margin:2px 0 0;font-size:11px;color:var(--clr-on-surface-variant)">Ingresos del d&iacute;a</p>
+    </div>
+    <div class="premium-card" style="padding:16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:36px;height:36px;border-radius:10px;background:color-mix(in srgb,var(--clr-error) 15%,transparent);display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:20px">shopping_cart_checkout</span>
+        </div>
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">EGRESOS</span>
+      </div>
+      <p style="margin:0;font-size:22px;font-weight:700;color:var(--clr-error)">- S/ {{ totalEgresosMonto.toFixed(2) }}</p>
+      <p style="margin:2px 0 0;font-size:11px;color:var(--clr-on-surface-variant)">Salidas registradas</p>
+    </div>
+    <div class="premium-card" style="padding:16px;background:linear-gradient(135deg,var(--aura-gold-dark) 0%,#b8860b 100%);border-color:transparent">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:rgba(0,0,0,0.7);font-size:20px">account_balance</span>
+        </div>
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(0,0,0,0.5)">BALANCE</span>
+      </div>
+      <p style="margin:0;font-size:22px;font-weight:700;color:rgba(0,0,0,0.85)">S/ {{ balanceNeto.toFixed(2) }}</p>
+      <p style="margin:2px 0 0;font-size:11px;color:rgba(0,0,0,0.5)">{{ cajaActual ? 'Caja abierta' : 'Sin caja activa' }}</p>
+    </div>
+  </div>
+
+  @if (deudasPendientes.length > 0) {
+    <div class="premium-card" style="padding:0;overflow:hidden;margin-top:16px">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--clr-outline-variant);background:var(--clr-surface-container-low);display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:20px">account_balance</span>
+          <span style="font-size:13px;font-weight:700;color:var(--clr-on-surface)">DEUDAS PENDIENTES</span>
+        </div>
+        <span style="font-size:12px;font-weight:700;color:var(--clr-error)">S/ {{ totalDeudas | number:'1.2-2' }}</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;text-align:left">
+          <thead>
+            <tr style="background:var(--clr-surface-container-high)">
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant)">Cliente</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant)">Habitaci&oacute;n</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant)">Ingreso</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant)">Salida</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);text-align:right">Total</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);text-align:right">Pagado</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);text-align:right">Pendiente</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);text-align:right">Acci&oacute;n</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of deudasPendientes; track d.id) {
+              <tr style="border-bottom:1px solid var(--clr-outline-variant)">
+                <td style="padding:10px 16px;font-size:13px;font-weight:600;color:var(--clr-on-surface)">{{ d.clienteNombre }}</td>
+                <td style="padding:10px 16px;font-size:13px;color:var(--clr-on-surface)">{{ d.habitacionNumero }}</td>
+                <td style="padding:10px 16px;font-size:13px;color:var(--clr-on-surface)">{{ d.fechaIngreso | date:'dd/MM/yyyy' }}</td>
+                <td style="padding:10px 16px;font-size:13px;color:var(--clr-on-surface)">{{ d.fechaSalidaReal | date:'dd/MM/yyyy' }}</td>
+                <td style="padding:10px 16px;font-size:13px;text-align:right;color:var(--clr-on-surface)">S/ {{ ((d.totalPagado || 0) + (d.deudaPendiente || 0)) | number:'1.2-2' }}</td>
+                <td style="padding:10px 16px;font-size:13px;text-align:right;color:var(--clr-status-available)">{{ d.totalPagado | number:'1.2-2' }}</td>
+                <td style="padding:10px 16px;font-size:13px;text-align:right;font-weight:700;color:var(--clr-error)">S/ {{ d.deudaPendiente | number:'1.2-2' }}</td>
+                <td style="padding:10px 16px;text-align:right">
+                  <button (click)="abrirCobrar(d)" style="padding:6px 14px;border-radius:6px;border:none;background:var(--clr-status-available);color:white;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px">
+                    <span class="material-symbols-outlined" style="font-size:14px">payments</span>
+                    COBRAR
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <div class="pag-main-grid">
+    <div class="premium-card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--clr-surface-container-low)">
+        <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface)">Historial de Transacciones</h3>
+        <div class="premium-field" style="max-width:260px;margin:0">
+          <div style="position:relative">
+            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">search</span>
+            <input class="premium-input" type="text" placeholder="Buscar por ID, tipo, m&eacute;todo o referencia..."
+              [(ngModel)]="searchTerm" (input)="onSearchInput()" style="padding-left:32px" />
+          </div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;max-height:500px;overflow-y:auto">
+        <table class="premium-table">
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Concepto</th>
+              <th>M&eacute;todo</th>
+              <th style="text-align:right">Monto</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of pagos; track p.id) {
+              <tr>
+                <td data-label="Hora" class="text-data-tabular">{{ p.fechaPago | date:'HH:mm' }}</td>
+                <td data-label="Concepto">
+                  <p class="text-body-md" style="font-weight:700;color:var(--clr-on-surface);margin:0">#{{ p.id }} {{ p.tipo }}</p>
+                  <p class="text-xs" style="color:var(--clr-on-surface-variant);margin:2px 0 0">{{ p.usuarioNombre }}{{ p.referencia ? ' - ' + p.referencia : '' }}</p>
+                </td>
+                <td data-label="Método">
+                  <span class="pag-metodo-badge" [class.pag-metodo-badge--yape]="p.metodo === 'YAPE'">
+                    @if (p.metodo === 'YAPE') {
+                      <span class="material-symbols-outlined" style="font-size:16px">qr_code_2</span>
+                    } @else {
+                      <span class="material-symbols-outlined" style="font-size:16px">payments</span>
+                    }
+                    {{ p.metodo }}
+                  </span>
+                </td>
+                <td data-label="Monto" class="text-data-tabular" style="text-align:right;font-weight:700;color:var(--clr-on-surface)">S/ {{ (p.monto || 0).toFixed(2) }}</td>
+                <td data-label="Estado">
+                  <span class="badge" [ngClass]="getPagoBadge(p.tipo)">
+                    @switch (p.tipo) {
+                      @case ('ADELANTO') { Adelanto }
+                      @case ('SALDO') { Saldo }
+                      @case ('EXTENSION') { Extensi&oacute;n }
+                      @default { {{ p.tipo }} }
+                    }
+                  </span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+                  @if (loading) { Cargando... } @else { No hay pagos registrados. }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p-paginator (onPageChange)="onPageChange($event)" [first]="page * pageSize" [rows]="pageSize" [totalRecords]="totalRecords" [rowsPerPageOptions]="[10,20,50,100]" />
+      <div class="pag-table-footer">
+        Mostrando {{ totalRecords }} pago(s) registrados
+      </div>
+    </div>
+
+    <div class="pag-sidebar">
+      <div class="premium-card" style="padding:20px">
+        <h3 style="color:var(--clr-on-surface);margin:0 0 16px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700">
+          <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:18px">receipt_long</span>
+          Registro Manual de Gasto
+        </h3>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="premium-field">
+            <label>Concepto del Gasto</label>
+            <input class="premium-input" type="text" [(ngModel)]="gastoConcepto" placeholder="Ej: Útiles de limpieza" />
+          </div>
+          <div class="premium-field">
+            <label>Categor&iacute;a</label>
+            <p-select [(ngModel)]="gastoCategoria" [options]="[{label:'Mantenimiento',value:'Mantenimiento'},{label:'Servicios',value:'Servicios'},{label:'Insumos',value:'Insumos'},{label:'Otros',value:'Otros'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar" styleClass="w-full" appendTo="body" />
+          </div>
+          <div class="premium-field">
+            <label>Monto (S/)</label>
+            <p-inputnumber [(ngModel)]="gastoMonto" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.01" placeholder="0.00" inputStyleClass="premium-input" styleClass="w-full" />
+          </div>
+          <button class="premium-btn" style="width:100%;justify-content:center;padding:12px;background:linear-gradient(135deg,var(--clr-error),#c62828);color:white;box-shadow:0 4px 14px color-mix(in srgb,var(--clr-error) 40%,transparent)" (click)="registrarGasto()" [disabled]="loadingGasto">
+            @if (loadingGasto) {
+              <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+            } @else {
+              <span class="material-symbols-outlined">money_off</span>
+              Registrar Salida de Dinero
+            }
+          </button>
+        </div>
+      </div>
+
+      <div class="premium-card" style="padding:0;overflow:hidden;margin-top:16px">
+        <div style="background:linear-gradient(135deg,var(--aura-gold-dark) 0%,#b8860b 100%);padding:16px 20px">
+          <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(0,0,0,0.5)">Balance del Turno</p>
+        </div>
+        <div style="padding:20px;position:relative">
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:16px">
+            <span style="font-size:28px;font-weight:700;color:var(--clr-on-surface)">S/ {{ balanceNeto.toFixed(2) }}</span>
+            <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);padding:2px 8px;border-radius:4px">Neto</span>
+          </div>
+          <div style="height:1px;background:var(--clr-outline-variant);margin-bottom:16px"></div>
+          <div style="display:flex;gap:16px">
+            <div style="flex:1">
+              <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant)">Ingresos</p>
+              <p style="margin:2px 0 0;font-size:16px;font-weight:700;color:var(--clr-status-available)">S/ {{ totalIngresos.toFixed(2) }}</p>
+            </div>
+            <div style="flex:1">
+              <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant)">Egresos</p>
+              <p style="margin:2px 0 0;font-size:16px;font-weight:700;color:var(--clr-error)">S/ {{ totalEgresosMonto.toFixed(2) }}</p>
+            </div>
+          </div>
+          <div style="position:absolute;right:16px;bottom:20px;font-size:64px;color:var(--clr-outline);opacity:0.08;pointer-events:none">
+            <span class="material-symbols-outlined" style="font-size:64px">account_balance_wallet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+@if (dialogVisible) {
+  <div class="hs-overlay" (click)="closeDialog()"></div>
+  <div class="hs-slide-panel">
+
+    <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:20px">payments</span>
+        </div>
+        <div>
+          <span style="font-weight:700;font-size:16px;color:white">Registrar Pago</span>
+          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.5)">Nuevo ingreso en caja</p>
+        </div>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="closeDialog()">
+        <span class="material-symbols-outlined" style="color:rgba(255,255,255,0.6)">close</span>
+      </button>
+    </div>
+
+    <div class="hs-slide-panel__body" style="gap:20px;display:flex;flex-direction:column;padding:24px">
+      <div class="pag-form-layout">
+
+        <div class="pag-form-row">
+          <div class="premium-field">
+            <label>Tipo</label>
+            <p-select [(ngModel)]="pagoTipo" [options]="[{label:'Adelanto',value:'ADELANTO'},{label:'Saldo',value:'SALDO'},{label:'Extensión',value:'EXTENSION'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo" styleClass="w-full" appendTo="body" />
+          </div>
+          <div class="premium-field">
+            <label>Monto (S/)</label>
+            <p-inputnumber [(ngModel)]="pagoMonto" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.01" inputStyleClass="premium-input" styleClass="w-full" />
+          </div>
+        </div>
+
+        <div class="pag-form-row">
+          <div class="premium-field">
+            <label>M&eacute;todo</label>
+            <p-select [(ngModel)]="pagoMetodo" [options]="[{label:'Efectivo',value:'EFECTIVO'},{label:'Yape',value:'YAPE'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar" styleClass="w-full" appendTo="body" />
+          </div>
+          <div class="premium-field">
+            <label>Referencia</label>
+            <input class="premium-input" type="text" [(ngModel)]="pagoReferencia" placeholder="Opcional" />
+          </div>
+        </div>
+
+        <div class="premium-divider"><span>Vincular a</span></div>
+
+        <div class="pag-form-row">
+          <div class="premium-field">
+            <label>Reserva</label>
+            <p-autocomplete [(ngModel)]="pagoReservaObj" [suggestions]="reservasBuscadas"
+              (completeMethod)="buscarReservas($event)" (onSelect)="onReservaSelect($event)"
+              optionLabel="label" [dropdown]="false" [minQueryLength]="2"
+              placeholder="Buscar reserva..." inputStyleClass="premium-input" styleClass="suggest-fullwidth"
+              [ngModelOptions]="{standalone: true}" />
+          </div>
+          <div class="premium-field">
+            <label>Hospedaje</label>
+            <p-autocomplete [(ngModel)]="pagoHospedajeObj" [suggestions]="hospedajesBuscados"
+              (completeMethod)="buscarHospedajes($event)" (onSelect)="onHospedajeSelect($event)"
+              optionLabel="label" [dropdown]="false" [minQueryLength]="2"
+              placeholder="Buscar hospedaje..." inputStyleClass="premium-input" styleClass="suggest-fullwidth"
+              [ngModelOptions]="{standalone: true}" />
+          </div>
+        </div>
+
+        <div class="premium-field">
+          <label>Observaci&oacute;n</label>
+          <textarea class="premium-input" [(ngModel)]="pagoObservacion" rows="2" placeholder="Opcional" style="resize:vertical;min-height:60px"></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="hs-slide-panel__footer" style="padding:16px 24px;gap:12px">
+      <button class="premium-btn" style="flex:1;background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);justify-content:center;padding:12px" (click)="closeDialog()">
+        Cancelar
+      </button>
+      <button class="premium-btn" style="flex:1;justify-content:center;padding:12px"
+        [disabled]="pagoMonto <= 0 || loadingPago" (click)="savePago()">
+        @if (loadingPago) {
+          <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+        }
+        <span class="material-symbols-outlined">payments</span>
+        Registrar Pago
+      </button>
+    </div>
+
+  </div>
+}
+
+@if (showCobrarModal) {
+  <div class="hs-overlay" (click)="showCobrarModal = false"></div>
+  <div class="hs-slide-panel">
+    <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:20px">payments</span>
+        </div>
+        <div>
+          <span style="font-weight:700;font-size:16px;color:white">Cobrar Deuda</span>
+          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.5)">{{ deudaSeleccionada?.clienteNombre }} - Hab. {{ deudaSeleccionada?.habitacionNumero }}</p>
+        </div>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="showCobrarModal = false">
+        <span class="material-symbols-outlined" style="color:rgba(255,255,255,0.6)">close</span>
+      </button>
+    </div>
+    <div class="hs-slide-panel__body" style="padding:24px;display:flex;flex-direction:column;gap:16px">
+      <div style="background:var(--clr-error-container, rgba(239,68,68,0.08));border:1px solid var(--clr-error);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:8px">
+        <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:20px">warning</span>
+        <div>
+          <span style="font-size:12px;font-weight:700;color:var(--clr-error)">Deuda pendiente: S/ {{ deudaSeleccionada?.deudaPendiente | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="premium-field">
+        <label>Monto a cobrar (S/)</label>
+        <p-inputnumber [(ngModel)]="cobrarMonto" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.01" [max]="deudaSeleccionada?.deudaPendiente" placeholder="0.00" inputStyleClass="premium-input" styleClass="w-full" />
+      </div>
+      <div class="premium-field">
+        <label>M&eacute;todo de pago</label>
+        <div style="display:flex;gap:8px">
+          <button style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--clr-outline-variant);background:transparent;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s"
+            [style.border-color]="cobrarMetodo === 'EFECTIVO' ? 'var(--clr-status-available)' : 'var(--clr-outline-variant)'"
+            [style.background]="cobrarMetodo === 'EFECTIVO' ? 'color-mix(in srgb, var(--clr-status-available) 8%, transparent)' : 'transparent'"
+            (click)="cobrarMetodo = 'EFECTIVO'">
+            <span class="material-symbols-outlined" style="font-size:18px">payments</span> EFECTIVO
+          </button>
+          <button style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--clr-outline-variant);background:transparent;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s"
+            [style.border-color]="cobrarMetodo === 'YAPE' ? 'var(--clr-tertiary)' : 'var(--clr-outline-variant)'"
+            [style.background]="cobrarMetodo === 'YAPE' ? 'color-mix(in srgb, var(--clr-tertiary) 8%, transparent)' : 'transparent'"
+            (click)="cobrarMetodo = 'YAPE'">
+            <span class="material-symbols-outlined" style="font-size:18px">phone_iphone</span> YAPE
+          </button>
+        </div>
+      </div>
+      <div class="premium-field">
+        <label>Referencia (opcional)</label>
+        <input class="premium-input" type="text" [(ngModel)]="cobrarReferencia" placeholder="N&uacute;mero de operaci&oacute;n" maxlength="100" />
+      </div>
+      <div class="premium-field">
+        <label>Observaci&oacute;n (opcional)</label>
+        <textarea class="premium-input" [(ngModel)]="cobrarObservacion" rows="2" placeholder="Notas..." maxlength="500" style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="hs-slide-panel__footer" style="padding:16px 24px;gap:12px">
+      <button class="premium-btn" style="flex:1;background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);justify-content:center;padding:12px" (click)="showCobrarModal = false">
+        Cancelar
+      </button>
+      <button class="premium-btn" style="flex:1;justify-content:center;padding:12px;background:var(--clr-status-available);color:white"
+        [disabled]="loadingCobrar || cobrarMonto <= 0 || cobrarMonto > deudaSeleccionada?.deudaPendiente" (click)="confirmarCobro()">
+        @if (loadingCobrar) {
+          <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+        }
+        <span class="material-symbols-outlined">check_circle</span>
+        Registrar Pago
+      </button>
+    </div>
+  </div>
+}
+
+@if (showCierreModal) {
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div class="absolute" style="top:0;left:0;right:0;bottom:0;background:rgba(0,32,70,0.25);backdrop-filter:blur(4px)" (click)="toggleCierreModal()"></div>
+    <div class="premium-card pag-cierre-modal" style="width:100%;max-width:640px;padding:0;animation:fadeScaleIn 0.2s ease-out">
+      <div class="pag-cierre-modal__header" style="padding:20px 24px;border-bottom:1px solid rgba(201,164,92,0.15);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+        <div>
+          <h2 style="font-size:16px;font-weight:700;color:white;margin:0">Confirmar Cierre de Caja</h2>
+          <p style="font-size:11px;color:rgba(255,255,255,0.5);margin:2px 0 0">Caja del d&iacute;a de hoy</p>
+        </div>
+        <button style="background:none;border:none;cursor:pointer;padding:8px;border-radius:50%;color:rgba(255,255,255,0.5)" (click)="toggleCierreModal()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="pag-cierre-modal__body" style="padding:24px;display:flex;flex-direction:column;gap:20px">
+        <div class="premium-grid-2" style="gap:12px">
+          <div style="padding:16px;background:var(--clr-surface-container-low);border-radius:12px;border:1px solid var(--clr-outline-variant)">
+            <p style="margin:0 0 6px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant)">Monto Sistema (Efectivo)</p>
+            <p style="margin:0;font-size:22px;font-weight:700;color:var(--clr-on-surface)">S/ {{ totalEfectivo.toFixed(2) }}</p>
+          </div>
+          <div style="padding:16px;background:var(--clr-secondary-fixed);border-radius:12px;border:2px solid var(--aura-gold)">
+            <p style="margin:0 0 6px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-secondary-container)">Efectivo Contado</p>
+            <input style="width:100%;background:transparent;border:none;outline:none;font-size:22px;font-weight:700;color:var(--clr-on-surface)" type="number" step="0.01" [(ngModel)]="cierreMontoFisico" />
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--clr-outline-variant)">
+            <span style="font-size:13px;color:var(--clr-on-surface-variant)">Total YAPE</span>
+            <span style="font-size:13px;font-weight:700;color:var(--clr-on-surface)">S/ {{ totalYape.toFixed(2) }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--clr-outline-variant)">
+            <span style="font-size:13px;color:var(--clr-on-surface-variant)">Total Egresos</span>
+            <span style="font-size:13px;font-weight:700;color:var(--clr-error)">- S/ {{ totalEgresosMonto.toFixed(2) }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0">
+            <span style="font-size:13px;font-weight:600;color:var(--clr-on-surface)">Balance Final</span>
+            <span style="font-size:13px;font-weight:700" [style.color]="balanceNeto >= 0 ? 'var(--clr-on-surface)' : 'var(--clr-error)'">S/ {{ balanceNeto.toFixed(2) }}</span>
+          </div>
+          @if (cierreMontoFisico !== null && Math.abs(cierreMontoFisico - totalEfectivo) > 0.01) {
+            <div style="padding:12px;border-radius:10px;display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--clr-error) 10%,transparent);border:1px solid color-mix(in srgb,var(--clr-error) 30%,transparent)">
+              <span class="material-symbols-outlined" style="color:var(--clr-error)">warning</span>
+              <div>
+                <p style="margin:0;font-size:12px;font-weight:700;color:var(--clr-on-surface)">Diferencia detectada</p>
+                <p style="margin:2px 0 0;font-size:11px;color:var(--clr-error)">Diferencia: S/ {{ (totalEfectivo - cierreMontoFisico).toFixed(2) }}. Agregue una observaci&oacute;n.</p>
+              </div>
+            </div>
+          } @else if (cierreMontoFisico !== null) {
+            <div style="padding:12px;border-radius:10px;display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--clr-status-available) 10%,transparent);border:1px solid color-mix(in srgb,var(--clr-status-available) 30%,transparent)">
+              <span class="material-symbols-outlined" style="color:var(--clr-status-available)">check_circle</span>
+              <div>
+                <p style="margin:0;font-size:12px;font-weight:700;color:var(--clr-on-surface)">Caja cuadrada</p>
+                <p style="margin:2px 0 0;font-size:11px;color:var(--clr-status-available)">El monto f&iacute;sico coincide con el reporte del sistema.</p>
+              </div>
+            </div>
+          }
+        </div>
+        <div class="premium-field">
+          <label>Observaciones del Cierre</label>
+          <textarea class="premium-input" [(ngModel)]="cierreObservacion" rows="3" placeholder="Anotaciones sobre discrepancias o eventos del turno..." style="resize:vertical"></textarea>
+        </div>
+      </div>
+      <div class="pag-cierre-modal__footer" style="padding:16px 24px;border-top:1px solid var(--clr-outline-variant);display:flex;justify-content:flex-end;gap:12px;background:var(--clr-surface-container-low)">
+        <button class="premium-btn" style="background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);padding:10px 24px" (click)="toggleCierreModal()">Cancelar</button>
+        <button class="premium-btn" style="padding:10px 28px" (click)="confirmarCierre()" [disabled]="loading">
+          @if (loading) {
+            <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+          }
+          <span class="material-symbols-outlined">lock</span>
+          Finalizar y Cerrar Caja
+        </button>
+      </div>
+    </div>
+  </div>
+}
+

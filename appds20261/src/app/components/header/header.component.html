@@ -1,0 +1,137 @@
+<header class="hs-topbar">
+  <div class="hs-topbar__left">
+    <button class="hs-topbar__menu-btn" (click)="menuToggle.emit()" aria-label="Menú de navegación">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    @if (logoSrc) {
+      <img [src]="logoSrc" alt="Logo" class="hs-topbar__logo" />
+    }
+    <span class="hs-topbar__brand">{{ hotelNombre || 'Sistema Hotelero' }}</span>
+  </div>
+
+  <div class="hs-topbar__meta">
+    <span class="hs-topbar__branch">{{ sucursal }}</span>
+    <span class="hs-topbar__datetime-sep">•</span>
+    <span class="hs-topbar__datetime">{{ fechaHoraActual() }}</span>
+  </div>
+
+  <div class="hs-topbar__right">
+    <div class="hs-topbar__actions">
+      <div class="hs-topbar__notif-wrap">
+        <button class="hs-topbar__icon-btn" title="Notificaciones" aria-label="Notificaciones" (click)="toggleNotif()">
+          <span class="material-symbols-outlined">notifications</span>
+          @if (notifCount > 0) {
+            <span class="hs-topbar__notif-badge">{{ notifCount > 99 ? '99+' : notifCount }}</span>
+          }
+        </button>
+        @if (notifOpen) {
+          <div class="hs-notif-dropdown" (click)="$event.stopPropagation()">
+            <div class="hs-notif-dropdown__header">
+              <span class="hs-notif-dropdown__title">Notificaciones</span>
+              @if (notifList.length > 0) {
+                <button class="hs-notif-dropdown__markall" (click)="marcarTodasLeidas()">Marcar todas leídas</button>
+              }
+            </div>
+            <div class="hs-notif-dropdown__body" style="max-height:350px;overflow-y:auto">
+              @for (n of notifList; track n.id) {
+                <div class="hs-notif-item" [class.hs-notif-item--clickable]="n.entidadTipo === 'INCIDENCIA'" (click)="irAIncidencia(n)">
+                  <div class="hs-notif-item__icon">
+                    @switch (n.tipo) {
+                      @case ('LIMPIEZA') { <span class="material-symbols-outlined" style="color:var(--clr-secondary)">cleaning_services</span> }
+                      @case ('INCIDENCIA') { <span class="material-symbols-outlined" style="color:var(--clr-error)">report</span> }
+                      @case ('HOSPEDAJE') { <span class="material-symbols-outlined" style="color:var(--clr-on-surface)">hotel</span> }
+                      @case ('PAGO') { <span class="material-symbols-outlined" style="color:var(--clr-tertiary)">payments</span> }
+                      @default { <span class="material-symbols-outlined">notifications</span> }
+                    }
+                  </div>
+                  <div class="hs-notif-item__content">
+                    <p class="hs-notif-item__title">{{ n.titulo }}</p>
+                    @if (n.mensaje) { <p class="hs-notif-item__msg">{{ n.mensaje }}</p> }
+                    <span class="hs-notif-item__date">{{ n.fechaCreacion | date:'HH:mm' }}</span>
+                  </div>
+                  <button class="hs-notif-item__dismiss" (click)="marcarLeida(n); $event.stopPropagation()" title="Marcar leída">
+                    <span class="material-symbols-outlined">check</span>
+                  </button>
+                </div>
+              } @empty {
+                <div class="hs-notif-dropdown__empty">No hay notificaciones pendientes</div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="toggleTheme()" aria-label="Cambiar tema">
+        <span class="material-symbols-outlined">{{ isDark() ? 'light_mode' : 'dark_mode' }}</span>
+      </button>
+      <button class="hs-topbar__icon-btn" title="Ayuda" aria-label="Ayuda">
+        <span class="material-symbols-outlined">help</span>
+      </button>
+    </div>
+
+    <div class="hs-topbar__profile-wrap">
+      <div class="hs-topbar__user" (click)="toggleProfile()" role="button" tabindex="0">
+        <div class="hs-topbar__user-info">
+          <span class="hs-topbar__user-name">{{ nombreUsuario }}</span>
+          <span class="hs-topbar__user-role">{{ rolLabel }}</span>
+        </div>
+        <div class="hs-topbar__avatar" [style.background]="fotoPerfil ? 'transparent' : avatarColor" [title]="nombreUsuario">
+          @if (fotoPerfil) {
+            <img [src]="fotoPerfil" alt="" class="hs-topbar__avatar-img" />
+          } @else {
+            {{ iniciales }}
+          }
+        </div>
+        <span class="material-symbols-outlined hs-topbar__chevron" [class.hs-topbar__chevron--open]="profileOpen()">expand_more</span>
+      </div>
+
+      @if (profileOpen()) {
+        <div class="hs-profile-dropdown" (click)="$event.stopPropagation()">
+          <div class="hs-profile-dropdown__header">
+            <div class="hs-profile-dropdown__avatar" [style.background]="fotoPerfil ? 'transparent' : avatarColor">
+              @if (fotoPerfil) {
+                <img [src]="fotoPerfil" alt="" class="hs-topbar__avatar-img" />
+              } @else {
+                {{ iniciales }}
+              }
+            </div>
+            <div class="hs-profile-dropdown__info">
+              <span class="hs-profile-dropdown__name">{{ nombreUsuario }}</span>
+              <span class="hs-profile-dropdown__email">{{ emailUsuario }}</span>
+              <span class="hs-profile-dropdown__role-badge" [style.background]="avatarColor">{{ rolUsuario }}</span>
+            </div>
+          </div>
+          <div class="hs-profile-dropdown__divider"></div>
+          <div class="hs-profile-dropdown__menu">
+            <button class="hs-profile-dropdown__item" (click)="irPerfil()">
+              <span class="material-symbols-outlined">person</span>
+              <span>Mi Perfil</span>
+            </button>
+            <button class="hs-profile-dropdown__item" (click)="irConfiguracion()">
+              <span class="material-symbols-outlined">settings</span>
+              <span>Configuración</span>
+            </button>
+            <button class="hs-profile-dropdown__item" (click)="irActividad()">
+              <span class="material-symbols-outlined">history</span>
+              <span>Mi Actividad</span>
+            </button>
+          </div>
+          <div class="hs-profile-dropdown__divider"></div>
+          <div class="hs-profile-dropdown__menu">
+            <button class="hs-profile-dropdown__item hs-profile-dropdown__item--theme" (click)="toggleTheme()">
+              <span class="material-symbols-outlined">{{ isDark() ? 'light_mode' : 'dark_mode' }}</span>
+              <span>{{ isDark() ? 'Modo Claro' : 'Modo Oscuro' }}</span>
+            </button>
+            <button class="hs-profile-dropdown__item hs-profile-dropdown__item--danger" (click)="logout()">
+              <span class="material-symbols-outlined">logout</span>
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</header>
+
+@if (notifOpen) {
+  <div class="hs-notif-backdrop" (click)="notifOpen = false"></div>
+}

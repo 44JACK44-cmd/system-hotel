@@ -1,0 +1,43 @@
+@if (visible) {
+  <div class="hs-overlay" (click)="cancelar()"></div>
+  <div class="hs-slide-panel" (click)="$event.stopPropagation()">
+    <div class="hs-slide-panel__header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="material-symbols-outlined">person_add</span>
+        <span style="font-weight:700;font-size:16px">Nuevo Cliente</span>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="cancelar()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="hs-slide-panel__body">
+      <p-toast />
+      <form [formGroup]="clienteForm" style="display:flex;flex-direction:column;gap:16px">
+        <div class="premium-field">
+          <label>Nombre Completo</label>
+          <div class="hs-input-icon"><span class="material-symbols-outlined">person</span><input class="premium-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan Pérez" /></div>
+          @if (clienteForm.get('nombreCompleto')?.invalid && clienteForm.get('nombreCompleto')?.touched) { <p class="hs-error">El nombre es obligatorio</p> }
+        </div>
+        <div class="premium-field">
+          <label>Teléfono</label>
+          <div class="hs-input-icon"><span class="material-symbols-outlined">phone</span><input class="premium-input" type="text" formControlName="telefono" placeholder="999 888 777" /></div>
+          @if (clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched) { <p class="hs-error">El teléfono es obligatorio</p> }
+        </div>
+        <div class="premium-field">
+          <label>Documento (opcional)</label>
+          <div class="hs-input-icon"><span class="material-symbols-outlined">badge</span><input class="premium-input" type="text" formControlName="documento" placeholder="DNI / Pasaporte" /></div>
+        </div>
+        <div class="premium-field">
+          <label>Email (opcional)</label>
+          <div class="hs-input-icon"><span class="material-symbols-outlined">mail</span><input class="premium-input" type="email" formControlName="email" placeholder="cliente@correo.com" /></div>
+          @if (clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched) { <p class="hs-error">Email inválido</p> }
+        </div>
+      </form>
+    </div>
+    <div class="hs-slide-panel__footer">
+      <button class="premium-btn" style="flex:1;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="cancelar()">Cancelar</button>
+      <button class="premium-btn" style="flex:1" [disabled]="clienteForm.invalid || loading" (click)="guardar()">
+        @if (loading) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
+        Crear Cliente
+      </button>
+    </div>
+  </div>
+}

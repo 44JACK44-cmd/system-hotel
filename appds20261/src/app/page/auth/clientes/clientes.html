@@ -1,0 +1,363 @@
+<div class="cli-page">
+  <div class="cli-layout">
+    <div class="cli-main">
+      <div class="cli-page__header">
+        <div>
+          <h1 class="cli-page__title">Directorio de Clientes</h1>
+          <p class="cli-page__subtitle">Administra y revisa la base de datos de huéspedes global.</p>
+        </div>
+        <div class="cli-header-actions">
+          <button class="premium-btn" (click)="showDialog()">
+            <span class="material-symbols-outlined">add</span>
+            Nuevo Cliente
+          </button>
+        </div>
+      </div>
+      <div class="premium-card" style="padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="position:relative;flex:1;min-width:200px">
+          <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">search</span>
+          <input class="premium-input" type="text" [(ngModel)]="searchTerm" (input)="onSearchInput()"
+            placeholder="Buscar por nombre, DNI, correo o teléfono..." style="padding-left:32px" />
+        </div>
+        @if (isAdmin) {
+          <div class="cli-toggle-label" (click)="toggleInactivos()">
+            <span class="cli-toggle-track" [class.cli-toggle-on]="includeInactivos">
+              <span class="cli-toggle-thumb" [class.cli-toggle-thumb-on]="includeInactivos"></span>
+            </span>
+            <span class="cli-toggle-text">{{ includeInactivos ? 'Activos' : 'Inactivos' }}</span>
+          </div>
+        }
+      </div>
+      <p-toast />
+      <div class="premium-card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
+        <div style="overflow-x:auto;max-height:400px;overflow-y:auto">
+        <table class="premium-table">
+          <thead>
+            <tr>
+              <th class="cli-th-sortable" (click)="toggleSort('nombreCompleto')">
+                Huésped
+                @if (sortField === 'nombreCompleto') {
+                  <span class="material-symbols-outlined cli-sort-icon cli-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                }
+              </th>
+              <th class="cli-th-sortable" (click)="toggleSort('estado')">
+                Estado
+                @if (sortField === 'estado') {
+                  <span class="material-symbols-outlined cli-sort-icon cli-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                }
+              </th>
+              <th class="cli-th-sortable" (click)="toggleSort('lealtad')">
+                Lealtad
+                @if (sortField === 'lealtad') {
+                  <span class="material-symbols-outlined cli-sort-icon cli-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                }
+              </th>
+              <th>Última Estancia</th>
+              <th style="text-align:right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of clientes; track c.id) {
+              <tr (click)="onSelectCliente(c)" [class.selected]="detailCliente?.id === c.id" class="cli-row">
+                <td data-label="Huésped">
+                  <div class="cli-guest-cell">
+                    <div class="cli-avatar">{{ c.nombreCompleto | slice:0:2 }}</div>
+                    <div>
+                      <div class="cli-guest-name">{{ c.nombreCompleto }}</div>
+                      <div class="cli-guest-email">{{ c.email || c.telefono || '—' }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td data-label="Estado">
+                  @if (c.estado === 'Hospedado') { <span class="cli-status-badge" style="background:color-mix(in srgb,var(--clr-status-available) 20%,transparent);color:var(--clr-status-available)">Hospedado</span> }
+                  @else if (c.estado === 'Reserva') { <span class="cli-status-badge" style="background:color-mix(in srgb,var(--clr-warning) 25%,transparent);color:color-mix(in srgb,var(--clr-warning) 80%,var(--clr-black))">Reserva</span> }
+                  @else { <span class="cli-status-badge" style="background:color-mix(in srgb,var(--clr-on-surface-variant) 12%,transparent);color:var(--clr-on-surface-variant)">Registrado</span> }
+                  @if (!c.activo) { <span class="cli-status-badge" style="background:color-mix(in srgb,var(--clr-error) 18%,transparent);color:var(--clr-error);margin-left:4px">Inactivo</span> }
+                </td>
+                <td data-label="Lealtad">
+                  <div class="cli-loyalty">
+                    @if (c.lealtad === 'VIP') { <span class="material-symbols-outlined" style="color:var(--clr-warning);font-size:16px;font-variation-settings:'FILL' 1">workspace_premium</span> }
+                    @else if (c.lealtad === 'Frecuente') { <span class="material-symbols-outlined" style="color:var(--clr-secondary);font-size:16px;font-variation-settings:'FILL' 1">star</span> }
+                    @else if (c.lealtad === 'Regular') { <span class="material-symbols-outlined" style="color:var(--clr-on-surface-variant);font-size:16px;font-variation-settings:'FILL' 1">star</span> }
+                    @else { <span class="material-symbols-outlined" style="color:var(--clr-outline-variant);font-size:16px">person_outline</span> }
+                    <span class="text-data-tabular">{{ c.lealtad }}</span>
+                  </div>
+                </td>
+                <td data-label="Última Estancia" class="text-data-tabular" style="color:var(--clr-on-surface-variant)">@if (c.ultimaEstancia) { {{ c.ultimaEstancia | date:'dd/MM/yy' }} } @else { — }</td>
+                <td data-label="Acciones" style="text-align:right">
+                  <div class="cli-actions-cell">
+                    <button class="cli-action-btn cli-action-btn--edit" (click)="editCliente(c); $event.stopPropagation()" title="Editar"><span class="material-symbols-outlined">edit</span></button>
+                    @if (isAdmin) {
+                      @if (c.activo) {
+                        <button class="cli-action-btn cli-action-btn--block" (click)="confirmarDesactivar(c); $event.stopPropagation()" title="Desactivar"><span class="material-symbols-outlined">block</span></button>
+                      } @else {
+                        <button class="cli-action-btn cli-action-btn--reactivate" (click)="confirmarReactivar(c); $event.stopPropagation()" title="Reactivar"><span class="material-symbols-outlined">check_circle</span></button>
+                        <button class="cli-action-btn cli-action-btn--delete" (click)="confirmarEliminacion(c); $event.stopPropagation()" title="Eliminar"><span class="material-symbols-outlined">delete</span></button>
+                      }
+                    }
+                    <button class="cli-action-btn cli-action-btn--history" (click)="showHistorial(c); $event.stopPropagation()" title="Historial"><span class="material-symbols-outlined">history</span></button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+                  @if (loading) { Cargando clientes... } @else { No hay clientes registrados. }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        </div>
+        <p-paginator (onPageChange)="onPageChange($event)" [first]="page * pageSize" [rows]="pageSize" [totalRecords]="totalRecords" [rowsPerPageOptions]="[10,20,50,100]" />
+        <div class="cli-table-footer">Mostrando {{ totalRecords }} cliente(s) registrados</div>
+      </div>
+    </div>
+    @if (detailCliente) {
+      <aside class="cli-detail-panel">
+        <div class="cli-detail-cover">
+          <div class="cli-detail-avatar">{{ detailCliente.nombreCompleto | slice:0:2 }}</div>
+          <div style="flex:1">
+            <h2 class="cli-detail-name">{{ detailCliente.nombreCompleto }}</h2>
+            <p class="cli-detail-subtitle">{{ detailCliente.lealtad }} • ID: {{ detailCliente.id }}</p>
+          </div>
+          <button class="cli-detail-close" (click)="detailCliente = null"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="cli-detail-body">
+          <div class="cli-detail-actions">
+            <button class="cli-btn-primary" (click)="nuevaReservaDesdeCliente(detailCliente)"><span class="material-symbols-outlined">add_box</span> Nueva Reserva</button>
+            <button class="cli-btn-outline" (click)="contactarCliente(detailCliente)"><span class="material-symbols-outlined">mail</span> Contactar</button>
+            @if (isAdmin) {
+              @if (detailCliente.activo) {
+                <button class="cli-btn-outline" style="border-color:color-mix(in srgb,var(--clr-error) 50%,transparent);color:var(--clr-error)" (click)="confirmarDesactivar(detailCliente)"><span class="material-symbols-outlined">block</span> Desactivar</button>
+              } @else {
+                <button class="cli-btn-outline" style="border-color:color-mix(in srgb,var(--clr-status-available) 50%,transparent);color:var(--clr-status-available)" (click)="confirmarReactivar(detailCliente)"><span class="material-symbols-outlined">check_circle</span> Reactivar</button>
+                <button class="cli-btn-outline" style="border-color:color-mix(in srgb,var(--clr-error) 50%,transparent);color:var(--clr-error)" (click)="confirmarEliminacion(detailCliente)"><span class="material-symbols-outlined">delete</span> Eliminar</button>
+              }
+            }
+          </div>
+          <section class="cli-section">
+            <h3 class="cli-section-title">Información Personal</h3>
+            <div class="cli-info-grid">
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">badge</span><div><p class="cli-info-label">Documento</p><p class="cli-info-value">{{ detailCliente.documento || '—' }}</p></div></div>
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">phone</span><div><p class="cli-info-label">Teléfono</p><p class="cli-info-value">{{ detailCliente.telefono || '—' }}</p></div></div>
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">mail</span><div><p class="cli-info-label">Email</p><p class="cli-info-value">{{ detailCliente.email || '—' }}</p></div></div>
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">calendar_month</span><div><p class="cli-info-label">Registrado desde</p><p class="cli-info-value">{{ detailCliente.createdAt | date:'dd/MM/yyyy' }}</p></div></div>
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">meeting_room</span><div><p class="cli-info-label">Estado actual</p><p class="cli-info-value">{{ detailCliente.estado }} @if (!detailCliente.activo) { <span class="cli-status-badge" style="background:color-mix(in srgb,var(--clr-error) 20%,transparent);color:var(--clr-error);margin-left:6px">Inactivo</span> }</p></div></div>
+              <div class="cli-info-item"><span class="material-symbols-outlined cli-info-icon">hotel</span><div><p class="cli-info-label">Estancias completadas</p><p class="cli-info-value">{{ detailCliente.totalEstancias || 0 }}</p></div></div>
+            </div>
+          </section>
+          <section class="cli-section">
+            <div class="cli-section-header">
+              <h3 class="cli-section-title" style="border:none;padding:0;margin:0">Historial de Estancias</h3>
+              <button class="cli-link-btn" (click)="showHistorial(detailCliente)">Ver todo ({{ historialReservas.length }})</button>
+            </div>
+            @if (historialReservas.length > 0) {
+              <div class="cli-history-list">
+                @for (r of historialReservas.slice(0, 3); track $index) {
+                  <div class="cli-history-item">
+                    <div class="cli-history-icon"><span class="material-symbols-outlined">meeting_room</span></div>
+                    <div class="cli-history-info">
+                      <p class="cli-history-room">{{ r.habitacionNumero || 'N/A' }}</p>
+                      <p class="cli-history-dates">{{ r.fechaEntrada | date:'dd/MM/yy' }} — {{ r.fechaSalida | date:'dd/MM/yy' }}</p>
+                    </div>
+                    <div style="text-align:right">
+                      @if (r.totalPagado) { <p class="cli-history-amount">S/ {{ r.totalPagado.toFixed(2) }}</p> }
+                      <span class="badge" [ngClass]="r.estado === 'CONFIRMADA' ? 'badge-confirmed' : r.estado === 'CANCELADA' ? 'badge-cancelled' : r.estado === 'REALIZADA' ? 'badge-completed' : 'badge-info'">{{ r.estado }}</span>
+    </div>
+  </div>
+}
+@if (showCobrarModal) {
+  <div class="hs-overlay" (click)="showCobrarModal = false"></div>
+  <div class="hs-slide-panel">
+    <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:20px">payments</span>
+        </div>
+        <div>
+          <span style="font-weight:700;font-size:16px;color:white">Cobrar Deuda</span>
+          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.5)">{{ deudaSeleccionada?.clienteNombre }} - Hab. {{ deudaSeleccionada?.habitacionNumero }}</p>
+        </div>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="showCobrarModal = false">
+        <span class="material-symbols-outlined" style="color:rgba(255,255,255,0.6)">close</span>
+      </button>
+    </div>
+    <div class="hs-slide-panel__body" style="padding:24px;display:flex;flex-direction:column;gap:16px">
+      <div style="background:var(--clr-error-container, rgba(239,68,68,0.08));border:1px solid var(--clr-error);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:8px">
+        <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:20px">warning</span>
+        <div>
+          <span style="font-size:12px;font-weight:700;color:var(--clr-error)">Deuda pendiente: S/ {{ deudaSeleccionada?.deudaPendiente | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="premium-field">
+        <label>Monto a cobrar (S/)</label>
+        <p-inputnumber [(ngModel)]="cobrarMonto" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.01" [max]="deudaSeleccionada?.deudaPendiente" placeholder="0.00" inputStyleClass="premium-input" styleClass="w-full" />
+      </div>
+      <div class="premium-field">
+        <label>M&eacute;todo de pago</label>
+        <div style="display:flex;gap:8px">
+          <button style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--clr-outline-variant);background:transparent;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s"
+            [style.border-color]="cobrarMetodo === 'EFECTIVO' ? 'var(--clr-status-available)' : 'var(--clr-outline-variant)'"
+            [style.background]="cobrarMetodo === 'EFECTIVO' ? 'color-mix(in srgb, var(--clr-status-available) 8%, transparent)' : 'transparent'"
+            (click)="cobrarMetodo = 'EFECTIVO'">
+            <span class="material-symbols-outlined" style="font-size:18px">payments</span> EFECTIVO
+          </button>
+          <button style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--clr-outline-variant);background:transparent;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s"
+            [style.border-color]="cobrarMetodo === 'YAPE' ? 'var(--clr-tertiary)' : 'var(--clr-outline-variant)'"
+            [style.background]="cobrarMetodo === 'YAPE' ? 'color-mix(in srgb, var(--clr-tertiary) 8%, transparent)' : 'transparent'"
+            (click)="cobrarMetodo = 'YAPE'">
+            <span class="material-symbols-outlined" style="font-size:18px">phone_iphone</span> YAPE
+          </button>
+        </div>
+      </div>
+      <div class="premium-field">
+        <label>Referencia (opcional)</label>
+        <input class="premium-input" type="text" [(ngModel)]="cobrarReferencia" placeholder="N&uacute;mero de operaci&oacute;n" maxlength="100" />
+      </div>
+      <div class="premium-field">
+        <label>Observaci&oacute;n (opcional)</label>
+        <textarea class="premium-input" [(ngModel)]="cobrarObservacion" rows="2" placeholder="Notas..." maxlength="500" style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="hs-slide-panel__footer" style="padding:16px 24px;gap:12px">
+      <button class="premium-btn" style="flex:1;background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);justify-content:center;padding:12px" (click)="showCobrarModal = false">
+        Cancelar
+      </button>
+      <button class="premium-btn" style="flex:1;justify-content:center;padding:12px;background:var(--clr-status-available);color:white"
+        [disabled]="loadingCobrar || cobrarMonto <= 0 || cobrarMonto > deudaSeleccionada?.deudaPendiente" (click)="confirmarCobro()">
+        @if (loadingCobrar) {
+          <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+        }
+        <span class="material-symbols-outlined">check_circle</span>
+        Registrar Pago
+      </button>
+    </div>
+  </div>
+}
+              </div>
+            } @else { <p class="cli-empty-text">Sin estancias registradas.</p> }
+          </section>
+          @if (detailCliente.observaciones) {
+            <section class="cli-section">
+              <h3 class="cli-section-title">Notas de Recepción</h3>
+              <div class="cli-notes-card">
+                "{{ detailCliente.observaciones }}"
+              </div>
+            </section>
+          }
+        </div>
+      </aside>
+    }
+  </div>
+</div>
+@if (dialogVisible) {
+  <div class="hs-overlay" (click)="closeDialog()"></div>
+  <div class="hs-slide-panel">
+    <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:18px">{{ editing ? 'edit' : 'person_add' }}</span>
+        </div>
+        <span style="font-weight:700;font-size:16px;color:#fff">{{ editing ? 'Editar Cliente' : 'Nuevo Cliente' }}</span>
+      </div>
+      <button style="width:32px;height:32px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s" (click)="closeDialog()" (mouseenter)="$any($event.currentTarget).style.background='rgba(255,255,255,0.2)'" (mouseleave)="$any($event.currentTarget).style.background='rgba(255,255,255,0.1)'"><span class="material-symbols-outlined" style="font-size:18px">close</span></button>
+    </div>
+    <div class="hs-slide-panel__body">
+      <form [formGroup]="clienteForm" style="display:flex;flex-direction:column;gap:16px">
+        <div class="premium-field">
+          <label>Nombre Completo</label>
+          <div style="position:relative">
+            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">person</span>
+            <input class="premium-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan Pérez" maxlength="150" minlength="2" autocomplete="name" style="padding-left:32px" />
+          </div>
+          @if (clienteForm.get('nombreCompleto')?.invalid && clienteForm.get('nombreCompleto')?.touched) { <small class="field-error">El nombre es obligatorio (mín. 2 caracteres)</small> }
+        </div>
+        <div class="premium-field">
+          <label>Tel&eacute;fono</label>
+          <div style="position:relative">
+            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">phone</span>
+            <input class="premium-input" type="text" formControlName="telefono" placeholder="999 888 777" maxlength="20" inputmode="tel" autocomplete="tel" style="padding-left:32px" />
+          </div>
+          @if (clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched) { <small class="field-error">Teléfono inválido. Ej: +51987654321</small> }
+        </div>
+        <div class="premium-field">
+          <label>Documento (opcional)</label>
+          <div style="position:relative">
+            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">badge</span>
+            <input class="premium-input" type="text" formControlName="documento" placeholder="12345678" maxlength="8" minlength="8" pattern="[0-9]{8}" inputmode="numeric" autocomplete="off" style="padding-left:32px" />
+          </div>
+          @if (clienteForm.get('documento')?.invalid && clienteForm.get('documento')?.touched) { <small class="field-error">El DNI debe contener exactamente 8 dígitos</small> }
+        </div>
+        <div class="premium-field">
+          <label>Email (opcional)</label>
+          <div style="position:relative">
+            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">mail</span>
+            <input class="premium-input" type="email" formControlName="email" placeholder="correo@ejemplo.com" maxlength="100" inputmode="email" autocomplete="email" style="padding-left:32px" />
+          </div>
+          @if (clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched) { <small class="field-error">Ingrese un correo electrónico válido</small> }
+        </div>
+      </form>
+    </div>
+    <div class="hs-slide-panel__footer" style="border-top:1px solid var(--clr-outline-variant);padding:16px 20px;display:flex;gap:10px">
+      <button class="premium-btn" style="flex:1;background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);justify-content:center;padding:12px" (click)="closeDialog()">Cancelar</button>
+      <button class="premium-btn" style="flex:1;justify-content:center;padding:12px" [disabled]="clienteForm.invalid || loading" (click)="save()">
+        @if (loading) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
+        {{ editing ? 'Guardar Cambios' : 'Crear Cliente' }}
+      </button>
+    </div>
+  </div>
+}
+@if (historialVisible) {
+  <div class="hs-overlay" (click)="closeHistorial()"></div>
+  <div class="hs-slide-panel" style="max-width:520px">
+    <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:18px">history</span>
+        </div>
+        <span style="font-weight:700;font-size:16px;color:#fff">Historial — {{ selectedCliente?.nombreCompleto }}</span>
+      </div>
+      <button style="width:32px;height:32px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s" (click)="closeHistorial()" (mouseenter)="$any($event.currentTarget).style.background='rgba(255,255,255,0.2)'" (mouseleave)="$any($event.currentTarget).style.background='rgba(255,255,255,0.1)'"><span class="material-symbols-outlined" style="font-size:18px">close</span></button>
+    </div>
+    <div class="hs-slide-panel__body hs-slide-panel__body--scroll">
+      <div class="cli-tab-bar">
+        <button class="cli-tab" [class.cli-tab--active]="historialTab === '0'" (click)="historialTab = '0'"><span class="material-symbols-outlined">event</span> Reservas</button>
+        <button class="cli-tab" [class.cli-tab--active]="historialTab === '1'" (click)="historialTab = '1'"><span class="material-symbols-outlined">hotel</span> Hospedajes</button>
+      </div>
+      @if (historialTab === '0') {
+        @for (r of historialReservas; track $index) {
+          <div class="cli-history-item">
+            <div class="cli-history-item__icon" style="background:rgba(5,93,182,.1)"><span class="material-symbols-outlined" style="color:var(--clr-secondary)">event</span></div>
+            <div style="flex:1">
+              <div class="text-body-md" style="font-weight:600">{{ r.habitacionNumero || 'N/A' }}</div>
+              <div class="text-data-tabular" style="color:var(--clr-on-surface-variant)">{{ r.fechaEntrada | date:'dd/MM/yy' }} — {{ r.fechaSalida | date:'dd/MM/yy' }}</div>
+            </div>
+            <span class="badge" [ngClass]="r.estado === 'CONFIRMADA' ? 'badge-confirmed' : r.estado === 'CANCELADA' ? 'badge-cancelled' : r.estado === 'REALIZADA' ? 'badge-completed' : 'badge-info'">{{ r.estado }}</span>
+          </div>
+        } @empty { <div style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">Sin reservas registradas.</div> }
+      }
+      @if (historialTab === '1') {
+        @for (h of historialHospedajes; track $index) {
+          <div class="cli-history-item">
+            <div class="cli-history-item__icon" style="background:rgba(67,160,71,.1)"><span class="material-symbols-outlined" style="color:var(--clr-status-available)">hotel</span></div>
+            <div style="flex:1">
+              <div class="text-body-md" style="font-weight:600">{{ h.habitacionNumero || 'N/A' }}</div>
+              <div class="text-data-tabular" style="color:var(--clr-on-surface-variant)">{{ h.fechaIngreso | date:'dd/MM/yy' }} — {{ h.fechaSalidaReal ? (h.fechaSalidaReal | date:'dd/MM/yy') : 'En curso' }}</div>
+            </div>
+            <span class="badge" [ngClass]="h.estado === 'ACTIVO' ? 'badge-active' : h.estado === 'FINALIZADO' ? 'badge-completed' : 'badge-info'">{{ h.estado }}</span>
+            @if (h.deudaPendiente > 0) {
+              <span style="font-size:11px;font-weight:700;color:var(--clr-error);margin-left:6px">PENDIENTE S/ {{ h.deudaPendiente | number:'1.2-2' }}</span>
+              <button (click)="abrirCobrar(h); $event.stopPropagation()" style="padding:4px 10px;border-radius:6px;border:none;background:var(--clr-error);color:white;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:3px;margin-left:6px">
+                <span class="material-symbols-outlined" style="font-size:12px">payments</span>COBRAR
+              </button>
+            } @else if (h.estado === 'FINALIZADO') {
+              <span style="font-size:11px;font-weight:700;color:var(--clr-status-available);margin-left:6px">CANCELADO</span>
+            }
+          </div>
+        } @empty { <div style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">Sin hospedajes registrados.</div> }
+      }
+    </div>
+  </div>
+}

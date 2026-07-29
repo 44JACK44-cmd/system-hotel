@@ -1,0 +1,95 @@
+<div class="hs-overlay" (click)="cerrar()"></div>
+<div class="nr-modal" [class.nr-modal--shifted]="showQuickCreateCliente" (click)="$event.stopPropagation()">
+    <header class="nr-header">
+      <h1 class="nr-header-title">NUEVA RESERVA</h1>
+      <button class="nr-header-close" (click)="cerrar()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </header>
+
+    <p-toast position="top-center" />
+
+    <div class="nr-body">
+      <section class="nr-section">
+        <label class="nr-label">CLIENTE</label>
+        <div class="nr-search-row">
+          <div style="position:relative;flex:1">
+            <p-autocomplete [(ngModel)]="selectedCliente" [suggestions]="clientesSugerencias"
+              (completeMethod)="buscarCliente($event)" (onSelect)="onClienteAutoSelected($event.value)"
+              optionLabel="label" [minQueryLength]="1" [delay]="300"
+              placeholder="Buscar cliente por nombre, DNI o teléfono..."
+              inputStyleClass="nr-input" styleClass="suggest-fullwidth"
+              [showEmptyMessage]="true" emptyMessage="Sin resultados">
+              <ng-template pTemplate="item" let-item>
+                <div style="padding:4px 0">
+                  <div style="font-weight:500;color:var(--clr-on-surface)">{{ item.label }}</div>
+                  <div style="font-size:12px;color:var(--clr-on-surface-variant)">{{ item.subtitle }}</div>
+                </div>
+              </ng-template>
+            </p-autocomplete>
+          </div>
+        </div>
+        <button class="premium-btn" type="button" (click)="abrirQuickCreateCliente()" style="width:100%;margin-top:8px;padding:8px 14px;font-size:12px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)"><span class="material-symbols-outlined" style="font-size:16px">person_add</span> + Nuevo Cliente</button>
+      </section>
+
+      <section class="nr-section">
+        <label class="nr-label">HABITACI&Oacute;N</label>
+        <div class="nr-select-wrap">
+          <p-select [(ngModel)]="reservaData.habitacionId" name="habitacionId" [options]="habitaciones" optionLabel="label" optionValue="id" placeholder="Buscar habitación" styleClass="w-full" (ngModelChange)="recalcular();onHabitacionChange()" appendTo="body" />
+        </div>
+      </section>
+
+      <section class="nr-section">
+        <div class="nr-fechas-header">
+          <label class="nr-label" style="margin-bottom:0">FECHAS</label>
+          <div class="nr-saldo">
+            <span class="nr-saldo-label">SALDO:</span>
+            <p class="nr-saldo-value">S/ {{ saldoPendiente.toFixed(2) }}</p>
+          </div>
+        </div>
+        <div class="nr-dates-row">
+          <div class="nr-field">
+            <div class="nr-date-input-wrapper">
+              <p-datepicker [(ngModel)]="reservaData.fechaEntrada" name="fechaEntrada" (ngModelChange)="recalcular()" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="nr-input" styleClass="custom-datepicker" placeholder="Fecha entrada" />
+            </div>
+          </div>
+          <div class="nr-field">
+            <div class="nr-date-input-wrapper">
+              <p-datepicker [(ngModel)]="reservaData.fechaSalida" name="fechaSalida" (ngModelChange)="recalcular()" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="nr-input" styleClass="custom-datepicker" placeholder="Fecha salida" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="nr-section">
+        <label class="nr-label">ADELANTO <span class="nr-obligatorio">(obligatorio)</span></label>
+        <div class="nr-adelanto-row">
+          <div class="nr-monto-wrap">
+            <span class="nr-monto-prefix">S/</span>
+            <input class="nr-input nr-monto-input" type="text" [(ngModel)]="reservaData.adelanto" name="adelanto" (ngModelChange)="recalcular()" placeholder="0.00" inputmode="decimal" />
+          </div>
+          <div class="nr-pago-opts">
+            <p-radioButton [(ngModel)]="reservaData.metodoPago" name="metodo" value="YAPE" inputId="nr-yape" />
+            <label for="nr-yape" class="nr-radio-label">YAPE</label>
+            <p-radioButton [(ngModel)]="reservaData.metodoPago" name="metodo" value="EFECTIVO" inputId="nr-efectivo" />
+            <label for="nr-efectivo" class="nr-radio-label">EFECTIVO</label>
+          </div>
+        </div>
+      </section>
+
+      <section class="nr-section">
+        <textarea class="nr-input nr-textarea" [(ngModel)]="reservaData.observaciones" name="observaciones" rows="2" placeholder="Observaciones" maxlength="500"></textarea>
+      </section>
+    </div>
+
+    <div class="nr-actions">
+      <button class="nr-btn nr-btn-cancel" type="button" (click)="cerrar()">CANCELAR</button>
+      <button class="nr-btn nr-btn-save" type="button" (click)="guardar()" [disabled]="!puedeGuardar() || loading">
+        @if (loading) {
+          <span class="material-symbols-outlined" style="animation:nr-spin 1s linear infinite;font-size:18px">sync</span>
+        }
+        GUARDAR
+      </button>
+    </div>
+</div>
+<app-cliente-quick-create [visible]="showQuickCreateCliente" (clienteCreado)="onClienteCreado($event)" (close)="cerrarQuickCreateCliente()" />

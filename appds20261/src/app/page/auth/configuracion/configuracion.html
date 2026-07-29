@@ -1,0 +1,209 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="cfg-page">
+  <header class="cfg-header">
+    <div>
+      <h1 class="cfg-title">Configuración General</h1>
+      <p class="cfg-subtitle">Gestione la identidad, finanzas y operabilidad de su sucursal.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="premium-btn" style="background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);padding:10px 20px" (click)="descartar()">Descartar Cambios</button>
+      <button class="premium-btn" (click)="guardarTodo()" [disabled]="saving" style="padding:10px 24px">
+        @if (saving) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
+        <span class="material-symbols-outlined">save</span>
+        Guardar Todo
+      </button>
+    </div>
+  </header>
+
+  @if (loading) {
+    <div class="cfg-loading">
+      <span class="material-symbols-outlined" style="font-size:48px;color:var(--clr-outline)">sync</span>
+      <p>Cargando configuración...</p>
+    </div>
+  } @else {
+    <div class="cfg-grid">
+      <nav style="display:flex;flex-direction:column;gap:4px;min-width:200px;background:var(--clr-surface-container-lowest);border:1px solid var(--clr-outline-variant);border-radius:14px;padding:8px;height:fit-content">
+        <button style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:none;border-radius:10px;background:transparent;color:var(--clr-on-surface-variant);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s ease;text-align:left"
+          [style.background]="activeTab === 'datos-hotel' ? 'linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark))' : 'transparent'"
+          [style.color]="activeTab === 'datos-hotel' ? 'var(--aura-dark)' : 'var(--clr-on-surface-variant)'"
+          (click)="switchTab('datos-hotel')">
+          <span class="material-symbols-outlined" style="font-size:20px">hotel</span>
+          <span>Datos del Hotel</span>
+        </button>
+        <button style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:none;border-radius:10px;background:transparent;color:var(--clr-on-surface-variant);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s ease;text-align:left"
+          [style.background]="activeTab === 'tarifas' ? 'linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark))' : 'transparent'"
+          [style.color]="activeTab === 'tarifas' ? 'var(--aura-dark)' : 'var(--clr-on-surface-variant)'"
+          (click)="switchTab('tarifas')">
+          <span class="material-symbols-outlined" style="font-size:20px">payments</span>
+          <span>Tarifas</span>
+        </button>
+        <button style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:none;border-radius:10px;background:transparent;color:var(--clr-on-surface-variant);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s ease;text-align:left"
+          [style.background]="activeTab === 'pagos' ? 'linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark))' : 'transparent'"
+          [style.color]="activeTab === 'pagos' ? 'var(--aura-dark)' : 'var(--clr-on-surface-variant)'"
+          (click)="switchTab('pagos')">
+          <span class="material-symbols-outlined" style="font-size:20px">credit_card</span>
+          <span>M&eacute;todos de Pago</span>
+        </button>
+        <button style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:none;border-radius:10px;background:transparent;color:var(--clr-on-surface-variant);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s ease;text-align:left"
+          [style.background]="activeTab === 'politicas' ? 'linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark))' : 'transparent'"
+          [style.color]="activeTab === 'politicas' ? 'var(--aura-dark)' : 'var(--clr-on-surface-variant)'"
+          (click)="switchTab('politicas')">
+          <span class="material-symbols-outlined" style="font-size:20px">policy</span>
+          <span>Impuestos y Pol&iacute;ticas</span>
+        </button>
+      </nav>
+
+      <section style="flex:1;min-width:0">
+        @if (activeTab === 'datos-hotel') {
+          <div class="premium-card" style="padding:0;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid rgba(201,164,92,0.15)">
+              <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--clr-on-surface)">Informaci&oacute;n Identitaria</h3>
+            </div>
+            <div style="padding:20px">
+              <div class="cfg-logo-section">
+                <div class="cfg-logo-box" (click)="logoInput.click()" style="cursor:pointer;overflow:hidden">
+                  @if (logosrc) {
+                    <img [src]="logosrc" alt="Logo" style="width:100%;height:100%;object-fit:contain" />
+                  }
+                  <div class="cfg-logo-overlay">
+                    <span class="material-symbols-outlined" style="color:white">upload</span>
+                  </div>
+                  <input #logoInput type="file" accept="image/*" (change)="onLogoSelected($event)" style="display:none" />
+                </div>
+                <div>
+                  <h4 style="font-size:16px;font-weight:700;margin:0 0 2px">Logo de Sucursal</h4>
+                  <p style="font-size:14px;line-height:20px;color:var(--clr-on-surface-variant);margin:0">PNG o SVG recomendado. Máximo 2MB.</p>
+                  <button class="cfg-link-btn" type="button" (click)="logoInput.click()">
+                    @if (uploadingLogo) { Subiendo... } @else { REEMPLAZAR IMAGEN }
+                  </button>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div class="premium-field">
+                  <label>Nombre Comercial</label>
+                  <input class="premium-input" type="text" pInputText [(ngModel)]="params['hotel.nombre']" maxlength="100" required />
+                </div>
+                <div class="premium-field">
+                  <label>RUC / ID Fiscal</label>
+                  <input class="premium-input" type="text" pInputText [(ngModel)]="params['hotel.ruc']" maxlength="20" pattern="[0-9]{11}" inputmode="numeric" />
+                </div>
+                <div class="premium-field" style="grid-column:1/-1">
+                  <label>Direcci&oacute;n F&iacute;sica</label>
+                  <input class="premium-input" type="text" pInputText [(ngModel)]="params['hotel.direccion']" maxlength="200" />
+                </div>
+                <div class="premium-field">
+                  <label>Tel&eacute;fono de Recepci&oacute;n</label>
+                  <input class="premium-input" type="tel" pInputText [(ngModel)]="params['hotel.telefono']" maxlength="20" inputmode="tel" />
+                </div>
+                <div class="premium-field">
+                  <label>Correo Electr&oacute;nico</label>
+                  <input class="premium-input" type="email" pInputText [(ngModel)]="params['hotel.email']" maxlength="100" inputmode="email" />
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab === 'tarifas') {
+          <div class="premium-card" style="padding:20px">
+            <h3 style="margin:0 0 8px;font-size:14px;font-weight:700;color:var(--clr-on-surface)">Configuraci&oacute;n de Temporadas</h3>
+            <p style="margin:0;font-size:13px;color:var(--clr-on-surface-variant)">Las tarifas se gestionan por habitaci&oacute;n desde el m&oacute;dulo de Habitaciones.</p>
+          </div>
+        }
+
+        @if (activeTab === 'pagos') {
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div class="premium-card" style="padding:0;overflow:hidden">
+              <div style="padding:16px 20px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between">
+                <div style="width:44px;height:44px;border-radius:12px;background:color-mix(in srgb,var(--clr-secondary) 10%,transparent);display:flex;align-items:center;justify-content:center">
+                  <span class="material-symbols-outlined" style="color:var(--clr-secondary);font-size:22px">payments</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="padding:2px 8px;border-radius:20px;background:color-mix(in srgb,var(--clr-status-available) 12%,transparent);color:var(--clr-status-available);font-size:9px;font-weight:700">CONFIGURADO</span>
+                  <label style="position:relative;display:inline-block;width:36px;height:20px;cursor:pointer">
+                    <input type="checkbox" checked style="opacity:0;width:0;height:0" />
+                    <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--aura-gold);border-radius:20px;transition:0.3s"></span>
+                  </label>
+                </div>
+              </div>
+              <div style="padding:16px 20px">
+                <h4 style="margin:0 0 4px;font-size:15px;font-weight:700;color:var(--clr-on-surface)">Efectivo</h4>
+                <p style="margin:0 0 12px;font-size:13px;color:var(--clr-on-surface-variant)">Gesti&oacute;n directa en caja. Emisi&oacute;n de boleta o factura f&iacute;sica/electr&oacute;nica.</p>
+                <button class="premium-btn" style="padding:8px 16px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);font-size:11px">Configurar Flujo</button>
+              </div>
+            </div>
+            <div class="premium-card" style="padding:0;overflow:hidden">
+              <div style="padding:16px 20px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between">
+                <div style="width:44px;height:44px;border-radius:12px;background:color-mix(in srgb,var(--clr-tertiary) 10%,transparent);display:flex;align-items:center;justify-content:center">
+                  <span class="material-symbols-outlined" style="color:var(--clr-tertiary);font-size:22px">qr_code_2</span>
+                </div>
+                <span style="padding:2px 8px;border-radius:20px;background:color-mix(in srgb,var(--clr-status-available) 12%,transparent);color:var(--clr-status-available);font-size:9px;font-weight:700">CONFIGURADO</span>
+              </div>
+              <div style="padding:16px 20px">
+                <h4 style="margin:0 0 4px;font-size:15px;font-weight:700;color:var(--clr-on-surface)">Yape</h4>
+                <p style="margin:0 0 12px;font-size:13px;color:var(--clr-on-surface-variant)">Pagos mediante c&oacute;digo QR o n&uacute;mero de celular.</p>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab === 'politicas') {
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="premium-card" style="padding:0;overflow:hidden">
+              <div style="padding:16px 20px;border-bottom:1px solid rgba(201,164,92,0.15)">
+                <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--clr-on-surface)">Impuestos y Facturaci&oacute;n</h3>
+              </div>
+              <div style="padding:20px">
+              <div class="cfg-tax-grid">
+                  <div style="display:flex;flex-direction:column;gap:14px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--clr-surface-container-low);border-radius:8px">
+                    <span style="font-size:12px;font-weight:600;color:var(--clr-on-surface)">IGV / IVA Aplicable</span>
+                    <div style="display:flex;align-items:center;gap:4px">
+                      <input style="min-width:60px;width:100%;max-width:100px;padding:6px 8px;border:1px solid var(--clr-outline-variant);border-radius:6px;font-size:13px;font-weight:700;text-align:center;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface);outline:none;font-family:'Inter',sans-serif" type="number" value="18" />
+                      <span style="font-size:12px;font-weight:600;color:var(--clr-on-surface-variant)">%</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--clr-surface-container-low);border-radius:8px">
+                    <span style="font-size:12px;font-weight:600;color:var(--clr-on-surface)">Tasa de Servicio</span>
+                    <div style="display:flex;align-items:center;gap:4px">
+                      <input style="min-width:60px;width:100%;max-width:100px;padding:6px 8px;border:1px solid var(--clr-outline-variant);border-radius:6px;font-size:13px;font-weight:700;text-align:center;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface);outline:none;font-family:'Inter',sans-serif" type="number" value="10" />
+                      <span style="font-size:12px;font-weight:600;color:var(--clr-on-surface-variant)">%</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <p-checkbox binary="true" checked="true" inputId="tax-included" />
+                    <label for="tax-included" style="font-size:12px;color:var(--clr-on-surface);cursor:pointer">Precios mostrados ya incluyen impuestos</label>
+                  </div>
+                </div>
+              <div style="padding:12px 16px;background:color-mix(in srgb,var(--clr-secondary) 6%,transparent);border:1px solid color-mix(in srgb,var(--clr-secondary) 15%,transparent);border-radius:10px">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+                  <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-secondary)">info</span>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-secondary);letter-spacing:0.04em">Configuraci&oacute;n Fiscal</span>
+                </div>
+                <p style="margin:0;font-size:12px;color:var(--clr-on-surface-variant)">Configure el IGV/IVA y la tasa de servicio seg&uacute;n la legislaci&oacute;n vigente. Estos valores se aplicar&aacute;n autom&aacute;ticamente en las facturas.</p>
+              </div>
+              </div>
+              </div>
+            </div>
+            <div class="premium-card" style="padding:0;overflow:hidden">
+              <div style="padding:16px 20px;border-bottom:1px solid rgba(201,164,92,0.15)">
+                <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--clr-on-surface)">Pol&iacute;ticas de Cancelaci&oacute;n</h3>
+              </div>
+              <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+                <div class="premium-field">
+                  <label>Pol&iacute;tica Est&aacute;ndar</label>
+                  <p-select [options]="[{label:'Flexible: Cancelación gratuita hasta 24h antes',value:'flexible'},{label:'Moderada: Reembolso 50% hasta 48h antes',value:'moderada'},{label:'Estricta: Sin reembolso tras la reserva',value:'estricta'},{label:'Personalizada...',value:'personalizada'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar política" styleClass="w-full" appendTo="body" />
+                </div>
+                <div class="premium-field">
+                  <label>T&eacute;rminos y Condiciones (pie de p&aacute;gina)</label>
+                  <textarea class="premium-input" pTextarea rows="4" style="resize:vertical;min-height:80px">El cliente acepta que el hotel no se hace responsable por objetos de valor no declarados en la caja fuerte de recepción. La hora de Check-out es a las 11:00 AM, penalidad de media tarifa tras 1 hora de retraso.</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </section>
+    </div>
+  }
+</div>

@@ -1,0 +1,197 @@
+<div class="inc-page">
+  <div class="inc-page__header">
+    <div>
+      <h1 class="inc-page__title">Incidencias</h1>
+      <p class="inc-page__subtitle">Gestión de limpieza, mantenimiento y reportes de habitaciones.</p>
+    </div>
+  </div>
+  <p-toast />
+  <section class="kpi-grid" style="gap:12px">
+    <div class="premium-card" style="padding:14px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Limpias</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;background:color-mix(in srgb,var(--clr-status-available) 12%,transparent);color:var(--clr-status-available);font-size:10px;font-weight:700">{{ (habitacionesLimpias.length / (habitaciones.length || 1) * 100) | number:'1.0-0' }}%</span>
+      </div>
+      <p style="margin:0;font-size:22px;font-weight:800;color:var(--clr-on-surface)">{{ habitacionesLimpias.length }}</p>
+    </div>
+    <div class="premium-card" style="padding:14px 16px;border-left:3px solid var(--clr-error)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Sucias</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;background:color-mix(in srgb,var(--clr-error) 12%,transparent);color:var(--clr-error);font-size:10px;font-weight:700">Requiere atenci&oacute;n</span>
+      </div>
+      <p style="margin:0;font-size:22px;font-weight:800;color:var(--clr-error)">{{ habitacionesSucias.length }}</p>
+    </div>
+    <div class="premium-card" style="padding:14px 16px;border-left:3px solid var(--clr-secondary)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">En Progreso</span>
+        <span class="material-symbols-outlined" style="color:var(--clr-secondary);font-size:20px;animation:pulse 2s cubic-bezier(0.4,0,0.6,1) infinite">sync</span>
+      </div>
+      <p style="margin:0;font-size:22px;font-weight:800;color:var(--clr-secondary)">{{ habitacionesEnProgreso.length | number:'2.0' }}</p>
+    </div>
+    <div class="premium-card" style="padding:14px 16px;border-left:3px solid var(--clr-status-maintenance)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Mantenimiento</span>
+        <span class="material-symbols-outlined" style="color:var(--clr-status-maintenance);font-size:20px">engineering</span>
+      </div>
+      <p style="margin:0;font-size:22px;font-weight:800;color:var(--clr-on-tertiary-fixed-variant)">{{ habitacionesMantenimiento.length }}</p>
+    </div>
+  </section>
+  <div class="premium-card" style="padding:0;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--clr-outline-variant);background:var(--clr-surface-container-low);flex-wrap:wrap;gap:8px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <h2 style="margin:0;font-size:14px;font-weight:700;color:var(--clr-on-surface)">Estado de Habitaciones</h2>
+        <span style="display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;background:color-mix(in srgb,var(--clr-secondary) 12%,transparent);color:var(--clr-secondary);font-size:10px;font-weight:700">Planta 1 &amp; 2</span>
+      </div>
+      <div style="position:relative;max-width:200px">
+        <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);z-index:1">search</span>
+        <input style="width:100%;padding:8px 10px 8px 32px;border:1px solid var(--clr-outline-variant);border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;color:var(--clr-on-surface);background:var(--clr-surface-container-lowest);outline:none;box-sizing:border-box" placeholder="Buscar hab..." type="text" [(ngModel)]="searchTerm" (input)="onSearchInput()"/>
+      </div>
+    </div>
+    <div class="room-grid">
+      @for (hab of habitaciones; track hab.id) {
+        @let activeInc = getActiveIncidentForRoom(hab);
+        <div class="room-card">
+          <div class="room-indicator" [style.background]="activeInc?.tipo === 'LIMPIEZA' ? 'var(--clr-secondary-container)' : hab.estado === 'DISPONIBLE' ? 'var(--clr-status-available)' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : 'var(--clr-on-tertiary-fixed-variant)'"></div>
+          <div class="room-card__body">
+            <div class="room-card__top">
+              <h3 class="room-card__number">Hab. {{ hab.numero }}</h3>
+              @if (activeInc?.tipo === 'LIMPIEZA' || activeInc?.tipo === 'LIMPIEZA_CHECKOUT') {
+                <span class="room-badge room-badge--cleaning">Limpiando</span>
+              } @else {
+                <span class="room-badge" [style.color]="hab.estado === 'DISPONIBLE' ? 'var(--clr-status-available)' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : hab.estado === 'LIMPIEZA' ? 'var(--clr-warning)' : 'var(--clr-on-tertiary-fixed-variant)'" [style.borderColor]="hab.estado === 'DISPONIBLE' ? 'var(--clr-status-available)' : hab.estado === 'OCUPADA' ? 'var(--clr-error)' : hab.estado === 'LIMPIEZA' ? 'var(--clr-warning)' : 'var(--clr-on-tertiary-fixed-variant)'">
+                  {{ hab.estado === 'DISPONIBLE' ? 'Limpia' : hab.estado === 'OCUPADA' ? 'Ocupada' : hab.estado === 'LIMPIEZA' ? 'Sucia' : 'Manten.' }}
+                </span>
+              }
+            </div>
+            <p class="room-card__type">{{ hab.tipo }}</p>
+            <div class="room-card__action">
+              @if (activeInc?.tipo === 'LIMPIEZA' || activeInc?.tipo === 'LIMPIEZA_CHECKOUT') {
+                <div class="staff-row">
+                  <div class="staff-avatar staff-avatar--sm"><span class="material-symbols-outlined" style="font-size:14px">person</span></div>
+                  <span class="staff-name">En curso...</span>
+                </div>
+              } @else if (hab.estado === 'OCUPADA') {
+                <button class="room-btn room-btn--primary" (click)="asignarLimpieza(hab)">ASIGNAR</button>
+              } @else if (hab.estado !== 'DISPONIBLE') {
+                <button class="room-btn room-btn--tertiary" (click)="verReporte(activeInc)">VER REPORTE</button>
+              } @else {
+                <button class="room-btn room-btn--outline" (click)="verDetalles(hab)">DETALLES</button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="premium-card" style="padding:0;overflow:hidden">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
+      <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;display:flex;align-items:center;gap:6px;color:var(--clr-on-surface)">
+        <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:18px">warning</span>
+        Incidencias Activas
+      </h3>
+      <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:20px;background:color-mix(in srgb,var(--clr-error) 15%,transparent);color:var(--clr-error);font-size:11px;font-weight:700">{{ incidenciasActivas.length }}</span>
+    </div>
+    <div style="padding:0;overflow-x:auto;max-height:500px;overflow-y:auto">
+      <table style="width:100%;border-collapse:collapse;text-align:left">
+        <thead>
+          <tr style="background:var(--clr-surface-container-high)">
+            <th style="padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);cursor:pointer;white-space:nowrap" (click)="toggleSort('habitacionNumero')">
+              Habitación
+              @if (sortField === 'habitacionNumero') {
+                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;color:var(--clr-secondary)">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+              }
+            </th>
+            <th style="padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);cursor:pointer;white-space:nowrap" (click)="toggleSort('tipo')">
+              Tipo
+              @if (sortField === 'tipo') {
+                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;color:var(--clr-secondary)">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+              }
+            </th>
+            <th style="padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);white-space:nowrap">Motivo</th>
+            <th style="padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);cursor:pointer;white-space:nowrap" (click)="toggleSort('fechaInicio')">
+              Inicio
+              @if (sortField === 'fechaInicio') {
+                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;color:var(--clr-secondary)">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+              }
+            </th>
+            <th style="padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);text-align:right;white-space:nowrap">Acci&oacute;n</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inc of paginatedIncidencias; track inc.id) {
+            <tr style="border-bottom:1px solid var(--clr-outline-variant);transition:background 0.15s" (mouseenter)="$any($event.currentTarget).style.background='var(--clr-surface-container-low)'" (mouseleave)="$any($event.currentTarget).style.background=''">
+              <td data-label="Hab." style="padding:8px 12px;font-size:12px;font-weight:700;color:var(--clr-on-surface)">{{ inc.habitacionNumero }}</td>
+              <td data-label="Tipo" style="padding:8px 12px"><span class="badge" [ngClass]="inc.tipo === 'LIMPIEZA' ? 'badge-dirty' : 'badge-maintenance'" style="font-size:10px">{{ inc.tipo }}</span></td>
+              <td data-label="Motivo" style="padding:8px 12px;font-size:12px;color:var(--clr-on-surface)">{{ inc.motivo }}</td>
+              <td data-label="Inicio" style="padding:8px 12px;font-size:11px;font-variant-numeric:tabular-nums;color:var(--clr-on-surface-variant)">{{ inc.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td data-label="" style="padding:8px 12px;text-align:right">
+                <button style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border:none;border-radius:8px;background:var(--clr-status-available);color:white;font-family:'Inter',sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all 0.2s ease" (click)="finalizar(inc)">
+                  <span class="material-symbols-outlined" style="font-size:14px">check_circle</span>
+                  Finalizar
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+                  <span class="material-symbols-outlined" style="font-size:32px;opacity:0.4">check_circle</span>
+                  No hay incidencias activas
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <p-paginator (onPageChange)="onPageChange($event)" [first]="page * pageSize" [rows]="pageSize" [totalRecords]="totalRecords" [rowsPerPageOptions]="[5,10,20,50]" />
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="premium-card" style="padding:0;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;gap:8px;background:var(--clr-surface-container-low)">
+        <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:18px">report_problem</span>
+        <h3 style="margin:0;font-size:12px;font-weight:700;color:var(--clr-on-surface)">Reportar Incidencia</h3>
+      </div>
+      <form [formGroup]="incidenciaForm" style="display:flex;flex-direction:column;gap:14px;padding:16px">
+        <div class="premium-field">
+          <label>Habitaci&oacute;n / &Aacute;rea</label>
+          <p-select formControlName="habitacionId" [options]="habitaciones" optionLabel="label" optionValue="id" placeholder="Seleccionar habitación" styleClass="w-full" appendTo="body" />
+        </div>
+        <div class="premium-field">
+          <label>Tipo</label>
+          <p-select formControlName="tipo" [options]="tipos" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo" styleClass="w-full" appendTo="body" />
+        </div>
+        <div class="premium-field">
+          <label>Descripci&oacute;n del Problema</label>
+          <textarea class="premium-input" pTextarea formControlName="motivo" rows="3" maxlength="500" placeholder="Ej: Aire acondicionado no enfría..." style="resize:vertical"></textarea>
+        </div>
+        <div class="premium-field">
+          <label>Fotos / Evidencia</label>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border:2px dashed var(--clr-outline-variant);border-radius:10px;color:var(--clr-on-surface-variant);cursor:pointer;transition:all 0.2s" (mouseenter)="$any($event.currentTarget).style.borderColor='var(--aura-gold)'" (mouseleave)="$any($event.currentTarget).style.borderColor='var(--clr-outline-variant)'">
+            <span class="material-symbols-outlined" style="font-size:24px">add_a_photo</span>
+            <span style="font-size:12px;font-weight:600">Subir Imagen</span>
+          </div>
+        </div>
+        <button class="premium-btn" style="width:100%;justify-content:center;padding:12px;background:linear-gradient(135deg,var(--clr-error),#c62828);color:white;box-shadow:0 4px 14px color-mix(in srgb,var(--clr-error) 40%,transparent)" [disabled]="incidenciaForm.invalid || loading" (click)="save()">
+          @if (loading) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
+          <span class="material-symbols-outlined">warning</span>
+          Enviar Reporte Urgente
+        </button>
+      </form>
+    </div>
+    <div class="premium-card" style="padding:0;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;gap:8px;background:var(--clr-surface-container-low)">
+        <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:18px">cleaning_services</span>
+        <h3 style="margin:0;font-size:12px;font-weight:700;color:var(--clr-on-surface)">Acciones R&aacute;pidas</h3>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;padding:16px">
+        <button class="premium-btn" style="width:100%;justify-content:center;padding:12px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="loadIncidencias()">
+          <span class="material-symbols-outlined" style="font-size:18px">refresh</span> Actualizar
+        </button>
+        <button class="premium-btn" style="width:100%;justify-content:center;padding:12px" (click)="incidenciaForm.reset({tipo:'LIMPIEZA'});">
+          <span class="material-symbols-outlined" style="font-size:18px">add</span> Nueva Incidencia
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

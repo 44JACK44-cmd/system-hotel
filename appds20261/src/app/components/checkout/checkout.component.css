@@ -1,0 +1,39 @@
+@keyframes co-spin { to { transform:rotate(360deg); } }
+
+.hs-slide-panel--shifted {
+  transform: translateX(25%);
+  filter: brightness(0.7);
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.co-quick-btn {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:10px 8px;
+  border:1px solid var(--clr-outline-variant);
+  border-radius:10px;
+  background:var(--clr-surface-container-lowest);
+  color:var(--clr-on-surface-variant);
+  cursor:pointer;
+  font-family:Inter,sans-serif;
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  transition:all 0.2s ease;
+  min-height:60px;
+}
+.co-quick-btn:hover {
+  border-color:var(--aura-gold);
+  color:var(--clr-on-surface);
+  box-shadow:0 2px 8px rgba(201,164,92,0.15);
+}
+.co-quick-btn .material-symbols-outlined {
+  font-size:20px;
+  color:var(--clr-on-surface-variant);
+}
+.co-quick-btn:hover .material-symbols-outlined {
+  color:var(--aura-gold);
+}

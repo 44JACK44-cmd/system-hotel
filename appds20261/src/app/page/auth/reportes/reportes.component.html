@@ -1,0 +1,347 @@
+<div class="rep-page">
+
+  <!-- Page Header -->
+  <div class="rep-page__header">
+    <div>
+      <h1 class="rep-title">Análisis e Informes</h1>
+      <p class="rep-subtitle">Visión general del rendimiento operativo y financiero.</p>
+    </div>
+    <div class="rep-header-actions">
+      <!-- Filter Bar -->
+      <div class="rep-filter-bar">
+        <div class="rep-filter-item">
+          <span class="material-symbols-outlined rep-filter-icon">calendar_today</span>
+          <span class="rep-filter-label">Ingresos</span>
+          <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="ingresoInicio" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input" styleClass="custom-datepicker" /></div>
+          <span class="rep-filter-sep">—</span>
+          <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="ingresoFin" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input" styleClass="custom-datepicker" /></div>
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto" (click)="loadIngresos()">
+            <span class="material-symbols-outlined" style="font-size:18px">refresh</span>
+          </button>
+        </div>
+        <div style="width:1px;height:24px;background:var(--clr-outline-variant);flex-shrink:0"></div>
+        <div class="rep-filter-item">
+          <span class="rep-filter-label">Ocup</span>
+          <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="ocupacionFecha" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input" styleClass="custom-datepicker" /></div>
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto" (click)="loadOcupacion()">
+            <span class="material-symbols-outlined" style="font-size:18px">refresh</span>
+          </button>
+        </div>
+        <div style="width:1px;height:24px;background:var(--clr-outline-variant);flex-shrink:0"></div>
+        <div class="rep-filter-item">
+          <span class="rep-filter-label">NC</span>
+          <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="noConcretadasInicio" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="custom-datepicker" /></div>
+          <span class="rep-filter-sep">—</span>
+          <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="noConcretadasFin" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="custom-datepicker" /></div>
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto" (click)="loadNoConcretadas()">
+            <span class="material-symbols-outlined" style="font-size:18px">refresh</span>
+          </button>
+        </div>
+      </div>
+      <div class="rep-export-group">
+        <button class="premium-btn" style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);font-size:12px" (click)="exportPDF(ingresos ? [ingresos] : [], 'Reporte de Ingresos', ['total','totalAdelantos','totalSaldos','totalExtensiones'])">
+          <span class="material-symbols-outlined" style="font-size:16px">picture_as_pdf</span>
+          PDF
+        </button>
+        <button class="premium-btn" style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);font-size:12px" (click)="exportCSV(ingresos ? [ingresos] : [], 'reporte-ingresos', ['total','totalAdelantos','totalSaldos','totalExtensiones'])">
+          <span class="material-symbols-outlined" style="font-size:16px">table_chart</span>
+          Excel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <p-toast />
+
+  <!-- KPI Metrics Grid -->
+  <div class="rep-kpi-grid">
+    <!-- Ocupación -->
+    <div class="premium-card" style="padding:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Ocupaci&oacute;n</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--aura-gold);opacity:0.7">hotel</span>
+      </div>
+      <p style="margin:0;font-size:28px;font-weight:800;color:var(--clr-on-surface)">{{ ocupacion?.porcentajeOcupacion || 0 }}%</p>
+      @if (ocupacion) {
+        <div style="display:flex;align-items:center;gap:4px;margin-top:4px;font-size:12px;color:var(--clr-status-available)">
+          <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
+          <span>{{ ocupacion.ocupadas }}/{{ ocupacion.totalHabitaciones }} hab.</span>
+        </div>
+      }
+      <div style="margin-top:8px;height:4px;background:var(--clr-surface-container-low);border-radius:4px;overflow:hidden">
+        <div style="height:100%;border-radius:4px;background:linear-gradient(90deg,var(--aura-gold),var(--aura-gold-light));transition:width 0.5s ease" [style.width.%]="ocupacion?.porcentajeOcupacion || 0"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--clr-on-surface-variant)">
+        <span>Disp: {{ ocupacion?.disponibles || 0 }}</span>
+        <span>Ocup: {{ ocupacion?.ocupadas || 0 }}</span>
+        <span>Total: {{ ocupacion?.totalHabitaciones || 0 }}</span>
+      </div>
+    </div>
+
+    <!-- RevPAR -->
+    <div class="premium-card" style="padding:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">RevPAR</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--aura-gold);opacity:0.7">monetization_on</span>
+      </div>
+      <p style="margin:0;font-size:28px;font-weight:800;color:var(--clr-on-surface)">S/ {{ (ingresos?.total / (ocupacion?.totalHabitaciones || 1)) | number:'1.2-2' }}</p>
+      <div style="display:flex;align-items:center;gap:4px;margin-top:4px;font-size:12px;color:var(--clr-status-available)">
+        <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
+        <span>Ingreso / Hab. Disp.</span>
+      </div>
+    </div>
+
+    <!-- ADR -->
+    <div class="premium-card" style="padding:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">ADR</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--aura-gold);opacity:0.7">request_quote</span>
+      </div>
+      <p style="margin:0;font-size:28px;font-weight:800;color:var(--clr-on-surface)">S/ {{ (ingresos?.total / (ocupacion?.ocupadas || 1)) | number:'1.2-2' }}</p>
+      <div style="display:flex;align-items:center;gap:4px;margin-top:4px;font-size:12px;color:var(--clr-error)">
+        <span class="material-symbols-outlined" style="font-size:14px">trending_down</span>
+        <span>Ingreso / Hab. Ocup.</span>
+      </div>
+    </div>
+
+    <!-- Reservas Hoy -->
+    <div class="premium-card" style="padding:16px;background:linear-gradient(135deg,var(--aura-gold-dark) 0%,#b8860b 100%);border-color:transparent">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(0,0,0,0.5)">Reservas Hoy</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:rgba(0,0,0,0.5)">event_available</span>
+      </div>
+      <p style="margin:0;font-size:30px;font-weight:800;color:rgba(0,0,0,0.85)">{{ noConcretadas?.canceladas || 0 }}</p>
+      <div style="font-size:12px;color:rgba(0,0,0,0.5);margin-top:4px">No concretadas del per&iacute;odo</div>
+      <div style="font-size:11px;color:rgba(0,0,0,0.4);margin-top:2px">Canceladas: {{ noConcretadas?.canceladas || 0 }} &middot; No Show: {{ noConcretadas?.noShow || 0 }}</div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="rep-charts-grid">
+    <!-- Bar Chart - Occupancy Trend -->
+    <div class="premium-card" style="padding:0;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
+        <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface-variant)">Tendencia de Ocupaci&oacute;n</h3>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--aura-gold);flex-shrink:0"></span>
+          <span style="font-size:11px;color:var(--clr-on-surface-variant)">Hoy</span>
+        </div>
+      </div>
+      <div style="padding:20px;min-height:120px;display:flex;align-items:flex-end;gap:16px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:80px">
+          <div style="width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--aura-gold),var(--aura-gold-dark));transition:height 0.5s ease;min-height:4px;position:relative" [style.height.%]="ocupacion?.porcentajeOcupacion || 0">
+            <div style="position:absolute;top:-24px;left:50%;transform:translateX(-50%);background:var(--clr-surface-container-low);padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;color:var(--clr-on-surface);white-space:nowrap">Hoy: {{ ocupacion?.porcentajeOcupacion || 0 }}%</div>
+          </div>
+          <span style="font-size:10px;font-weight:700;color:var(--clr-on-surface-variant)">Hoy</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:80px">
+          <div style="width:100%;height:100%;border-radius:6px 6px 0 0;background:color-mix(in srgb,var(--clr-outline-variant) 30%,transparent)"></div>
+          <span style="font-size:10px;font-weight:700;color:var(--clr-on-surface-variant)">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Origen de Reservas -->
+    <div class="premium-card" style="padding:0;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);background:var(--clr-surface-container-low)">
+        <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface-variant)">Distribuci&oacute;n por M&eacute;todo de Pago</h3>
+      </div>
+      <div class="rep-source-list">
+        <div class="rep-source-item">
+          <div class="rep-source-head">
+            <span>Yape</span>
+            <span class="rep-source-pct">
+              {{ ((ingresosMetodo?.yape || 0) / ((ingresosMetodo?.yape || 0) + (ingresosMetodo?.efectivo || 0) || 1) * 100) | number:'1.0-0' }}%
+            </span>
+          </div>
+          <div class="rep-source-bar">
+            <div class="rep-source-fill rep-source-fill--yape" [style.width.%]="(ingresosMetodo?.yape || 0) / ((ingresosMetodo?.yape || 0) + (ingresosMetodo?.efectivo || 0) || 1) * 100"></div>
+          </div>
+        </div>
+        <div class="rep-source-item">
+          <div class="rep-source-head">
+            <span>Efectivo</span>
+            <span class="rep-source-pct">
+              {{ ((ingresosMetodo?.efectivo || 0) / ((ingresosMetodo?.yape || 0) + (ingresosMetodo?.efectivo || 0) || 1) * 100) | number:'1.0-0' }}%
+            </span>
+          </div>
+          <div class="rep-source-bar">
+            <div class="rep-source-fill rep-source-fill--efectivo" [style.width.%]="(ingresosMetodo?.efectivo || 0) / ((ingresosMetodo?.yape || 0) + (ingresosMetodo?.efectivo || 0) || 1) * 100"></div>
+          </div>
+        </div>
+        <div class="rep-source-item">
+          <div class="rep-source-head">
+            <span>Adelantos</span>
+            <span class="rep-source-pct">
+              {{ ((ingresos?.totalAdelantos || 0) / (ingresos?.total || 1) * 100) | number:'1.0-0' }}%
+            </span>
+          </div>
+          <div class="rep-source-bar">
+            <div class="rep-source-fill rep-source-fill--adelantos" [style.width.%]="(ingresos?.totalAdelantos || 0) / (ingresos?.total || 1) * 100"></div>
+          </div>
+        </div>
+        <div class="rep-source-item">
+          <div class="rep-source-head">
+            <span>Extensiones</span>
+            <span class="rep-source-pct">
+              {{ ((ingresos?.totalExtensiones || 0) / (ingresos?.total || 1) * 100) | number:'1.0-0' }}%
+            </span>
+          </div>
+          <div class="rep-source-bar">
+            <div class="rep-source-fill rep-source-fill--ext" [style.width.%]="(ingresos?.totalExtensiones || 0) / (ingresos?.total || 1) * 100"></div>
+          </div>
+        </div>
+      </div>
+      <p style="margin:8px 0 0;font-size:10px;color:var(--clr-on-surface-variant);padding:0 16px 16px">* Basado en datos del per&iacute;odo seleccionado</p>
+    </div>
+  </div>
+
+  <!-- Revenue Breakdown Table -->
+    <div class="premium-card" style="padding:0;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
+        <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface-variant)">Desglose de Ingresos Mensuales</h3>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant)">Total Ingresos:</span>
+          <span style="font-size:14px;font-weight:700;color:var(--aura-gold-dark)">S/ {{ (ingresos?.total || 0) | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div style="padding:0;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;text-align:left">
+          <thead>
+            <tr>
+              <th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);white-space:nowrap">Fecha</th>
+              <th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);white-space:nowrap">Hab. Vendidas</th>
+              <th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);white-space:nowrap">Ocupaci&oacute;n %</th>
+              <th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);white-space:nowrap">ADR</th>
+              <th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);white-space:nowrap">RevPAR</th>
+              <th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);white-space:nowrap">Ingreso Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:10px 12px;font-size:13px;font-weight:600;color:var(--clr-on-surface);border-bottom:1px solid var(--clr-outline-variant)">Per&iacute;odo Actual</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;border-bottom:1px solid var(--clr-outline-variant)">{{ ocupacion?.ocupadas || 0 }} / {{ ocupacion?.totalHabitaciones || 0 }}</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;border-bottom:1px solid var(--clr-outline-variant)">{{ ocupacion?.porcentajeOcupacion || 0 }}%</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;border-bottom:1px solid var(--clr-outline-variant)">S/ {{ (ingresos?.total / (ocupacion?.ocupadas || 1)) | number:'1.2-2' }}</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;border-bottom:1px solid var(--clr-outline-variant)">S/ {{ (ingresos?.total / (ocupacion?.totalHabitaciones || 1)) | number:'1.2-2' }}</td>
+              <td style="padding:10px 12px;font-size:13px;font-weight:700;font-family:'Inter',monospace;color:var(--aura-gold-dark);border-bottom:1px solid var(--clr-outline-variant)">S/ {{ (ingresos?.total || 0) | number:'1.2-2' }}</td>
+            </tr>
+            <tr style="background:var(--clr-surface-container-low)">
+              <td style="padding:10px 12px;font-size:13px;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">Adelantos ({{ ((ingresos?.totalAdelantos || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%)</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">S/ {{ (ingresos?.totalAdelantos || 0) | number:'1.2-2' }}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px;font-size:13px;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">Saldos ({{ ((ingresos?.totalSaldos || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%)</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">S/ {{ (ingresos?.totalSaldos || 0) | number:'1.2-2' }}</td>
+            </tr>
+            <tr style="background:var(--clr-surface-container-low)">
+              <td style="padding:10px 12px;font-size:13px;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">Extensiones ({{ ((ingresos?.totalExtensiones || 0) / (ingresos?.total || 1) * 100) | number:'1.1-1' }}%)</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">&mdash;</td>
+              <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">S/ {{ (ingresos?.totalExtensiones || 0) | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- Legacy Sections (preserved with all bindings) -->
+  <div class="rep-legacy-grid">
+
+    <!-- Historial de Incidencias -->
+    <div class="premium-card" style="padding:0;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
+        <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface);display:flex;align-items:center;gap:6px">
+          <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-error)">cleaning_services</span>
+          Historial de Incidencias
+        </h3>
+        <div style="display:flex;gap:6px">
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadIncidencias()">
+            <span class="material-symbols-outlined" style="font-size:14px">refresh</span>
+            Cargar
+          </button>
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportCSV(historialIncidencias, 'incidencias', ['habitacion','tipo','motivo','fechaInicio','duracionHoras'])">
+            <span class="material-symbols-outlined" style="font-size:14px">download</span>
+            CSV
+          </button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;max-height:400px;overflow-y:auto">
+      <table style="width:100%;border-collapse:collapse;text-align:left">
+          <thead>
+            <tr><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortHist('habitacion')">Habitaci&oacute;n @if (histSortField === 'habitacion') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortHist('tipo')">Tipo @if (histSortField === 'tipo') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortHist('motivo')">Motivo @if (histSortField === 'motivo') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);white-space:nowrap">Inicio</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);white-space:nowrap">Duraci&oacute;n</th></tr>
+          </thead>
+          <tbody>
+            @for (i of sortedHistorial; track $index) {
+              <tr>
+                <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--clr-on-surface);border-bottom:1px solid var(--clr-outline-variant)">{{ i.habitacion }}</td>
+                <td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--clr-outline-variant)"><span class="badge" [ngClass]="i.tipo === 'LIMPIEZA' ? 'badge-dirty' : 'badge-maintenance'">{{ i.tipo }}</span></td>
+                <td style="padding:10px 12px;font-size:13px;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">{{ i.motivo }}</td>
+                <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;border-bottom:1px solid var(--clr-outline-variant)">{{ i.fechaInicio | date:'short' }}</td>
+                <td style="padding:10px 12px;font-size:13px;font-family:'Inter',monospace;border-bottom:1px solid var(--clr-outline-variant)">{{ i.duracionHoras != null ? i.duracionHoras + 'h' : 'En curso' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">Cargue el historial para ver datos.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+    <!-- Ranking de Habitaciones -->
+    <div class="premium-card" style="padding:0;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
+        <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface);display:flex;align-items:center;gap:6px">
+          <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-secondary)">leaderboard</span>
+          Ranking de Habitaciones
+        </h3>
+        <div style="display:flex;gap:6px">
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadRanking()">
+            <span class="material-symbols-outlined" style="font-size:14px">refresh</span>
+            Cargar
+          </button>
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportCSV(ranking, 'ranking-habitaciones', ['numero','tipo','vecesReservada','ingresoGenerado'])">
+            <span class="material-symbols-outlined" style="font-size:14px">download</span>
+            CSV
+          </button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;max-height:400px;overflow-y:auto">
+      <table style="width:100%;border-collapse:collapse;text-align:left">
+          <thead>
+            <tr><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap">#</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortRank('numero')">Habitaci&oacute;n @if (rankSortField === 'numero') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortRank('tipo')">Tipo @if (rankSortField === 'tipo') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortRank('vecesReservada')">Veces Reservada @if (rankSortField === 'vecesReservada') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortRank('ingresoGenerado')">Ingreso Generado @if (rankSortField === 'ingresoGenerado') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th></tr>
+        </thead>
+        <tbody>
+          @for (r of sortedRanking; track $index; let i = $index) {
+            <tr>
+              <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant);font-family:'Inter',monospace">{{ i + 1 }}</td>
+              <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--clr-on-surface);border-bottom:1px solid var(--clr-outline-variant);font-family:'Inter',monospace">{{ r.numero }}</td>
+              <td style="padding:10px 12px;font-size:13px;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant)">{{ r.tipo }}</td>
+              <td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--clr-outline-variant);font-family:'Inter',monospace">{{ r.vecesReservada }}</td>
+              <td style="padding:10px 12px;font-size:13px;font-weight:600;border-bottom:1px solid var(--clr-outline-variant);font-family:'Inter',monospace">S/ {{ r.ingresoGenerado }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">Cargue el ranking para ver datos.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>

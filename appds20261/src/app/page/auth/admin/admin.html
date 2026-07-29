@@ -1,0 +1,143 @@
+<div class="admin-page">
+  <div class="admin-page__header">
+    <div>
+      <h1 style="margin:0;font-size:24px;font-weight:800;color:var(--clr-on-surface)">Panel de Administraci&oacute;n</h1>
+      <p style="margin:4px 0 0;font-size:14px;color:var(--clr-on-surface-variant)">Monitoreo de ingresos y m&eacute;tricas operativas &mdash; {{ mesActual }}</p>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="premium-btn" style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);pointer-events:none;opacity:0.8">
+        <span class="material-symbols-outlined">calendar_today</span>
+        {{ mesActual }}
+      </button>
+      <a [routerLink]="'/admin/reportes'" class="premium-btn" style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);text-decoration:none;font-size:12px;display:inline-flex;align-items:center;gap:6px">
+        <span class="material-symbols-outlined">download</span>
+        Exportar Reporte
+      </a>
+    </div>
+  </div>
+
+  <div class="admin-kpi-grid" style="margin:16px 0">
+    <div class="premium-card premium-kpi">
+      <div class="premium-kpi-header">
+        <span class="premium-kpi-label">Ocupaci&oacute;n</span>
+        <span class="premium-kpi-icon">bed</span>
+      </div>
+      <p class="premium-kpi-value">{{ ocupacion?.porcentajeOcupacion || 0 }}%</p>
+      <div class="premium-kpi-bar">
+        <div class="premium-kpi-bar-fill" [style.width.%]="ocupacion?.porcentajeOcupacion || 0"></div>
+      </div>
+      <div class="premium-kpi-footer">
+        <span>{{ ocupacion?.ocupadas || 0 }}/{{ ocupacion?.totalHabitaciones || 0 }} hab.</span>
+      </div>
+    </div>
+
+    <div class="premium-card premium-kpi">
+      <div class="premium-kpi-header">
+        <span class="premium-kpi-label">Ingresos Estimados</span>
+        <span class="premium-kpi-icon">payments</span>
+      </div>
+      <p class="premium-kpi-value">S/ {{ (ingresos?.total || 0) | number:'1.2-2' }}</p>
+      <div class="premium-kpi-footer">
+        <span>Adelantos: S/ {{ (ingresos?.totalAdelantos || 0) | number:'1.2-2' }}</span>
+        <span>Saldos: S/ {{ (ingresos?.totalSaldos || 0) | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <div class="premium-card premium-kpi">
+      <div class="premium-kpi-header">
+        <span class="premium-kpi-label">Adelantos</span>
+        <span class="premium-kpi-icon">payments</span>
+      </div>
+      <p class="premium-kpi-value">S/ {{ (ingresos?.totalAdelantos || 0) | number:'1.2-2' }}</p>
+      <div class="premium-kpi-footer">
+        <span>{{ ((ingresos?.totalAdelantos / (ingresos?.total || 1)) * 100 | number:'1.0-0') || 0 }}% del total</span>
+      </div>
+    </div>
+
+    <div class="premium-card premium-kpi">
+      <div class="premium-kpi-header">
+        <span class="premium-kpi-label">Total Habitaciones</span>
+        <span class="premium-kpi-icon">hotel</span>
+      </div>
+      <p class="premium-kpi-value">{{ ocupacion?.totalHabitaciones || 0 }}</p>
+      <div class="premium-kpi-footer">
+        <span>Disp: {{ ocupacion?.disponibles || 0 }}</span>
+        <span>Ocup: {{ ocupacion?.ocupadas || 0 }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-split" style="margin-bottom:16px">
+    <div class="premium-card" style="padding:0;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
+        <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface)">Gesti&oacute;n Operativa</h3>
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface-variant)">Acceso r&aacute;pido</span>
+      </div>
+      <div class="admin-nav-grid" style="padding:16px">
+        @for (nav of navItems; track nav.route) {
+          <a [routerLink]="nav.route" class="admin-nav-item">
+            <span class="material-symbols-outlined">{{ nav.icon }}</span>
+            <span class="text-label-caps">{{ nav.label }}</span>
+          </a>
+        }
+      </div>
+    </div>
+
+    <div class="premium-card" style="padding:0;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);background:var(--clr-surface-container-low)">
+        <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface)">Disponibilidad</h3>
+      </div>
+      <div style="padding:16px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--clr-surface-container-low);border-radius:8px">
+            <span style="font-size:12px;color:var(--clr-on-surface-variant)">Total</span>
+            <span style="font-size:14px;font-weight:700;font-family:'Inter',monospace">{{ ocupacion?.totalHabitaciones || 0 }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:color-mix(in srgb,var(--clr-status-available) 6%,transparent);border-radius:8px">
+            <span style="font-size:12px;color:var(--clr-status-available)">Disponibles</span>
+            <span style="font-size:14px;font-weight:700;font-family:'Inter',monospace;color:var(--clr-status-available)">{{ ocupacion?.disponibles || 0 }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:color-mix(in srgb,var(--clr-status-occupied) 6%,transparent);border-radius:8px">
+            <span style="font-size:12px;color:var(--clr-status-occupied)">Ocupadas</span>
+            <span style="font-size:14px;font-weight:700;font-family:'Inter',monospace;color:var(--clr-status-occupied)">{{ ocupacion?.ocupadas || 0 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="premium-card" style="padding:0;overflow:hidden">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
+      <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface)">Reportes Integrales</h3>
+      <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface-variant)">Actualizado: Hoy</span>
+    </div>
+    <div style="padding:16px">
+      <div class="admin-reports-grid">
+        <a [routerLink]="'/admin/reportes'" class="admin-report-btn">
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span>Facturaci&oacute;n</span>
+        </a>
+        <a [routerLink]="'/admin/reportes'" class="admin-report-btn">
+          <span class="material-symbols-outlined">account_balance_wallet</span>
+          <span>Libro de Impuestos</span>
+        </a>
+        <a [routerLink]="'/admin/reportes'" class="admin-report-btn">
+          <span class="material-symbols-outlined">monitoring</span>
+          <span>Tendencias</span>
+        </a>
+        <a [routerLink]="'/recepcion/incidencias'" class="admin-report-btn">
+          <span class="material-symbols-outlined">inventory_2</span>
+          <span>Suministros</span>
+        </a>
+        <a [routerLink]="'/admin/usuarios'" class="admin-report-btn">
+          <span class="material-symbols-outlined">history</span>
+          <span>Registros</span>
+        </a>
+        <a [routerLink]="'/admin/habitaciones'" class="admin-report-btn">
+          <span class="material-symbols-outlined">engineering</span>
+          <span>Ajustes</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

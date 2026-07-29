@@ -1,0 +1,206 @@
+<p-toast />
+<p-confirmdialog />
+
+<div class="hab-page">
+  <div class="hab-page__header">
+    <div>
+      <h1 class="hab-page__title">Gesti&oacute;n de Habitaciones</h1>
+      <p class="hab-page__subtitle">Supervise y actualice el inventario de habitaciones.</p>
+    </div>
+    @if (isAdmin) {
+      <button class="premium-btn" (click)="showDialog()">
+        <span class="material-symbols-outlined">add</span>
+        Agregar Habitaci&oacute;n
+      </button>
+    }
+  </div>
+
+  <div class="premium-card" style="padding:16px">
+    <div class="hab-filter-grid">
+      <div class="premium-field">
+        <label>Piso</label>
+        <p-select [(ngModel)]="filterPiso" (ngModelChange)="applyFilter()" [options]="filterPisos" optionLabel="label" optionValue="value" placeholder="Todos los pisos" styleClass="w-full" appendTo="body" />
+      </div>
+      <div class="premium-field">
+        <label>Estado</label>
+        <p-select [(ngModel)]="filterEstado" (ngModelChange)="applyFilter()" [options]="filterEstados" optionLabel="label" optionValue="value" placeholder="Todos los estados" styleClass="w-full" appendTo="body" />
+      </div>
+      <div class="premium-field" style="grid-column:span 2">
+        <label>B&uacute;squeda R&aacute;pida</label>
+        <input class="premium-input" type="text" placeholder="Buscar por n&uacute;mero o tipo..."
+          [(ngModel)]="filterSearch" (input)="applyFilter()" />
+      </div>
+    </div>
+  </div>
+
+  <div class="premium-card" style="padding:0;overflow:hidden">
+    <div style="padding:0;overflow-x:auto;max-height:500px;overflow-y:auto">
+    <table style="width:100%;border-collapse:collapse;text-align:left">
+      <thead>
+        <tr style="background:var(--clr-surface-container-high)">
+          <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);white-space:nowrap">N&Uacute;MERO</th>
+          <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);white-space:nowrap">TIPO</th>
+          <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);white-space:nowrap">PISO</th>
+          <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);white-space:nowrap">PRECIO BASE</th>
+          <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);white-space:nowrap">ESTADO</th>
+          <th style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);white-space:nowrap;text-align:right">ACCIONES</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (h of filteredHabitaciones; track h.id) {
+          <tr style="border-bottom:1px solid var(--clr-outline-variant);transition:background 0.15s" (mouseenter)="$any($event.currentTarget).style.background='var(--clr-surface-container-low)'" (mouseleave)="$any($event.currentTarget).style.background=''">
+            <td style="padding:10px 16px;font-size:13px;font-weight:800;color:var(--clr-on-surface)">{{ h.numero }}</td>
+            <td style="padding:10px 16px;font-size:13px;color:var(--clr-on-surface)">{{ h.tipo }}</td>
+            <td style="padding:10px 16px;font-size:13px;color:var(--clr-on-surface)">{{ h.piso }}</td>
+            <td style="padding:10px 16px;font-size:13px;font-weight:600;color:var(--clr-on-surface)">S/ {{ h.precioNoche }}</td>
+            <td style="padding:10px 16px">
+              <span class="badge" [ngClass]="getEstadoClass(h.estado)" style="display:inline-flex;align-items:center;gap:6px">
+                <span style="width:6px;height:6px;border-radius:50%;display:inline-block;background:currentColor"></span>
+                {{ h.estado === 'LIMPIEZA' ? 'SUCIA' : h.estado }}
+              </span>
+            </td>
+            <td style="padding:10px 16px;text-align:right">
+              <div style="display:flex;gap:4px;justify-content:flex-end">
+                @if (isAdmin) {
+                  <button style="width:32px;height:32px;border-radius:6px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--clr-secondary) 8%,transparent);color:var(--clr-secondary);transition:background 0.15s"
+                    (click)="editHabitacion(h)" pTooltip="Editar">
+                    <span class="material-symbols-outlined" style="font-size:18px">edit</span>
+                  </button>
+                }
+                <button style="width:32px;height:32px;border-radius:6px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--clr-surface-tint) 10%,transparent);color:var(--clr-surface-tint);transition:background 0.15s"
+                  (click)="showEstadoDialog(h)" pTooltip="Cambiar Estado">
+                  <span class="material-symbols-outlined" style="font-size:18px">swap_horiz</span>
+                </button>
+                @if (isAdmin) {
+                  <button style="width:32px;height:32px;border-radius:6px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--clr-error) 8%,transparent);color:var(--clr-error);transition:background 0.15s"
+                    (click)="deleteHabitacion(h)" pTooltip="Desactivar">
+                    <span class="material-symbols-outlined" style="font-size:18px">delete</span>
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">No hay habitaciones que coincidan con los filtros.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--clr-surface-container-low);border-top:1px solid var(--clr-outline-variant)">
+      <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-outline)">Mostrando {{ filteredHabitaciones.length }} de {{ habitaciones.length }} habitaci&oacute;n(es)</span>
+    </div>
+  </div>
+</div>
+
+@if (dialogVisible) {
+  <div class="hs-overlay" (click)="closeDialog()"></div>
+  <div class="hs-slide-panel">
+    <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:20px">{{ editing ? 'edit' : 'add' }}</span>
+        </div>
+        <div>
+          <span style="font-weight:700;font-size:16px;color:white">{{ editing ? 'Editar Habitaci&oacute;n' : 'Nueva Habitaci&oacute;n' }}</span>
+          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.5)">Administraci&oacute;n de inventario</p>
+        </div>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="closeDialog()">
+        <span class="material-symbols-outlined" style="color:rgba(255,255,255,0.6)">close</span>
+      </button>
+    </div>
+
+    <div class="hs-slide-panel__body" style="gap:20px;display:flex;flex-direction:column;padding:24px">
+      <form [formGroup]="habForm" style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="premium-field">
+            <label>N&uacute;mero de Habitaci&oacute;n</label>
+            <input class="premium-input" type="text" formControlName="numero" placeholder="Ej: 101" maxlength="10" autocomplete="off" />
+          </div>
+          @if (habForm.get('numero')?.invalid && habForm.get('numero')?.touched) { <small class="field-error">El número es obligatorio (máx. 10 caracteres)</small> }
+        </div>
+        <div class="premium-field">
+          <label>Piso</label>
+          <p-select formControlName="piso" [options]="pisosOpt" optionLabel="label" optionValue="value" placeholder="Seleccionar piso" styleClass="w-full" appendTo="body" />
+          @if (habForm.get('piso')?.invalid && habForm.get('piso')?.touched) { <small class="field-error">Seleccione un piso</small> }
+        </div>
+
+        <div class="premium-field">
+          <label>Tipo de Habitaci&oacute;n</label>
+          <p-select formControlName="tipo" [options]="tipos" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo" styleClass="w-full" appendTo="body" />
+        </div>
+
+        <div class="premium-field">
+          <label>Precio Base por Noche (S/)</label>
+          <p-inputnumber formControlName="precioNoche" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" inputStyleClass="premium-input" styleClass="w-full" />
+          @if (habForm.get('precioNoche')?.invalid && habForm.get('precioNoche')?.touched) { <small class="field-error">El precio debe ser mayor a S/ 0.01</small> }
+        </div>
+
+      </form>
+    </div>
+
+    <div class="hs-slide-panel__footer" style="padding:16px 24px;gap:12px">
+      <button class="premium-btn" style="flex:1;background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);justify-content:center;padding:12px" (click)="closeDialog()">
+        Cancelar
+      </button>
+      <button class="premium-btn" style="flex:1;justify-content:center;padding:12px"
+        [disabled]="habForm.invalid || loading" (click)="save()">
+        @if (loading) {
+          <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span>
+        }
+        <span class="material-symbols-outlined">{{ editing ? 'save' : 'add' }}</span>
+        {{ editing ? 'Guardar Cambios' : 'Crear Habitaci&oacute;n' }}
+      </button>
+    </div>
+  </div>
+}
+
+@if (estadoDialogVisible) {
+  <div class="hs-overlay" (click)="closeEstadoDialog()"></div>
+  <div class="hs-slide-panel">
+    <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:20px">swap_horiz</span>
+        </div>
+        <div>
+          <span style="font-weight:700;font-size:16px;color:white">Cambiar Estado</span>
+          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.5)">Hab. {{ selectedHabitacion?.numero }}</p>
+        </div>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="estadoDialogVisible = false">
+        <span class="material-symbols-outlined" style="color:rgba(255,255,255,0.6)">close</span>
+      </button>
+    </div>
+
+    <div class="hs-slide-panel__body">
+      <p class="text-body-md" style="color:var(--clr-on-surface-variant)">
+        Estado actual:
+        <span class="badge" [ngClass]="getEstadoClass(selectedHabitacion?.estado)">{{ selectedHabitacion?.estado === 'LIMPIEZA' ? 'SUCIA' : selectedHabitacion?.estado }}</span>
+      </p>
+      <div class="hab-status-grid">
+        <button class="hab-status-btn hab-status-btn--available" (click)="cambiarEstado('DISPONIBLE')">
+          <span class="material-symbols-outlined filled-icon">check_circle</span>
+          DISPONIBLE
+        </button>
+        <button class="hab-status-btn hab-status-btn--occupied" (click)="cambiarEstado('OCUPADA')">
+          <span class="material-symbols-outlined">person</span>
+          OCUPADA
+        </button>
+        <button class="hab-status-btn hab-status-btn--dirty" (click)="cambiarEstado('LIMPIEZA')">
+          <span class="material-symbols-outlined">cleaning_services</span>
+          LIMPIEZA
+        </button>
+        <button class="hab-status-btn hab-status-btn--maintenance" (click)="cambiarEstado('MANTENIMIENTO')">
+          <span class="material-symbols-outlined">engineering</span>
+          MANTENIMIENTO
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+

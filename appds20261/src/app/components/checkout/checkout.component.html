@@ -1,0 +1,218 @@
+@if (visible) {
+<div class="hs-overlay hs-overlay--animate" (click)="cerrar()">
+<div class="hs-slide-panel hs-slide-panel--wide hs-slide-panel--animate" [class.hs-slide-panel--shifted]="showConsumoModal" (click)="$event.stopPropagation()">
+  <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
+        <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:22px">logout</span>
+      </div>
+      <div>
+        <h2 style="font-size:18px;font-weight:700;color:white;margin:0">CHECK-OUT</h2>
+        <p style="margin:2px 0 0;font-size:11px;color:rgba(255,255,255,0.6)">Liquidaci&oacute;n de estancia y liberaci&oacute;n de habitaci&oacute;n</p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="hs-topbar__icon-btn" (click)="irAIncidencias()" pTooltip="Ir a Incidencias"><span class="material-symbols-outlined">notifications</span></button>
+      <button class="hs-topbar__icon-btn" (click)="irAConfiguracion()" pTooltip="Configuración"><span class="material-symbols-outlined">settings</span></button>
+      <button class="hs-topbar__icon-btn" (click)="cerrar()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+  </div>
+
+  <p-toast position="top-center" />
+
+  <div class="hs-slide-panel__body hs-slide-panel__body--scroll" style="background:var(--clr-surface-container);padding:24px;gap:20px;display:flex;flex-direction:column">
+
+    <!-- Search -->
+    <div class="premium-card" style="padding:16px 20px">
+      <div class="premium-grid-2" style="align-items:end">
+        <div class="premium-field">
+          <label>BUSCAR HOSPEDAJE ACTIVO</label>
+          <p-autocomplete [(ngModel)]="hospedajeEncontrado" [suggestions]="searchResults"
+            (completeMethod)="buscarHospedaje($event)" (onSelect)="onSelect($event)"
+            optionLabel="displayLabel" [dropdown]="false" [minQueryLength]="2"
+            placeholder="N° habitación, huésped o ID..."
+            inputStyleClass="premium-input" styleClass="suggest-fullwidth" />
+        </div>
+        @if (hospedajeEncontrado) {
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="premium-btn" style="padding:10px 20px" (click)="imprimirFactura()" pTooltip="Imprimir Factura">
+              <span class="material-symbols-outlined">print</span>
+              Factura
+            </button>
+            <button class="premium-btn" style="padding:10px 20px" (click)="abrirModalConsumo()" pTooltip="Registrar Consumo">
+              <span class="material-symbols-outlined">inventory</span>
+              Consumo
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (hospedajeEncontrado) {
+      <!-- Premium Billing Summary -->
+      <div class="premium-grid-2">
+        <!-- Guest & Room Detail Card -->
+        <div class="premium-card" style="padding:0;overflow:hidden">
+          <div style="background:linear-gradient(135deg,var(--clr-primary) 0%,var(--clr-primary-fixed) 100%);padding:20px;color:var(--clr-white)">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+                <span class="material-symbols-outlined" style="font-size:28px;font-variation-settings:'FILL' 1">bed</span>
+              </div>
+              <div>
+                <p style="margin:0;font-size:22px;font-weight:700">{{ hospedajeEncontrado.habitacionNumero }} &middot; {{ hospedajeEncontrado.habitacionTipo }}</p>
+                <p style="margin:4px 0 0;font-size:14px;opacity:0.85">{{ hospedajeEncontrado.clienteNombre }}</p>
+              </div>
+            </div>
+          </div>
+          <div style="padding:16px 20px">
+            <div class="premium-grid-2" style="gap:12px">
+              <div>
+                <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant)">Check-In</p>
+                <p style="margin:2px 0 0;font-size:13px;font-weight:600;color:var(--clr-on-surface)">{{ formatFecha(hospedajeEncontrado.fechaIngreso) }}</p>
+              </div>
+              <div>
+                <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant)">Check-Out</p>
+                <p style="margin:2px 0 0;font-size:13px;font-weight:600;color:var(--clr-on-surface)">{{ formatFecha(hospedajeEncontrado.fechaSalidaProgramada) }}</p>
+              </div>
+            </div>
+            @if (esExtension) {
+              <div style="margin-top:12px;padding:10px 14px;background:color-mix(in srgb,var(--clr-warning) 15%,transparent);border-radius:10px;border:1px solid color-mix(in srgb,var(--clr-warning) 30%,transparent)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span class="material-symbols-outlined" style="color:var(--clr-warning);font-size:18px">warning</span>
+                  <div>
+                    <p style="margin:0;font-size:11px;font-weight:700;color:var(--clr-warning)">OVERSTAY &middot; {{ nochesExtra }}h de extensi&oacute;n</p>
+                    <p style="margin:2px 0 0;font-size:12px;color:var(--clr-on-surface)">Salida programada era {{ formatFechaDesdeStr(hospedajeEncontrado.fechaSalidaProgramada) }}</p>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Financial Summary Card -->
+        <div class="premium-card" style="padding:0;overflow:hidden">
+          <div style="background:linear-gradient(135deg,var(--aura-gold-dark) 0%,#b8860b 100%);padding:16px 20px">
+            <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(0,0,0,0.5)">Resumen Financiero</p>
+          </div>
+          <div style="padding:16px 20px">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--clr-outline-variant)">
+                <span style="font-size:13px;color:var(--clr-on-surface-variant)">Costo de Hospedaje</span>
+                <span style="font-size:13px;font-weight:600;color:var(--clr-on-surface)">S/ {{ ((hospedajeEncontrado.totalPagado || 0) + (hospedajeEncontrado.deudaPendiente || 0)).toFixed(2) }}</span>
+              </div>
+              @if (esExtension && cargoExtension > 0) {
+                <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--clr-outline-variant)">
+                  <span style="font-size:13px;font-weight:700;color:var(--aura-gold-dark)">Cargo por Extensi&oacute;n</span>
+                  <span style="font-size:13px;font-weight:700;color:var(--aura-gold-dark)">+ S/ {{ cargoExtension.toFixed(2) }}</span>
+                </div>
+              }
+              @if (consumos.length > 0) {
+                <div style="padding:8px 0;border-bottom:1px solid var(--clr-outline-variant)">
+                  <p style="margin:0 0 6px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-secondary)">Consumos</p>
+                  <div style="max-height:100px;overflow-y:auto">
+                    @for (c of consumos; track c.id) {
+                      <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px">
+                        <span style="color:var(--clr-on-surface-variant)">{{ c.descripcion || c.tipoConsumo }}</span>
+                        <span style="font-weight:600;color:var(--clr-on-surface)">S/ {{ (c.subtotal || 0).toFixed(2) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--clr-outline-variant)">
+                <span style="font-size:13px;color:var(--clr-status-occupied)">Adelanto Pagado</span>
+                <span style="font-size:13px;font-weight:600;color:var(--clr-status-available)">- S/ {{ (hospedajeEncontrado.totalPagado || 0).toFixed(2) }}</span>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 0;margin-top:4px">
+              <span style="font-size:18px;font-weight:700;color:var(--clr-on-surface)">TOTAL A PAGAR</span>
+              <span style="font-size:24px;font-weight:700;color:var(--aura-gold-dark)">S/ {{ totalDeuda.toFixed(2) }}</span>
+            </div>
+            <div style="margin-top:12px;padding:8px 12px;background:var(--clr-surface-container-low);border-radius:8px;text-align:center;font-size:10px;font-weight:600;text-transform:uppercase;color:var(--clr-on-surface-variant);letter-spacing:0.04em">
+              El saldo pendiente debe liquidarse para la entrega de llaves
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaction & Payment -->
+      <div class="premium-card" style="padding:0;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--clr-outline-variant);display:flex;justify-content:space-between;align-items:center">
+          <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-secondary)">Transacci&oacute;n Final</p>
+          <span style="font-size:12px;color:var(--clr-on-surface-variant);font-weight:600">#CO-{{ hospedajeEncontrado.id }}</span>
+        </div>
+        <div class="premium-grid-2" style="padding:20px">
+          <!-- Left: Date + Quick Actions -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div>
+              <p style="margin:0 0 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Salida Real</p>
+              <div class="premium-grid-2" style="gap:8px">
+                <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--clr-surface-container-low);border-radius:10px;border:1px solid var(--clr-outline-variant)">
+                  <span class="material-symbols-outlined" style="font-size:18px;color:var(--clr-on-surface-variant)">event</span>
+                  <span style="font-weight:600;color:var(--clr-on-surface)">{{ formatFechaCorta(fechaActual) }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--clr-surface-container-low);border-radius:10px;border:1px solid var(--clr-outline-variant)">
+                  <span class="material-symbols-outlined" style="font-size:18px;color:var(--clr-on-surface-variant)">schedule</span>
+                  <span style="font-weight:600;color:var(--clr-on-surface)">{{ formatHora(fechaActual) }}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <p style="margin:0 0 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Estado de Habitaci&oacute;n</p>
+              <div class="premium-grid-2" style="gap:8px">
+                <button class="co-quick-btn" (click)="reportarSucio()" pTooltip="Reportar como Sucio">
+                  <span class="material-symbols-outlined">cleaning_services</span>
+                  <span>MARCAR SUCIO</span>
+                </button>
+                <button class="co-quick-btn" (click)="liberarHabitacion()" pTooltip="Marcar como Disponible">
+                  <span class="material-symbols-outlined">check_circle</span>
+                  <span>LIBERAR</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Right: Payment -->
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Pago de Saldo Pendiente</p>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <div style="position:relative;flex:1">
+                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--clr-on-surface-variant);z-index:1;pointer-events:none">S/</span>
+                <p-inputnumber [(ngModel)]="montoPago" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" inputStyleClass="premium-input" [inputStyle]="{'padding-left':'36px','font-size':'20px','font-weight':'700'}" styleClass="w-full" />
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <div style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px solid var(--clr-outline-variant);border-radius:10px;cursor:pointer;transition:all 0.2s" [style.border-color]="metodoPago==='EFECTIVO'?'var(--aura-gold)':'var(--clr-outline-variant)'">
+                <p-radioButton [(ngModel)]="metodoPago" name="co-metodo" value="EFECTIVO" inputId="co-efectivo" />
+                <label for="co-efectivo" style="cursor:pointer;font-size:12px;font-weight:700;color:var(--clr-on-surface)">EFECTIVO</label>
+              </div>
+              <div style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px solid var(--clr-outline-variant);border-radius:10px;cursor:pointer;transition:all 0.2s" [style.border-color]="metodoPago==='YAPE'?'var(--aura-gold)':'var(--clr-outline-variant)'">
+                <p-radioButton [(ngModel)]="metodoPago" name="co-metodo" value="YAPE" inputId="co-yape" />
+                <label for="co-yape" style="cursor:pointer;font-size:12px;font-weight:700;color:var(--clr-on-surface)">YAPE</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+  @if (hospedajeEncontrado) {
+    <div class="hs-slide-panel__footer" style="justify-content:flex-end">
+      <button class="premium-btn" style="background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);padding:10px 24px" (click)="cerrar()" [disabled]="loading">Cancelar</button>
+      <button class="premium-btn" style="padding:10px 32px" [disabled]="loading" (click)="finalizarCheckOut()">
+        @if (loading) {
+          <span class="material-symbols-outlined" style="animation:co-spin 1s linear infinite">sync</span>
+        }
+        <span class="material-symbols-outlined">logout</span>
+        Finalizar Estancia
+      </button>
+    </div>
+  }
+</div>
+</div>
+}
+<app-consumo-modal
+  [visible]="showConsumoModal"
+  [hospedajeId]="hospedajeEncontrado?.id"
+  [editConsumo]="null"
+  (close)="showConsumoModal = false"
+  (saved)="onConsumoSaved()" />

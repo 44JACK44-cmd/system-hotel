@@ -1,0 +1,116 @@
+.perfil-loading {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 80px 20px; gap: 12px; color: var(--clr-on-surface-variant);
+}
+.perfil-loading .material-symbols-outlined { font-size: 48px; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.perfil-page { max-width: 760px; margin: 0 auto; padding: 36px 24px; }
+
+.perfil-header {
+  display: flex; align-items: center; gap: 24px; margin-bottom: 32px;
+}
+
+.perfil-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.perfil-avatar {
+  width: 96px; height: 96px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 800; color: var(--aura-dark); position: relative; overflow: hidden;
+  border: 3px solid var(--aura-gold); background: var(--aura-gold-light);
+  flex-shrink: 0; cursor: pointer;
+}
+.perfil-avatar-img { width: 100%; height: 100%; object-fit: cover; }
+.perfil-avatar-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center; opacity: 0;
+  transition: opacity 0.2s; cursor: pointer;
+}
+.perfil-avatar-overlay .material-symbols-outlined { color: white; font-size: 28px; }
+.perfil-avatar:hover .perfil-avatar-overlay { opacity: 1; }
+.perfil-avatar-uploading { font-size: 12px; color: var(--aura-gold); font-weight: 600; }
+.perfil-avatar-hint { font-size: 11px; color: var(--clr-on-surface-variant); }
+
+.perfil-header-info { display: flex; flex-direction: column; gap: 4px; }
+.perfil-name { font-size: 24px; font-weight: 800; margin: 0; color: var(--clr-on-surface); }
+.perfil-role-badge {
+  display: inline-block; font-size: 11px; font-weight: 700; color: var(--aura-dark);
+  padding: 3px 12px; border-radius: 12px; align-self: flex-start; letter-spacing: 0.03em;
+  background: var(--aura-gold);
+}
+.perfil-username { font-size: 14px; color: var(--clr-on-surface-variant); margin: 2px 0 0; }
+
+.perfil-body { display: flex; flex-direction: column; gap: 16px; }
+
+.perfil-card {
+  background: var(--clr-surface); border-radius: var(--radius-xl);
+  border: 1px solid var(--clr-outline-variant); overflow: hidden;
+}
+.perfil-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--clr-outline-variant);
+}
+.perfil-card-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--clr-on-surface); }
+.perfil-card-body { padding: 20px; }
+
+.perfil-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.perfil-info-item { display: flex; flex-direction: column; gap: 2px; }
+.perfil-info-label { font-size: 11px; font-weight: 600; color: var(--clr-on-surface-variant); text-transform: uppercase; letter-spacing: 0.04em; }
+.perfil-info-value { font-size: 14px; color: var(--clr-on-surface); font-weight: 500; }
+
+.perfil-form { display: flex; flex-direction: column; gap: 14px; max-width: 400px; }
+.perfil-field { display: flex; flex-direction: column; gap: 4px; }
+.perfil-field label { font-size: 11px; font-weight: 600; color: var(--clr-on-surface-variant); text-transform: uppercase; letter-spacing: 0.04em; }
+.perfil-input {
+  padding: 10px 14px; border-radius: var(--radius-md);
+  border: 1px solid var(--clr-outline); background: var(--clr-surface);
+  color: var(--clr-on-surface); font-size: 14px; outline: none; transition: border-color 0.15s;
+}
+.perfil-input:focus { border-color: var(--aura-gold); box-shadow: 0 0 0 2px rgba(200,164,92,0.2); }
+
+.perfil-form-actions { display: flex; gap: 8px; margin-top: 4px; }
+
+.perfil-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.12s; border: none;
+}
+.perfil-btn-primary { background: var(--aura-gold); color: var(--aura-dark); }
+.perfil-btn-primary:hover { filter: brightness(1.1); }
+.perfil-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.perfil-btn-outline {
+  background: transparent; border: 1px solid rgba(200,164,92,0.3);
+  color: var(--aura-gold);
+}
+.perfil-btn-outline:hover { background: rgba(200,164,92,0.08); }
+.perfil-btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.perfil-modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; display: flex;
+  align-items: center; justify-content: center;
+}
+.perfil-modal {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: var(--clr-surface); border-radius: var(--radius-xl);
+  width: 400px; max-width: calc(100vw - 24px); max-height: 100dvh; z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.perfil-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--clr-outline-variant);
+}
+.perfil-modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; }
+.perfil-modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--clr-on-surface-variant); padding: 0; line-height: 1; }
+.perfil-modal-body { padding: 14px 20px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.perfil-modal-footer {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 10px 20px; border-top: 1px solid var(--clr-outline-variant);
+}
+
+@media (max-width: 600px) {
+  .perfil-page { padding: 20px 16px; }
+  .perfil-header { flex-direction: column; text-align: center; gap: 12px; }
+  .perfil-header-info { align-items: center; }
+  .perfil-role-badge { align-self: center; }
+  .perfil-info-grid { grid-template-columns: 1fr; }
+  .perfil-form { max-width: 100%; }
+}

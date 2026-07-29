@@ -1,0 +1,123 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="rcfg-page">
+  <header class="rcfg-header">
+    <div>
+      <h1 class="rcfg-title">Configuración</h1>
+      <p class="rcfg-subtitle">Preferencias personales y datos del hotel.</p>
+    </div>
+  </header>
+
+  @if (loading) {
+    <div class="rcfg-loading">
+      <span class="material-symbols-outlined">sync</span>
+      <p>Cargando configuración...</p>
+    </div>
+  } @else {
+    <div class="rcfg-grid">
+      <nav class="rcfg-tabs">
+        <button class="rcfg-tab" [class.rcfg-tab--active]="activeTab === 'mis-preferencias'" (click)="switchTab('mis-preferencias')">
+          <span class="material-symbols-outlined">settings</span>
+          <span>Mis Preferencias</span>
+        </button>
+        <button class="rcfg-tab" [class.rcfg-tab--active]="activeTab === 'datos-hotel'" (click)="switchTab('datos-hotel')">
+          <span class="material-symbols-outlined">hotel</span>
+          <span>Datos del Hotel</span>
+        </button>
+      </nav>
+
+      <section class="rcfg-content">
+        @if (activeTab === 'mis-preferencias') {
+          <div class="rcfg-card">
+            <h3 class="rcfg-card-title">Apariencia</h3>
+            <div class="rcfg-pref-row">
+              <div class="rcfg-pref-info">
+                <span class="rcfg-pref-label">Modo Oscuro</span>
+                <span class="rcfg-pref-desc">Cambiar entre tema claro y oscuro</span>
+              </div>
+              <button class="rcfg-theme-btn" (click)="toggleTheme()">
+                <span class="material-symbols-outlined">{{ isDark() ? 'light_mode' : 'dark_mode' }}</span>
+                <span>{{ isDark() ? 'Modo Claro' : 'Modo Oscuro' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="rcfg-card">
+            <h3 class="rcfg-card-title">Información de Cuenta</h3>
+            <div class="rcfg-info-grid">
+              <div class="rcfg-info-item">
+                <span class="rcfg-info-label">Usuario</span>
+                <span class="rcfg-info-value">{{ authService.getUsername() }}</span>
+              </div>
+              <div class="rcfg-info-item">
+                <span class="rcfg-info-label">Rol</span>
+                <span class="rcfg-info-value">{{ authService.isAdmin() ? 'Administrador' : 'Recepcionista' }}</span>
+              </div>
+              <div class="rcfg-info-item">
+                <span class="rcfg-info-label">Email</span>
+                <span class="rcfg-info-value">{{ authService.getEmail() || '—' }}</span>
+              </div>
+              <div class="rcfg-info-item">
+                <span class="rcfg-info-label">Teléfono</span>
+                <span class="rcfg-info-value">{{ authService.getTelefono() || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab === 'datos-hotel') {
+          <div class="rcfg-card">
+            <div class="rcfg-card-header">
+              <h3 class="rcfg-card-title">Información del Hotel</h3>
+              <button class="rcfg-btn rcfg-btn-primary" (click)="guardarHotel()" [disabled]="saving">
+                @if (saving) { Guardando... } @else { Guardar Cambios }
+              </button>
+            </div>
+            <div class="rcfg-card-body">
+              <div class="rcfg-logo-section">
+                <div class="rcfg-logo-box" (click)="logoInput.click()" style="cursor:pointer;overflow:hidden">
+                  @if (logosrc) {
+                    <img [src]="logosrc" alt="Logo" style="width:100%;height:100%;object-fit:contain" />
+                  }
+                  <div class="rcfg-logo-overlay">
+                    <span class="material-symbols-outlined" style="color:white">upload</span>
+                  </div>
+                  <input #logoInput type="file" accept="image/*" (change)="onLogoSelected($event)" style="display:none" />
+                </div>
+                <div>
+                  <h4 style="font-size:14px;font-weight:700;margin:0 0 2px">Logo del Hotel</h4>
+                  <p style="font-size:12px;color:var(--clr-on-surface-variant);margin:0">PNG o SVG. Máximo 2MB.</p>
+                  <button class="rcfg-link-btn" type="button" (click)="logoInput.click()">
+                    @if (uploadingLogo) { Subiendo... } @else { REEMPLAZAR IMAGEN }
+                  </button>
+                </div>
+              </div>
+              <div class="rcfg-field-grid">
+                <div class="rcfg-field">
+                  <label>NOMBRE COMERCIAL</label>
+                  <input class="rcfg-input" type="text" [(ngModel)]="params['hotel.nombre']" maxlength="100" required />
+                </div>
+                <div class="rcfg-field">
+                  <label>RUC / ID FISCAL</label>
+                  <input class="rcfg-input" type="text" [(ngModel)]="params['hotel.ruc']" maxlength="20" pattern="[0-9]{11}" inputmode="numeric" />
+                </div>
+                <div class="rcfg-field rcfg-field--full">
+                  <label>DIRECCIÓN</label>
+                  <input class="rcfg-input" type="text" [(ngModel)]="params['hotel.direccion']" maxlength="200" />
+                </div>
+                <div class="rcfg-field">
+                  <label>TELÉFONO</label>
+                  <input class="rcfg-input" type="tel" [(ngModel)]="params['hotel.telefono']" maxlength="20" inputmode="tel" />
+                </div>
+                <div class="rcfg-field">
+                  <label>EMAIL</label>
+                  <input class="rcfg-input" type="email" [(ngModel)]="params['hotel.email']" maxlength="100" inputmode="email" />
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </section>
+    </div>
+  }
+</div>

@@ -1,0 +1,93 @@
+<div class="act-page">
+  <header class="act-header">
+    <div>
+      <h1 class="act-title">Mi Actividad</h1>
+      <p class="act-subtitle">Registro de acciones realizadas en el sistema.</p>
+    </div>
+    <div class="act-btn-row">
+      <button class="act-btn act-btn-outline" (click)="exportarCSV()" [disabled]="actividades.length === 0">
+        <span class="material-symbols-outlined">download</span> Exportar CSV
+      </button>
+    </div>
+  </header>
+
+  <div class="act-filters">
+    <div class="act-filter-group">
+      <label>MÓDULO</label>
+      <select class="act-select" [(ngModel)]="filtroModulo" (change)="filtrar()">
+        @for (m of modulos; track m) {
+          <option [value]="m">{{ m || 'Todos' }}</option>
+        }
+      </select>
+    </div>
+    <div class="act-filter-group">
+      <label>DESDE</label>
+      <input class="act-input" type="date" [(ngModel)]="filtroFechaDesde" (change)="filtrar()" />
+    </div>
+    <div class="act-filter-group">
+      <label>HASTA</label>
+      <input class="act-input" type="date" [(ngModel)]="filtroFechaHasta" (change)="filtrar()" />
+    </div>
+    <button class="act-btn act-btn-ghost" (click)="limpiarFiltros()">
+      <span class="material-symbols-outlined">clear</span> Limpiar
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="act-loading">
+      <span class="material-symbols-outlined">sync</span>
+      <p>Cargando actividad...</p>
+    </div>
+  } @else if (actividades.length === 0) {
+    <div class="act-empty">
+      <span class="material-symbols-outlined">history</span>
+      <p>No se encontraron registros de actividad</p>
+    </div>
+  } @else {
+    <div class="act-table-wrap" style="max-height:600px;overflow-y:auto">
+      <table class="act-table">
+        <thead>
+          <tr>
+            <th>Fecha/Hora</th>
+            <th>Acción</th>
+            <th>Módulo</th>
+            <th>Detalle</th>
+            <th>IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of actividades; track a.id) {
+            <tr>
+              <td class="act-cell-date">{{ a.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td><span class="act-badge">{{ a.accion }}</span></td>
+              <td>{{ a.modulo || '—' }}</td>
+              <td class="act-cell-detalle">{{ a.detalle || '—' }}</td>
+              <td class="act-cell-ip">{{ a.ip || '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="act-paginator">
+      <span class="act-paginator-info">{{ totalElements }} registro(s)</span>
+      <div class="act-paginator-controls">
+        <span class="act-paginator-label">Filas:</span>
+        <select class="act-paginator-size" (change)="cambiarSize($any($event.target).value)">
+          @for (opt of pageSizeOptions; track opt) {
+            <option [value]="opt" [selected]="size === opt">{{ opt }}</option>
+          }
+        </select>
+        <button class="act-page-btn" [disabled]="page === 0" (click)="cambiarPagina(page - 1)">
+          <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        @for (p of paginas; track p) {
+          <button class="act-page-btn" [class.act-page-btn--active]="p === page" (click)="cambiarPagina(p)">{{ p + 1 }}</button>
+        }
+        <button class="act-page-btn" [disabled]="page >= totalPages - 1" (click)="cambiarPagina(page + 1)">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  }
+</div>

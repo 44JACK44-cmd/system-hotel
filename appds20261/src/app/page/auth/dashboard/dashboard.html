@@ -1,0 +1,237 @@
+<div class="dash-page">
+
+  <!-- Quick Action Bar -->
+  <div class="dash-actions-bar">
+    <button class="dash-action-btn" (click)="showNuevaReserva = true" pTooltip="Nueva Reserva" tooltipPosition="bottom">
+      <span class="material-symbols-outlined">calendar_month</span>
+      <span>Nueva Reserva</span>
+    </button>
+    <button class="dash-action-btn dash-action-btn--primary" (click)="showCheckIn = true" pTooltip="Check-In Rápido" tooltipPosition="bottom">
+      <span class="material-symbols-outlined">key</span>
+      <span>Check-In</span>
+    </button>
+    <button class="dash-action-btn dash-action-btn--danger" (click)="showCheckOut = true; selectedCheckOutId = null" pTooltip="Check-out" tooltipPosition="bottom">
+      <span class="material-symbols-outlined">logout</span>
+      <span>Check-Out</span>
+    </button>
+    <button class="dash-action-btn" (click)="showPagos = true" pTooltip="Pagos" tooltipPosition="bottom">
+      <span class="material-symbols-outlined">payments</span>
+      <span>Caja / Pagos</span>
+    </button>
+    <button class="dash-action-btn" (click)="irALimpieza()" pTooltip="Limpieza" tooltipPosition="bottom">
+      <span class="material-symbols-outlined">cleaning_services</span>
+      <span>Limpieza</span>
+    </button>
+  </div>
+
+  <!-- KPIs Command Center -->
+  <div class="dash-kpi-grid">
+    <div class="premium-card" style="padding:16px 18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Total Hab.</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--aura-gold);opacity:0.7">bed</span>
+      </div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--clr-on-surface)">{{ habitacionesCount.total }}</div>
+    </div>
+    <div class="premium-card" style="padding:16px 18px;border-left:3px solid var(--clr-status-available)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Disponibles</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--clr-status-available);opacity:0.7">check_circle</span>
+      </div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--clr-status-available)">{{ habitacionesCount.disponibles }}</div>
+    </div>
+    <div class="premium-card" style="padding:16px 18px;border-left:3px solid var(--clr-status-occupied)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Ocupadas</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--clr-status-occupied);opacity:0.7">person</span>
+      </div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--clr-status-occupied)">{{ habitacionesCount.ocupadas }}</div>
+    </div>
+    <div class="premium-card" style="padding:16px 18px;border-left:3px solid var(--clr-warning)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Limpieza</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--clr-warning);opacity:0.7">cleaning_services</span>
+      </div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--clr-warning)">{{ habitacionesCount.limpieza }}</div>
+    </div>
+    <div class="premium-card" style="padding:16px 18px;border-left:3px solid var(--clr-status-maintenance)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Mantenimiento</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--clr-status-maintenance);opacity:0.7">engineering</span>
+      </div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--clr-status-maintenance)">{{ habitacionesCount.mantenimiento }}</div>
+    </div>
+    <div class="premium-card" style="padding:16px 18px;background:linear-gradient(135deg,var(--aura-gold-dark) 0%,#b8860b 100%);border-color:transparent">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(0,0,0,0.5)">Caja</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:rgba(0,0,0,0.5);opacity:0.7">{{ cajaAbierta ? 'payments' : 'lock' }}</span>
+      </div>
+      <div style="font-size:18px;font-weight:800;letter-spacing:-0.02em;color:rgba(0,0,0,0.85)">{{ cajaAbierta ? 'ABIERTA' : 'CERRADA' }}</div>
+      <div style="font-size:11px;color:rgba(0,0,0,0.5);font-weight:600;margin-top:4px">S/ {{ ingresosHoy | number:'1.2-2' }}</div>
+    </div>
+    <div class="premium-card" style="padding:14px 16px;border-left:3px solid var(--clr-error)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Deudas</span>
+        <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:20px">account_balance</span>
+      </div>
+      <p style="margin:0;font-size:22px;font-weight:800;color:var(--clr-error)">{{ deudasPendientesCount }}</p>
+      <p style="margin:2px 0 0;font-size:11px;color:var(--clr-on-surface-variant)">{{ deudasMontoTotal | number:'1.2-2' }} S/ pendientes</p>
+    </div>
+  </div>
+
+  <!-- Room Map -->
+  <section class="premium-card dash-room-map" style="padding:0;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--clr-outline-variant);background:var(--clr-surface-container-low)">
+      <h2 style="margin:0;font-size:15px;font-weight:700;color:var(--clr-on-surface);display:flex;align-items:center;gap:8px">
+        <span class="material-symbols-outlined" style="color:var(--aura-gold)">map</span>
+        MAPA DE HABITACIONES
+      </h2>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--clr-on-surface-variant)">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--clr-status-available);flex-shrink:0"></span>Disponible
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--clr-on-surface-variant)">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--clr-status-occupied);flex-shrink:0"></span>Ocupada
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--clr-on-surface-variant)">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--clr-warning);flex-shrink:0"></span>Limpieza
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--clr-on-surface-variant)">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--clr-status-maintenance);flex-shrink:0"></span>Mantenimiento
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px 20px">
+      <ng-container *ngIf="pisos.length > 0; else emptyPisos">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div *ngFor="let piso of pisos; trackBy: trackByPiso" style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:44px;min-width:44px;background:linear-gradient(180deg,var(--aura-dark),var(--aura-dark-surface));color:var(--aura-gold);border-radius:8px;display:flex;align-items:center;justify-content:center;min-height:76px;font-size:9px;font-weight:800;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);letter-spacing:0.06em;text-transform:uppercase;border:1px solid rgba(201,164,92,0.1)">
+              <span>PISO {{ piso.numero }}</span>
+            </div>
+            <div class="floor-room-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;flex:1">
+              <div *ngFor="let hab of piso.habitaciones; trackBy: trackByHab"
+                   style="background:var(--clr-surface-container-lowest);border:1px solid var(--clr-outline-variant);border-radius:12px;overflow:hidden;transition:all 0.2s ease;cursor:default"
+                   [style.border-color]="hab.estado === 'DISPONIBLE' ? 'var(--clr-status-available)' : hab.estado === 'OCUPADA' ? 'var(--clr-status-occupied)' : hab.estado === 'LIMPIEZA' ? 'var(--clr-warning)' : 'var(--clr-status-maintenance)'">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px"
+                     [style.background]="hab.estado === 'DISPONIBLE' ? 'var(--clr-status-available)' : hab.estado === 'OCUPADA' ? 'var(--clr-status-occupied)' : hab.estado === 'LIMPIEZA' ? 'var(--clr-warning)' : 'var(--clr-status-maintenance)'">
+                  <span style="font-weight:800;font-size:14px;color:white">{{ hab.numero }}</span>
+                  <span class="material-symbols-outlined" style="font-size:16px;color:white">
+                    {{ hab.estado === 'DISPONIBLE' ? 'check_circle' : hab.estado === 'OCUPADA' ? 'person' : hab.estado === 'LIMPIEZA' ? 'cleaning_services' : 'engineering' }}
+                  </span>
+                </div>
+                <div style="padding:8px 10px">
+                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant);opacity:0.7;margin-bottom:2px">{{ hab.tipo }}</div>
+                  <div style="font-size:12px;font-weight:600" [style.color]="getRoomStatusColor(hab.estado)">
+                    {{ getHuespedNombre(hab) || hab.estado }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #emptyPisos>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px;color:var(--clr-on-surface-variant);opacity:0.75;font-size:12px">
+          <span class="material-symbols-outlined" style="font-size:32px;opacity:0.4">bed</span>
+          <span>Cargando habitaciones...</span>
+        </div>
+      </ng-template>
+    </div>
+  </section>
+
+  <!-- Bottom Grid: Alerts + Today's Data -->
+  <div class="dash-bottom-grid" style="gap:18px">
+    <div class="premium-card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
+        <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--clr-on-surface);display:flex;align-items:center;gap:6px">
+          <span class="material-symbols-outlined" style="color:var(--clr-secondary);font-size:18px">event_available</span>
+          RESERVAS DEL D&Iacute;A
+        </h3>
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:20px;background:var(--clr-secondary-fixed-dim);color:var(--clr-on-secondary-fixed);font-size:11px;font-weight:700">{{ reservasDelDia.length }}</span>
+      </div>
+      <div style="padding:0;max-height:400px;overflow-x:auto;overflow-y:auto">
+        <ng-container *ngIf="reservasDelDia.length > 0; else noReservas">
+          <p-table [value]="reservasDelDia" styleClass="premium-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Cliente</th>
+                <th>Hab.</th>
+                <th>Estado</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-r>
+              <tr>
+                <td style="font-size:13px;font-weight:600;color:var(--clr-on-surface)">{{ r.clienteNombre }}</td>
+                <td style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--clr-on-surface)">{{ r.habitacionNumero || '-' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getReservaStatusClass(r.estado)">{{ r.estado }}</span>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </ng-container>
+        <ng-template #noReservas>
+          <div style="display:flex;align-items:center;gap:8px;padding:16px;color:var(--clr-on-surface-variant);font-size:13px;opacity:0.7">
+            <span class="material-symbols-outlined">check_circle</span>
+            No hay reservas para hoy
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="premium-card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
+        <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--clr-on-surface);display:flex;align-items:center;gap:6px">
+          <span class="material-symbols-outlined" style="color:var(--clr-secondary);font-size:18px">hotel</span>
+          HOSPEDAJES ACTIVOS
+        </h3>
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:20px;background:color-mix(in srgb,var(--clr-status-occupied) 15%,transparent);color:var(--clr-status-occupied);font-size:11px;font-weight:700">{{ hospedajesActivos.length }}</span>
+      </div>
+      <div style="padding:0;max-height:400px;overflow-x:auto;overflow-y:auto">
+        <ng-container *ngIf="hospedajesActivos.length > 0; else noHospedajes">
+          <p-table [value]="hospedajesActivos" styleClass="premium-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Nombre</th>
+                <th>Hab.</th>
+                <th>Checkout</th>
+                <th>Acci&oacute;n</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-h>
+              <tr>
+                <td style="font-size:13px;font-weight:600;color:var(--clr-on-surface)">{{ h.clienteNombre }}</td>
+                <td style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--clr-on-surface)">{{ h.habitacionNumero }}</td>
+                <td style="font-size:12px;font-variant-numeric:tabular-nums">{{ h.fechaSalidaProgramada | date:'dd/MM HH:mm' }}</td>
+                <td>
+                  <button style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));color:var(--aura-dark);font-family:'Inter',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;cursor:pointer;transition:all 0.2s ease" (click)="showCheckOut = true; selectedCheckOutId = h.id">
+                    Check-Out
+                  </button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </ng-container>
+        <ng-template #noHospedajes>
+          <div style="display:flex;align-items:center;gap:8px;padding:16px;color:var(--clr-on-surface-variant);font-size:13px;opacity:0.7">
+            <span class="material-symbols-outlined">inbox</span>
+            No hay hu&eacute;spedes activos
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-nueva-reserva *ngIf="showNuevaReserva"
+  [visible]="showNuevaReserva"
+  (close)="showNuevaReserva = false; cargarDatos()"></app-nueva-reserva>
+<app-checkin *ngIf="showCheckIn"
+  [visible]="showCheckIn"
+  (close)="showCheckIn = false; cargarDatos()"></app-checkin>
+<app-checkout *ngIf="showCheckOut"
+  [visible]="showCheckOut" [hospedajeId]="selectedCheckOutId"
+  (close)="showCheckOut = false; selectedCheckOutId = null; cargarDatos()"></app-checkout>
+<app-pagos-modal *ngIf="showPagos"
+  [visible]="showPagos"
+  (close)="showPagos = false; cargarDatos()"></app-pagos-modal>

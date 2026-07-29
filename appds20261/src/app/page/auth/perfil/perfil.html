@@ -1,0 +1,144 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="perfil-page">
+  @if (loading) {
+    <div class="perfil-loading">
+      <span class="material-symbols-outlined">sync</span>
+      <p>Cargando perfil...</p>
+    </div>
+  } @else {
+    <div class="perfil-header">
+      <div class="perfil-avatar-wrap">
+        <div class="perfil-avatar" [style.background]="fotoPerfilSrc ? 'transparent' : avatarColor">
+          @if (fotoPerfilSrc) {
+            <img [src]="fotoPerfilSrc" alt="Foto de perfil" class="perfil-avatar-img" />
+          } @else {
+            <span>{{ iniciales }}</span>
+          }
+          <div class="perfil-avatar-overlay" (click)="avatarInput.click()">
+            <span class="material-symbols-outlined">photo_camera</span>
+          </div>
+        </div>
+        <input #avatarInput type="file" accept="image/*" (change)="onAvatarSelected($event)" style="display:none" />
+        @if (uploadingAvatar) {
+          <span class="perfil-avatar-uploading">Subiendo...</span>
+        }
+        <span class="perfil-avatar-hint">Haz clic para cambiar foto</span>
+      </div>
+      <div class="perfil-header-info">
+        <h1 class="perfil-name">{{ usuario.nombreCompleto }}</h1>
+        <span class="perfil-role-badge" [style.background]="avatarColor">{{ rolLabel }}</span>
+        <p class="perfil-username">@{{ usuario.username }}</p>
+      </div>
+    </div>
+
+    <div class="perfil-body">
+      <div class="perfil-card">
+        <div class="perfil-card-header">
+          <h3>Información Personal</h3>
+          @if (!editing) {
+            <button class="perfil-btn perfil-btn-outline" (click)="iniciarEdicion()">
+              <span class="material-symbols-outlined">edit</span> Editar
+            </button>
+          }
+        </div>
+        <div class="perfil-card-body">
+          @if (editing) {
+            <div class="perfil-form">
+              <div class="perfil-field">
+                <label>NOMBRE COMPLETO</label>
+                <input class="perfil-input" type="text" [(ngModel)]="editData.nombreCompleto" maxlength="150" minlength="2" autocomplete="name" />
+              </div>
+              <div class="perfil-field">
+                <label>EMAIL</label>
+                <input class="perfil-input" type="email" [(ngModel)]="editData.email" maxlength="100" inputmode="email" autocomplete="email" />
+              </div>
+              <div class="perfil-field">
+                <label>TELÉFONO</label>
+                <input class="perfil-input" type="tel" [(ngModel)]="editData.telefono" maxlength="20" inputmode="tel" autocomplete="tel" />
+              </div>
+              <div class="perfil-form-actions">
+                <button class="perfil-btn perfil-btn-outline" (click)="cancelarEdicion()" [disabled]="saving">Cancelar</button>
+                <button class="perfil-btn perfil-btn-primary" (click)="guardarPerfil()" [disabled]="saving">
+                  @if (saving) { Guardando... } @else { Guardar Cambios }
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="perfil-info-grid">
+              <div class="perfil-info-item">
+                <span class="perfil-info-label">Nombre Completo</span>
+                <span class="perfil-info-value">{{ usuario.nombreCompleto }}</span>
+              </div>
+              <div class="perfil-info-item">
+                <span class="perfil-info-label">Email</span>
+                <span class="perfil-info-value">{{ usuario.email || '—' }}</span>
+              </div>
+              <div class="perfil-info-item">
+                <span class="perfil-info-label">Teléfono</span>
+                <span class="perfil-info-value">{{ usuario.telefono || '—' }}</span>
+              </div>
+              <div class="perfil-info-item">
+                <span class="perfil-info-label">Usuario</span>
+                <span class="perfil-info-value">{{ usuario.username }}</span>
+              </div>
+              <div class="perfil-info-item">
+                <span class="perfil-info-label">Rol</span>
+                <span class="perfil-info-value">{{ rolLabel }}</span>
+              </div>
+              <div class="perfil-info-item">
+                <span class="perfil-info-label">Fecha de Registro</span>
+                <span class="perfil-info-value">{{ usuario.createdAt | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="perfil-info-item">
+                <span class="perfil-info-label">Último Acceso</span>
+                <span class="perfil-info-value">{{ usuario.ultimoAcceso ? (usuario.ultimoAcceso | date:'dd/MM/yyyy HH:mm') : '—' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="perfil-card">
+        <div class="perfil-card-header">
+          <h3>Seguridad</h3>
+        </div>
+        <div class="perfil-card-body">
+          <button class="perfil-btn perfil-btn-outline" (click)="abrirPasswordModal()">
+            <span class="material-symbols-outlined">lock</span> Cambiar Contraseña
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+@if (showPasswordModal) {
+  <div class="perfil-modal-backdrop" (click)="cerrarPasswordModal()"></div>
+  <div class="perfil-modal">
+    <div class="perfil-modal-header">
+      <h3>Cambiar Contraseña</h3>
+      <button class="perfil-modal-close" (click)="cerrarPasswordModal()">&times;</button>
+    </div>
+    <div class="perfil-modal-body">
+      <div class="perfil-field">
+        <label>CONTRASEÑA ACTUAL</label>
+        <input class="perfil-input" type="password" [(ngModel)]="passData.currentPassword" maxlength="100" autocomplete="current-password" />
+      </div>
+      <div class="perfil-field">
+        <label>NUEVA CONTRASEÑA</label>
+        <input class="perfil-input" type="password" [(ngModel)]="passData.newPassword" maxlength="100" minlength="6" autocomplete="new-password" />
+      </div>
+      <div class="perfil-field">
+        <label>CONFIRMAR NUEVA CONTRASEÑA</label>
+        <input class="perfil-input" type="password" [(ngModel)]="passData.confirmPassword" maxlength="100" minlength="6" autocomplete="new-password" />
+      </div>
+    </div>
+    <div class="perfil-modal-footer">
+      <button class="perfil-btn perfil-btn-outline" (click)="cerrarPasswordModal()">Cancelar</button>
+      <button class="perfil-btn perfil-btn-primary" (click)="cambiarPassword()" [disabled]="changingPassword">
+        @if (changingPassword) { Cambiando... } @else { Cambiar Contraseña }
+      </button>
+    </div>
+  </div>
+}

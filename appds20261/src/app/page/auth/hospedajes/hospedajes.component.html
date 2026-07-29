@@ -1,0 +1,383 @@
+<div class="hos-page">
+  <div class="hos-page__header">
+    <div>
+      <h1 class="hos-page__title">Hospedajes</h1>
+      <p class="hos-page__subtitle">Gestión de hospedajes activos, ingreso, salida, consumos, extensiones y cambios de habitación.</p>
+    </div>
+  </div>
+<p-toast />
+<p-confirmdialog />
+  <div class="hos-tabs">
+    <button class="hos-tab" [class.hos-tab--active]="activeTab === 'activos'" (click)="activeTab='activos';loadActivos()">
+      <span class="material-symbols-outlined">hotel</span>
+      Hospedajes Activos
+    </button>
+    <button class="hos-tab" [class.hos-tab--active]="activeTab === 'checkin'" (click)="activeTab='checkin'">
+      <span class="material-symbols-outlined">key</span>
+      Ingreso (Reserva)
+    </button>
+    <button class="hos-tab" [class.hos-tab--active]="activeTab === 'directo'" (click)="activeTab='directo'">
+      <span class="material-symbols-outlined">add_box</span>
+      Ingreso Directo
+    </button>
+  </div>
+  @if (activeTab === 'activos') {
+    <div class="hos-toolbar">
+      <div class="hos-search">
+        <span class="material-symbols-outlined">search</span>
+        <input class="hos-search-input" type="text" [(ngModel)]="filterText" (input)="onFilterInput()" placeholder="Buscar por huésped o habitación..." />
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="hos-action-btn" (click)="loadActivos()" title="Actualizar"><span class="material-symbols-outlined">refresh</span></button>
+      </div>
+    </div>
+    <div class="hos-layout">
+      <div class="hos-main-table">
+        <div class="premium-card" style="padding:0;overflow:hidden">
+          <div style="overflow-x:auto;max-height:500px;overflow-y:auto">
+            <table class="premium-table">
+              <thead>
+                <tr>
+                  <th class="hos-th-sortable" (click)="toggleSort('clienteNombre')">
+                    Huésped
+                    @if (sortField === 'clienteNombre') {
+                      <span class="material-symbols-outlined hos-sort-icon hos-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                    }
+                  </th>
+                  <th class="hos-th-sortable" (click)="toggleSort('habitacionNumero')">
+                    Hab.
+                    @if (sortField === 'habitacionNumero') {
+                      <span class="material-symbols-outlined hos-sort-icon hos-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                    }
+                  </th>
+                  <th>Ingreso</th>
+                  <th>Salida Prog.</th>
+                  <th class="hos-th-sortable" (click)="toggleSort('deudaPendiente')">
+                    Deuda
+                    @if (sortField === 'deudaPendiente') {
+                      <span class="material-symbols-outlined hos-sort-icon hos-sort-icon--active">{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+                    }
+                  </th>
+                  <th class="hos-th-actions">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (h of sortedHospedajes; track h.id) {
+                  <tr class="hos-row" [class.hos-row--selected]="selectedHospedajeId === h.id" (click)="selectHospedaje(h.id)">
+                    <td data-label="Huésped">
+                      <div class="hos-guest-cell">
+                        <div class="hos-avatar">{{ (h.clienteNombre || '??').substring(0, 2).toUpperCase() }}</div>
+                        <div>
+                          <p class="hos-guest-name">{{ h.clienteNombre }}</p>
+                          @if (h.notas) { <p class="hos-guest-tag">{{ h.notas }}</p> }
+                        </div>
+                      </div>
+                    </td>
+                    <td data-label="Hab."><span class="hos-room-badge">{{ h.habitacionNumero }}</span></td>
+                    <td data-label="Ingreso" class="text-data-tabular">{{ formatFechaCorta(h.fechaIngreso) }}</td>
+                    <td data-label="Salida" class="text-data-tabular hos-date-bold">{{ formatFechaCorta(h.fechaSalidaProgramada) }}</td>
+                    <td data-label="Deuda">
+                      <span class="hos-balance" [class.hos-balance--debt]="h.deudaPendiente > 0" [class.hos-balance--zero]="h.deudaPendiente === 0">
+                        {{ h.deudaPendiente > 0 ? '-S/ ' : 'S/ ' }}{{ (h.deudaPendiente || 0).toFixed(2) }}
+                      </span>
+                    </td>
+                    <td data-label="Acciones" class="hos-td-actions">
+                      <div class="hos-quick-actions">
+                        <button class="hos-action-btn-icon" pTooltip="Cargar Consumo" (click)="selectHospedaje(h.id); $event.stopPropagation()"><span class="material-symbols-outlined">add_shopping_cart</span></button>
+                        <button class="hos-action-btn-icon" pTooltip="Ver Factura" (click)="verFacturaDeHospedaje(h); $event.stopPropagation()"><span class="material-symbols-outlined">description</span></button>
+                        <button class="hos-action-btn-icon" pTooltip="Check-out Anticipado" (click)="showCheckoutFor(h.id); $event.stopPropagation()"><span class="material-symbols-outlined">exit_to_app</span></button>
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+                      @if (loading) { Cargando... } @else { No hay hospedajes activos. }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="hos-table-footer">
+            <span class="hos-footer-count">{{ filteredHospedajes.length }} hospedaje(s) activo(s)</span>
+          </div>
+        </div>
+      </div>
+      @if (detailHospedaje) {
+        <div class="hos-detail-panel">
+          <div class="hos-detail-panel__header">
+            <span class="hos-detail-panel__title">Detalle del Hospedaje</span>
+            <button class="hos-action-btn" (click)="clearSelection()"><span class="material-symbols-outlined">close</span></button>
+          </div>
+          <div class="hos-detail-body">
+            <div class="hos-detail-box">
+              <div class="hos-detail-row"><span class="hos-detail-label">Huésped</span><span class="hos-detail-value">{{ detailHospedaje.clienteNombre }}</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Habitación</span><span class="hos-detail-value">{{ detailHospedaje.habitacionNumero }} ({{ detailHospedaje.habitacionTipo }})</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Ingreso</span><span class="hos-detail-value">{{ formatFecha(detailHospedaje.fechaIngreso) }}</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Salida Prog.</span><span class="hos-detail-value">{{ formatFecha(detailHospedaje.fechaSalidaProgramada) }}</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Total Pagado</span><span class="hos-detail-value">S/ {{ (detailHospedaje.totalPagado || 0).toFixed(2) }}</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Deuda Pendiente</span><span class="hos-detail-value hos-debt-value">S/ {{ (detailHospedaje.deudaPendiente || 0).toFixed(2) }}</span></div>
+              <div class="hos-detail-row"><span class="hos-detail-label">Estado</span><span class="hos-detail-value" style="color:var(--clr-secondary)">{{ detailHospedaje.estado }}</span></div>
+            </div>
+            <div class="hos-section">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <p class="hos-section-title" style="margin:0">Consumos</p>
+                <button class="hos-action-btn" (click)="abrirModalConsumo()" title="Registrar Consumo"><span class="material-symbols-outlined">add_shopping_cart</span></button>
+              </div>
+              @if (loadingConsumos) { <p class="hos-empty-text">Cargando consumos...</p> }
+              @if (!loadingConsumos && consumos.length === 0) { <p class="hos-empty-text">Sin consumos registrados.</p> }
+              @if (consumos.length > 0) {
+                <div class="hos-consumos-scroll">
+                  <table class="premium-table" style="font-size:11px">
+                    <thead><tr><th>Tipo</th><th>Descripción</th><th style="text-align:center">Cant.</th><th style="text-align:right">P/U</th><th style="text-align:right">Subtotal</th><th style="text-align:center">Usuario</th><th style="text-align:center">Fecha</th><th style="text-align:center">Acción</th></tr></thead>
+                    <tbody>
+                      @for (c of consumos; track c.id) {
+                        <tr>
+                          <td><span style="font-size:10px;font-weight:600;color:var(--clr-secondary)">{{ c.tipoConsumo }}</span></td>
+                          <td>{{ c.descripcion }}</td>
+                          <td style="text-align:center">{{ c.cantidad }}</td>
+                          <td style="text-align:right">S/ {{ (c.precioUnitario || 0).toFixed(2) }}</td>
+                          <td style="text-align:right;font-weight:600">S/ {{ (c.subtotal || 0).toFixed(2) }}</td>
+                          <td style="text-align:center;font-size:10px">{{ c.usuarioNombre }}</td>
+                          <td style="text-align:center;font-size:10px">{{ formatFechaCorta(c.fechaRegistro) }}</td>
+                          <td style="text-align:center">
+                            <button class="hos-action-btn" (click)="editarConsumo(c)" title="Editar" style="width:24px;height:24px"><span class="material-symbols-outlined" style="font-size:14px">edit</span></button>
+                            <button class="hos-action-btn" (click)="eliminarConsumo(c.id)" title="Eliminar" style="width:24px;height:24px"><span class="material-symbols-outlined" style="font-size:14px">delete</span></button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                <p style="font-size:12px;font-weight:700;text-align:right;color:var(--clr-secondary);margin:4px 0 0 0">Total Consumos: S/ {{ totalConsumos.toFixed(2) }}</p>
+              }
+            </div>
+            <!-- Extender Estadía Premium -->
+            <div class="premium-card" style="padding:16px;margin-bottom:16px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center;color:var(--aura-dark)">
+                  <span class="material-symbols-outlined" style="font-size:16px">schedule</span>
+                </div>
+                <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant)">Extender Estad&iacute;a</p>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end">
+                <div class="premium-field">
+                  <label>Nueva fecha de salida</label>
+                  <p-datepicker [(ngModel)]="extensionFecha" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="premium-input" styleClass="w-full" placeholder="Seleccionar fecha" />
+                </div>
+                <button class="premium-btn" style="padding:10px 24px;min-height:38px;white-space:nowrap" (click)="extenderEstadia()" [disabled]="loadingExtension">
+                  @if (loadingExtension) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
+                  <span class="material-symbols-outlined">schedule</span>
+                  Extender
+                </button>
+              </div>
+              @if (costoExtensionPreview > 0) {
+                <div style="margin-top:12px;padding:10px 14px;background:var(--clr-surface-container-low);border-radius:10px;border:1px solid rgba(201,164,92,0.12);display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:12px;color:var(--clr-on-surface-variant)">Costo adicional estimado</span>
+                  <span style="font-size:15px;font-weight:700;color:var(--aura-gold-dark)">S/ {{ costoExtensionPreview.toFixed(2) }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Cambiar Habitación Premium -->
+            <div class="premium-card" style="padding:16px;margin-bottom:16px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center;color:var(--aura-dark)">
+                  <span class="material-symbols-outlined" style="font-size:16px">move_up</span>
+                </div>
+                <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant)">Cambiar Habitaci&oacute;n</p>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end">
+                <div class="premium-field">
+                  <label>Actual</label>
+                  <div style="padding:10px 14px;background:var(--clr-surface-container-low);border-radius:10px;border:1px solid var(--clr-outline-variant);font-size:13px;font-weight:600;color:var(--clr-on-surface)">{{ detailHospedaje.habitacionNumero }} — {{ detailHospedaje.habitacionTipo }}</div>
+                </div>
+                <div class="premium-field">
+                  <label>Nueva</label>
+                  <p-select [(ngModel)]="nuevaHabitacionId" [options]="habitacionesDisponibles" optionLabel="label" optionValue="id" placeholder="Seleccionar..." styleClass="w-full" appendTo="body" />
+                </div>
+                <button class="premium-btn" style="padding:10px 24px;min-height:38px;white-space:nowrap" (click)="cambiarHabitacion()" [disabled]="loadingCambio || !nuevaHabitacionId">
+                  @if (loadingCambio) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
+                  <span class="material-symbols-outlined">move_up</span>
+                  Cambiar
+                </button>
+              </div>
+            </div>
+
+            <!-- Action Bar Premium -->
+            <div style="display:flex;gap:12px;padding:12px 0">
+              <button class="premium-btn" style="padding:10px 20px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);flex:1;justify-content:center" (click)="verFactura()">
+                <span class="material-symbols-outlined">print</span>
+                Factura
+              </button>
+              <button class="premium-btn" style="flex:1;justify-content:center;padding:12px" (click)="showCheckout()">
+                <span class="material-symbols-outlined">logout</span>
+                Realizar Salida
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+      @if (!detailHospedaje) {
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;padding:32px;text-align:center">
+          <span class="material-symbols-outlined" style="font-size:48px;color:var(--clr-outline);opacity:0.2">touch_app</span>
+          <p style="margin:12px 0 0;font-size:14px;color:var(--clr-on-surface-variant);font-weight:500">Seleccione un hospedaje de la tabla para ver su detalle</p>
+          <p style="margin:4px 0 0;font-size:12px;color:var(--clr-outline)">Gesti&oacute;n de consumos, extensiones, cambio de habitaci&oacute;n y salida</p>
+        </div>
+      }
+    </div>
+  }
+  @if (activeTab === 'checkin') {
+    <div class="premium-card">
+      <div style="display:flex;align-items:center;gap:10px;padding-bottom:20px;border-bottom:1px solid rgba(201,164,92,0.15);margin-bottom:20px">
+        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center;color:var(--aura-dark)">
+          <span class="material-symbols-outlined" style="font-size:22px">key</span>
+        </div>
+        <div>
+          <h2 style="margin:0;font-size:18px;font-weight:700;color:var(--clr-on-surface)">Ingreso desde Reserva</h2>
+          <p style="margin:2px 0 0;font-size:12px;color:var(--clr-on-surface-variant)">Seleccione una reserva y registre el ingreso del huésped</p>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div class="premium-field">
+          <label>BUSCAR RESERVA</label>
+          <p-autocomplete [(ngModel)]="checkInReservaObj" [suggestions]="reservasBuscadasCheckIn" (completeMethod)="buscarReservasCheckIn($event)" (onSelect)="onReservaCheckInSelect($event)" optionLabel="label" [dropdown]="false" [minQueryLength]="2" placeholder="Buscar reserva por nombre, habitación o ID..." inputStyleClass="premium-input" styleClass="suggest-fullwidth" [ngModelOptions]="{standalone: true}" />
+        </div>
+      </div>
+
+      <div class="premium-grid-2">
+        <div>
+          @if (checkInReservaObj) {
+            <div style="background:var(--clr-surface-container-low);border-radius:14px;padding:20px;border:1px solid rgba(201,164,92,0.12)">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                <span class="premium-badge" style="font-size:9px">Reserva #{{ checkInReservaObj.id }}</span>
+                <span class="premium-badge">CONFIRMADA</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center;color:var(--aura-dark);font-weight:700;font-size:16px;flex-shrink:0">{{ (checkInReservaObj.clienteNombre || '??').substring(0,2).toUpperCase() }}</div>
+                  <div>
+                    <p style="margin:0;font-size:15px;font-weight:600;color:var(--clr-on-surface)">{{ checkInReservaObj.clienteNombre || (checkInReservaObj.label?.split(' - ')[1] || '—') }}</p>
+                    <p style="margin:2px 0 0;font-size:12px;color:var(--clr-on-surface-variant)">Huésped</p>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+                  <div style="padding:8px 12px;background:var(--clr-surface-container-lowest);border-radius:8px">
+                    <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant)">Habitación</p>
+                    <p style="margin:2px 0 0;font-size:14px;font-weight:600;color:var(--clr-on-surface)">{{ checkInReservaObj.habitacionNumero || (checkInReservaObj.label?.split(' - ')[2] || '—') }}</p>
+                  </div>
+                  <div style="padding:8px 12px;background:var(--clr-surface-container-lowest);border-radius:8px">
+                    <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant)">Tipo</p>
+                    <p style="margin:2px 0 0;font-size:14px;font-weight:600;color:var(--clr-on-surface)">{{ checkInReservaObj.habitacionTipo || '—' }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;background:var(--clr-surface-container-low);border-radius:14px;border:1px dashed var(--clr-outline-variant);gap:8px">
+              <span class="material-symbols-outlined" style="font-size:48px;color:var(--clr-outline);opacity:0.3">search_hands_free</span>
+              <p style="margin:0;font-size:13px;color:var(--clr-on-surface-variant)">Seleccione una reserva para continuar</p>
+            </div>
+          }
+        </div>
+        @if (checkInReservaObj) {
+          <div style="background:var(--clr-surface-container-low);border-radius:14px;padding:20px;border:1px solid rgba(201,164,92,0.12)">
+            <p style="margin:0 0 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-secondary)">Pago pendiente</p>
+            <div class="premium-grid-2" style="margin-bottom:16px">
+              <div class="premium-field">
+                <label>Monto (opcional)</label>
+                <p-inputnumber [(ngModel)]="checkInMontoSaldo" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" inputStyleClass="premium-input" styleClass="w-full" />
+              </div>
+              <div class="premium-field">
+                <label>Método</label>
+                <p-select [(ngModel)]="checkInMetodo" [options]="[{label:'Efectivo',value:'EFECTIVO'},{label:'Yape',value:'YAPE'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar" styleClass="w-full" appendTo="body" />
+              </div>
+            </div>
+            <button class="premium-btn" style="width:100%;justify-content:center;padding:14px" [disabled]="loadingCheckIn" (click)="doCheckIn()">
+              @if (loadingCheckIn) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
+              <span class="material-symbols-outlined" style="font-size:22px">key</span>
+              Realizar Ingreso
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+  @if (activeTab === 'directo') {
+    <div class="premium-card">
+      <div style="display:flex;align-items:center;gap:10px;padding-bottom:20px;border-bottom:1px solid rgba(201,164,92,0.15);margin-bottom:20px">
+        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center;color:var(--aura-dark)">
+          <span class="material-symbols-outlined" style="font-size:22px">add_box</span>
+        </div>
+        <div>
+          <h2 style="margin:0;font-size:18px;font-weight:700;color:var(--clr-on-surface)">Ingreso Directo</h2>
+          <p style="margin:2px 0 0;font-size:12px;color:var(--clr-on-surface-variant)">Registro sin reserva previa</p>
+        </div>
+      </div>
+
+      <div class="premium-grid-2" style="margin-bottom:16px">
+        <div class="premium-field">
+          <label>Cliente</label>
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <p-autocomplete [(ngModel)]="directoCliente" [suggestions]="clientesFiltrados" (completeMethod)="buscarClientes($event)" (onSelect)="onClienteDirectoSelect($event)" optionLabel="nombreCompleto" [dropdown]="false" [minQueryLength]="1" [delay]="300" placeholder="Buscar cliente..." inputStyleClass="premium-input" styleClass="suggest-fullwidth" [ngModelOptions]="{standalone:true}" />
+            <button class="premium-btn" style="padding:10px 14px;flex-shrink:0" (click)="abrirQuickCreateCliente()"><span class="material-symbols-outlined" style="font-size:18px">person_add</span></button>
+          </div>
+          <app-cliente-quick-create [visible]="showQuickCreateCliente" (clienteCreado)="onClienteCreado($event)" (close)="cerrarQuickCreateCliente()" />
+          @if (directoCliente) {
+            <div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:6px 10px;background:rgba(76,175,80,0.08);border-radius:8px;border:1px solid rgba(76,175,80,0.15)">
+              <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-status-available)">check_circle</span>
+              <span style="font-size:12px;color:var(--clr-on-surface)">{{ directoCliente.nombreCompleto }} {{ directoCliente.documento ? '— ' + directoCliente.documento : '' }}</span>
+            </div>
+          }
+        </div>
+        <div class="premium-field">
+          <label>Habitación</label>
+          <p-select [(ngModel)]="directoHabitacionId" [options]="habitacionesDisponibles" optionLabel="label" optionValue="id" placeholder="Seleccionar habitación" styleClass="w-full" appendTo="body" />
+        </div>
+      </div>
+
+      <div class="premium-grid-2" style="margin-bottom:16px">
+        <div class="premium-field">
+          <label>Noches (m&aacute;x 30)</label>
+          <input class="premium-input" type="number" [(ngModel)]="directoNoches" min="1" max="30" />
+        </div>
+        <div class="premium-field">
+          <label>Monto Pagado</label>
+          <p-inputnumber [(ngModel)]="directoMontoPago" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" inputStyleClass="premium-input" styleClass="w-full" />
+        </div>
+        <div class="premium-field">
+          <label>M&eacute;todo</label>
+          <p-select [(ngModel)]="directoMetodo" [options]="[{label:'Efectivo',value:'EFECTIVO'},{label:'Yape',value:'YAPE'}]" optionLabel="label" optionValue="value" placeholder="Seleccionar" styleClass="w-full" appendTo="body" />
+        </div>
+      </div>
+
+      @if (costoDirectoTotal > 0) {
+        <div style="display:flex;gap:16px;margin-bottom:16px;padding:12px 16px;background:var(--clr-surface-container-low);border-radius:12px;border:1px solid rgba(201,164,92,0.12)">
+          <div style="flex:1">
+            <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant)">Total Estimado</p>
+            <p style="margin:2px 0 0;font-size:16px;font-weight:700;color:var(--clr-on-surface)">S/ {{ costoDirectoTotal.toFixed(2) }}</p>
+          </div>
+          <div style="flex:1">
+            <p style="margin:0;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-on-surface-variant)">Deuda</p>
+            <p style="margin:2px 0 0;font-size:16px;font-weight:700;color:var(--clr-error)">S/ {{ (costoDirectoTotal - (directoMontoPago || 0)).toFixed(2) }}</p>
+          </div>
+        </div>
+      }
+
+      <button class="premium-btn" style="width:100%;justify-content:center;padding:14px" [disabled]="loadingDirecto" (click)="doCheckInDirecto()">
+        @if (loadingDirecto) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
+        <span class="material-symbols-outlined">add_box</span>
+        Realizar Ingreso Directo
+      </button>
+    </div>
+  }
+</div>
+<app-checkout [visible]="showCheckoutPanel" [hospedajeId]="selectedHospedajeId" (close)="closeCheckout()" />
+<app-consumo-modal
+  [visible]="showConsumoModal"
+  [hospedajeId]="selectedHospedajeId"
+  [editConsumo]="editConsumo"
+  (close)="showConsumoModal = false"
+  (saved)="onConsumoSaved()" />
