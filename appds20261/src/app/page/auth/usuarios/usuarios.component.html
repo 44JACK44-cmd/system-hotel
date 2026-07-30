@@ -231,8 +231,10 @@
 
           <div class="premium-field">
             <label>Estado</label>
-            <p-toggleswitch formControlName="activo" style="width:60px" />
-            <span style="margin-left:8px;font-size:13px;color:var(--clr-on-surface-variant)">{{ userForm.get('activo')?.value ? 'Activo' : 'Inactivo' }}</span>
+            <div style="display:flex;align-items:center;gap:12px">
+              <p-toggleswitch formControlName="activo" style="flex-shrink:0" />
+              <span style="font-size:13px;color:var(--clr-on-surface-variant);white-space:nowrap">{{ userForm.get('activo')?.value ? 'Activo' : 'Inactivo' }}</span>
+            </div>
           </div>
 
           @if (editing && editingId) {

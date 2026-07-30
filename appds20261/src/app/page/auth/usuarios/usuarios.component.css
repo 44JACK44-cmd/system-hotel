@@ -143,6 +143,12 @@
   flex-shrink: 0;
 }
 
+/* ToggleSwitch fix - prevent cutting off in flex containers */
+:host ::ng-deep .p-inputswitch {
+  flex-shrink: 0;
+  min-width: 40px;
+}
+
 /* Action buttons */
 .usr-action-btn {
   width: 32px;

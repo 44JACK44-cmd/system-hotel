@@ -902,6 +902,18 @@ button, a, .hs-clickable {
   .hs-voucher { font-family: 'Inter', monospace; font-size: 12px; }
 }
 
+/* ============================================================
+   PrimeNG ToggleSwitch (p-inputswitch) Fix
+   Prevents toggle from being cut off in flex containers/modals
+   ============================================================ */
+.p-inputswitch {
+  flex-shrink: 0 !important;
+  min-width: 56px !important;
+}
+.p-inputswitch .p-inputswitch-slider {
+  min-width: 56px !important;
+}
+
 .suggest-fullwidth { width: 100%; }
 .suggest-fullwidth .p-autocomplete-input { padding-left: 36px; width: 100%; }
 .suggest-fullwidth .p-autocomplete-overlay { min-width: 300px; }

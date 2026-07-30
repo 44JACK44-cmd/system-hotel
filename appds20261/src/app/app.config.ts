@@ -4,10 +4,10 @@ import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@a
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { providePrimeNG } from 'primeng/config';
-import Aura from '@primeuix/themes/aura';
+import Nora from '@primeuix/themes/nora';
 import { definePreset } from '@primeuix/themes';
 
-const HotelPreset = definePreset(Aura, {
+const HotelPreset = definePreset(Nora, {
   components: {
     datepicker: {
       dropdown: {
