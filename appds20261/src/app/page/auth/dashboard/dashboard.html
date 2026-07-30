@@ -15,7 +15,7 @@
       <span>Check-Out</span>
     </button>
     <button class="dash-action-btn" (click)="showPagos = true" pTooltip="Pagos" tooltipPosition="bottom">
-      <span class="material-symbols-outlined">payments</span>
+      <i class="pi pi-credit-card"></i>
       <span>Caja / Pagos</span>
     </button>
     <button class="dash-action-btn" (click)="irALimpieza()" pTooltip="Limpieza" tooltipPosition="bottom">
@@ -29,7 +29,7 @@
     <div class="premium-card" style="padding:16px 18px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Total Hab.</span>
-        <span class="material-symbols-outlined" style="font-size:20px;color:var(--aura-gold);opacity:0.7">bed</span>
+        <i class="pi pi-building" style="font-size:20px;color:var(--aura-gold);opacity:0.7"></i>
       </div>
       <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--clr-on-surface)">{{ habitacionesCount.total }}</div>
     </div>
@@ -64,15 +64,15 @@
     <div class="premium-card" style="padding:16px 18px;background:linear-gradient(135deg,var(--aura-gold-dark) 0%,#b8860b 100%);border-color:transparent">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(0,0,0,0.5)">Caja</span>
-        <span class="material-symbols-outlined" style="font-size:20px;color:rgba(0,0,0,0.5);opacity:0.7">{{ cajaAbierta ? 'payments' : 'lock' }}</span>
+        <i class="pi" [ngClass]="cajaAbierta ? 'pi-credit-card' : 'pi-lock'" style="font-size:20px;color:rgba(0,0,0,0.5);opacity:0.7"></i>
       </div>
       <div style="font-size:18px;font-weight:800;letter-spacing:-0.02em;color:rgba(0,0,0,0.85)">{{ cajaAbierta ? 'ABIERTA' : 'CERRADA' }}</div>
       <div style="font-size:11px;color:rgba(0,0,0,0.5);font-weight:600;margin-top:4px">S/ {{ ingresosHoy | number:'1.2-2' }}</div>
     </div>
     <div class="premium-card" style="padding:14px 16px;border-left:3px solid var(--clr-error)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Deudas</span>
-        <span class="material-symbols-outlined" style="color:var(--clr-error);font-size:20px">account_balance</span>
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">ADELANTOS</span>
+        <i class="pi pi-wallet" style="color:var(--clr-error);font-size:20px"></i>
       </div>
       <p style="margin:0;font-size:22px;font-weight:800;color:var(--clr-error)">{{ deudasPendientesCount }}</p>
       <p style="margin:2px 0 0;font-size:11px;color:var(--clr-on-surface-variant)">{{ deudasMontoTotal | number:'1.2-2' }} S/ pendientes</p>
@@ -132,7 +132,7 @@
       </ng-container>
       <ng-template #emptyPisos>
         <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px;color:var(--clr-on-surface-variant);opacity:0.75;font-size:12px">
-          <span class="material-symbols-outlined" style="font-size:32px;opacity:0.4">bed</span>
+          <i class="pi pi-bed" style="font-size:32px;opacity:0.4"></i>
           <span>Cargando habitaciones...</span>
         </div>
       </ng-template>
@@ -182,7 +182,7 @@
     <div class="premium-card" style="padding:0;overflow:hidden">
       <div style="padding:14px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
         <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--clr-on-surface);display:flex;align-items:center;gap:6px">
-          <span class="material-symbols-outlined" style="color:var(--clr-secondary);font-size:18px">hotel</span>
+          <i class="pi pi-building" style="color:var(--clr-secondary);font-size:18px"></i>
           HOSPEDAJES ACTIVOS
         </h3>
         <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:20px;background:color-mix(in srgb,var(--clr-status-occupied) 15%,transparent);color:var(--clr-status-occupied);font-size:11px;font-weight:700">{{ hospedajesActivos.length }}</span>

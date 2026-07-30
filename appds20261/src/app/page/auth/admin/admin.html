@@ -20,7 +20,7 @@
     <div class="premium-card premium-kpi">
       <div class="premium-kpi-header">
         <span class="premium-kpi-label">Ocupaci&oacute;n</span>
-        <span class="premium-kpi-icon">bed</span>
+        <i class="pi pi-home premium-kpi-icon"></i>
       </div>
       <p class="premium-kpi-value">{{ ocupacion?.porcentajeOcupacion || 0 }}%</p>
       <div class="premium-kpi-bar">
@@ -34,7 +34,7 @@
     <div class="premium-card premium-kpi">
       <div class="premium-kpi-header">
         <span class="premium-kpi-label">Ingresos Estimados</span>
-        <span class="premium-kpi-icon">payments</span>
+        <i class="pi pi-credit-card premium-kpi-icon"></i>
       </div>
       <p class="premium-kpi-value">S/ {{ (ingresos?.total || 0) | number:'1.2-2' }}</p>
       <div class="premium-kpi-footer">
@@ -46,7 +46,7 @@
     <div class="premium-card premium-kpi">
       <div class="premium-kpi-header">
         <span class="premium-kpi-label">Adelantos</span>
-        <span class="premium-kpi-icon">payments</span>
+        <i class="pi pi-wallet premium-kpi-icon"></i>
       </div>
       <p class="premium-kpi-value">S/ {{ (ingresos?.totalAdelantos || 0) | number:'1.2-2' }}</p>
       <div class="premium-kpi-footer">
@@ -57,7 +57,7 @@
     <div class="premium-card premium-kpi">
       <div class="premium-kpi-header">
         <span class="premium-kpi-label">Total Habitaciones</span>
-        <span class="premium-kpi-icon">hotel</span>
+        <i class="pi pi-building premium-kpi-icon"></i>
       </div>
       <p class="premium-kpi-value">{{ ocupacion?.totalHabitaciones || 0 }}</p>
       <div class="premium-kpi-footer">
