@@ -35,5 +35,6 @@ public interface RepositoryUsuario extends JpaRepository<EntityUsuario, Long> {
     boolean existsByUsernameAndIdNot(String username, Long id);
     boolean existsByEmailAndIdNot(String email, Long id);
 
-    long countIncidenciasByUsuarioId(Long usuarioId);
+    @Query("SELECT COUNT(i) FROM EntityIncidenciaHabitacion i WHERE i.usuario.id = :usuarioId")
+    long countIncidenciasByUsuarioId(@Param("usuarioId") Long usuarioId);
 }

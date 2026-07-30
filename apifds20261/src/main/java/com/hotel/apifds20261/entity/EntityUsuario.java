@@ -3,6 +3,7 @@ package com.hotel.apifds20261.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import com.hotel.apifds20261.staticdata.*;
 
 @Entity
@@ -63,6 +64,9 @@ public class EntityUsuario {
 
     @Column(length = 5)
     private String tema = "LIGHT";
+
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private List<EntityIncidenciaHabitacion> incidencias;
 
     @PrePersist
     protected void onCreate() {
