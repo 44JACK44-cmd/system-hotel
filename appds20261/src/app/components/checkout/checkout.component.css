@@ -6,34 +6,268 @@
   transition: transform 0.25s ease, filter 0.25s ease;
 }
 
+.co-body {
+  padding: 12px !important;
+  gap: 10px !important;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Glass panel (search) — like ci-glass-panel ===== */
+.co-glass-panel {
+  background: color-mix(in srgb, var(--clr-surface-container-lowest) 80%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid color-mix(in srgb, var(--clr-surface-container-highest) 50%, transparent);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.co-glass-panel label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--clr-on-surface-variant);
+  margin-bottom: 8px;
+}
+
+/* ===== Card (room detail) — like ci-reservation-card ===== */
+.co-room-card {
+  background: var(--clr-surface-container-lowest);
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.co-room-header {
+  background: var(--clr-primary);
+  color: var(--clr-white);
+  padding: 8px 12px;
+}
+.co-room-body {
+  padding: 8px 10px;
+}
+.co-room-body .co-field-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--clr-outline);
+  margin-bottom: 2px;
+}
+.co-room-body .co-field-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--clr-on-surface);
+  margin: 0;
+}
+
+/* ===== Accent panel (financial + transaction) — like ci-payment-panel ===== */
+.co-accent-panel {
+  background: color-mix(in srgb, var(--clr-surface-container-lowest) 80%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid color-mix(in srgb, var(--clr-secondary) 25%, transparent);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.co-accent-header {
+  background: var(--clr-primary);
+  color: var(--clr-white);
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.co-accent-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.co-accent-body {
+  padding: 8px;
+}
+
+/* Financial rows */
+.co-fin-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--clr-outline-variant);
+}
+.co-fin-label {
+  font-size: 11px;
+  color: var(--clr-on-surface-variant);
+}
+.co-fin-value {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--clr-on-surface);
+}
+.co-fin-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0 0;
+  margin-top: 3px;
+}
+.co-fin-total-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--clr-on-surface);
+}
+.co-fin-total-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--aura-gold-dark);
+}
+.co-fin-notice {
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: var(--clr-surface-container-low);
+  border-radius: 6px;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--clr-on-surface-variant);
+  letter-spacing: 0.04em;
+}
+
+/* Transaction grid inside accent panel */
+.co-trans-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.co-trans-left, .co-trans-right {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.co-trans-section-title {
+  margin: 0 0 3px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--clr-on-surface-variant);
+}
+.co-date-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--clr-surface-container-low);
+  border-radius: 6px;
+  border: 1px solid var(--clr-outline-variant);
+}
+.co-date-chip span:last-child {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--clr-on-surface);
+}
+.co-quick-btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
 .co-quick-btn {
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:4px;
-  padding:10px 8px;
-  border:1px solid var(--clr-outline-variant);
-  border-radius:10px;
-  background:var(--clr-surface-container-lowest);
-  color:var(--clr-on-surface-variant);
-  cursor:pointer;
-  font-family:Inter,sans-serif;
-  font-size:9px;
-  font-weight:700;
-  text-transform:uppercase;
-  letter-spacing:0.04em;
-  transition:all 0.2s ease;
-  min-height:60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: 6px;
+  background: var(--clr-surface-container-lowest);
+  color: var(--clr-on-surface-variant);
+  cursor: pointer;
+  font-family: Inter, sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+  min-height: 36px;
 }
 .co-quick-btn:hover {
-  border-color:var(--aura-gold);
-  color:var(--clr-on-surface);
-  box-shadow:0 2px 8px rgba(201,164,92,0.15);
+  border-color: var(--aura-gold);
+  color: var(--clr-on-surface);
+  box-shadow: 0 2px 8px rgba(201, 164, 92, 0.15);
 }
 .co-quick-btn .material-symbols-outlined {
-  font-size:20px;
-  color:var(--clr-on-surface-variant);
+  font-size: 16px;
+  color: var(--clr-on-surface-variant);
 }
 .co-quick-btn:hover .material-symbols-outlined {
-  color:var(--aura-gold);
+  color: var(--aura-gold);
+}
+
+/* Payment amount input */
+.co-pay-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.co-monto-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.co-monto-symbol {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--clr-on-surface-variant);
+  z-index: 1;
+  pointer-events: none;
+}
+.co-pay-methods {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.co-pm-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 2px solid var(--clr-outline-variant);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.co-pm-option label {
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--clr-on-surface);
+}
+
+/* Overstay */
+.co-overstay {
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--clr-warning) 12%, transparent);
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--clr-warning) 25%, transparent);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .co-body {
+    padding: 8px !important;
+    gap: 6px !important;
+  }
+  .co-trans-grid {
+    grid-template-columns: 1fr;
+  }
 }

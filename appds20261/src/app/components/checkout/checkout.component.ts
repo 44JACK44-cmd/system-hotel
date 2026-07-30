@@ -62,12 +62,19 @@ export class CheckOutComponent implements OnInit, OnDestroy, OnChanges {
   hotelData: any = { nombre: '', ruc: '', direccion: '', telefono: '' };
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['visible']) {
-      this.layoutState.setOverlay(!!changes['visible'].currentValue);
+    if (changes['visible'] && !changes['visible'].firstChange) {
+      const curr = !!changes['visible'].currentValue;
+      const prev = !!changes['visible'].previousValue;
+      if (curr && !prev) {
+        this.layoutState.setOverlay(true);
+      } else if (!curr && prev) {
+        this.layoutState.setOverlay(false);
+      }
     }
   }
 
   ngOnInit(): void {
+    this.layoutState.setOverlay(true);
     if (this.hospedajeId && this.visible) {
       this.buscarHospedajePorId(this.hospedajeId);
     } else if (this.visible) {
@@ -373,11 +380,6 @@ TOTAL A PAGAR: S/ ${this.totalDeuda.toFixed(2)}`;
     this.router.navigate(['/recepcion/incidencias']);
   }
 
-  irAConfiguracion(): void {
-    this.cerrar();
-    this.router.navigate(['/admin/configuracion']);
-  }
-
   cerrar(): void {
     if (this.loading) return;
     this.hospedajeEncontrado = null;
@@ -387,6 +389,7 @@ TOTAL A PAGAR: S/ ${this.totalDeuda.toFixed(2)}`;
     this.cargoExtension = 0;
     this.montoPago = 0;
     this.consumos = [];
+    this.layoutState.setOverlay(false);
     this.close.emit();
   }
 }

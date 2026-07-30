@@ -40,12 +40,13 @@ export class ConsumoModalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['visible']) {
+    if (changes['visible'] && !changes['visible'].firstChange) {
       this.layoutState.setOverlay(!!changes['visible'].currentValue);
     }
   }
 
   ngOnInit(): void {
+    if (this.visible) { this.layoutState.setOverlay(true); }
     this.resetForm();
   }
 
