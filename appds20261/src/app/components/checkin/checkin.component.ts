@@ -12,6 +12,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { LayoutStateService } from '../../services/layout-state.service';
 import { EstadoActualizacionService } from '../../services/estado-actualizacion.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-checkin',
@@ -31,17 +32,51 @@ export class CheckInComponent implements OnInit, OnDestroy {
   private layoutState = inject(LayoutStateService);
   private estadoActualizacion = inject(EstadoActualizacionService);
 
+  private destroy$ = new Subject<void>();
+
   searchTerm = '';
   searchResults: any[] = [];
   selectedReserva: any = null;
   montoSaldo = 0;
   metodoPago = 'YAPE';
   loading = false;
+  initialLoading = true;
+
+  ngOnInit(): void {
+    this.layoutState.setOverlay(true);
+    this.cargarReservasDelDia();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.layoutState.setOverlay(false);
+  }
+
+  cargarReservasDelDia(): void {
+    this.initialLoading = true;
+    this.reservaService.listarDelDia().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
+        const reservas = (res.data || []).filter((r: any) => r.estado === 'CONFIRMADA');
+        this.searchResults = reservas.map((r: any) => ({
+          ...r,
+          displayLabel: `${r.clienteNombre} - Reserva #${r.id} - Hab ${r.habitacionNumero}`
+        }));
+        this.initialLoading = false;
+      },
+      error: () => {
+        this.initialLoading = false;
+      }
+    });
+  }
 
   buscarReserva(event: any): void {
     const valor = event.query?.trim() || this.searchTerm?.trim();
-    if (!valor || valor.length < 2) return;
-    this.reservaService.search(valor).subscribe({
+    if (!valor || valor.length < 2) {
+      this.searchResults = [];
+      return;
+    }
+    this.reservaService.search(valor).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
         this.searchResults = (res.data || []).map((r: any) => ({
           ...r,
@@ -49,6 +84,12 @@ export class CheckInComponent implements OnInit, OnDestroy {
         }));
       }
     });
+  }
+
+  onSearchFocus(): void {
+    if (this.searchResults.length > 0 && (!this.searchTerm || this.searchTerm.trim().length < 2)) {
+      this.buscarReserva({ query: this.searchTerm || '' });
+    }
   }
 
   onSelect(event: any): void {
@@ -93,7 +134,7 @@ export class CheckInComponent implements OnInit, OnDestroy {
       reservaId: this.selectedReserva.id,
       montoSaldo: this.montoSaldo || 0,
       metodoSaldo: this.metodoPago
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.loading = false;
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Check-in realizado correctamente' });
@@ -104,14 +145,6 @@ export class CheckInComponent implements OnInit, OnDestroy {
       },
       error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error en check-in' }); }
     });
-  }
-
-  ngOnInit(): void {
-    this.layoutState.setOverlay(true);
-  }
-
-  ngOnDestroy(): void {
-    this.layoutState.setOverlay(false);
   }
 
   formatFecha(d: string): string {
@@ -129,6 +162,8 @@ export class CheckInComponent implements OnInit, OnDestroy {
     this.selectedReserva = null;
     this.searchTerm = '';
     this.searchResults = [];
+    this.montoSaldo = 0;
+    this.metodoPago = 'YAPE';
     this.layoutState.setOverlay(false);
     this.close.emit();
   }

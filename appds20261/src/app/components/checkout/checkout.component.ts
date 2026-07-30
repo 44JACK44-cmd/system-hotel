@@ -70,9 +70,22 @@ export class CheckOutComponent implements OnInit, OnDestroy, OnChanges {
   ngOnInit(): void {
     if (this.hospedajeId && this.visible) {
       this.buscarHospedajePorId(this.hospedajeId);
+    } else if (this.visible) {
+      this.cargarHospedajesActivos();
     }
     this.configService.load();
     this.actualizarHotelData();
+  }
+
+  cargarHospedajesActivos(): void {
+    this.hospedajeService.listarActivos().subscribe({
+      next: (res) => {
+        this.searchResults = (res.data || []).map((h: any) => ({
+          ...h,
+          displayLabel: `Hab ${h.habitacionNumero} - ${h.clienteNombre} (#${h.id})`
+        }));
+      }
+    });
   }
 
   private actualizarHotelData(): void {
@@ -172,6 +185,12 @@ export class CheckOutComponent implements OnInit, OnDestroy, OnChanges {
         }));
       }
     });
+  }
+
+  onSearchFocus(): void {
+    if (this.searchResults.length > 0) {
+      this.buscarHospedaje({ query: '' });
+    }
   }
 
   onSelect(event: any): void {
