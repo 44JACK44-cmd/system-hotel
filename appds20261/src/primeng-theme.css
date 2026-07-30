@@ -515,12 +515,20 @@
 .p-dialog-mask {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  animation: hs-fade-in 0.2s var(--ease-out);
+}
+.p-dialog {
+  animation: hs-scale-in 0.2s var(--ease-out);
 }
 
 /* === Sidebar mask backdrop === */
 .p-sidebar-mask {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  animation: hs-fade-in 0.2s var(--ease-out);
+}
+.p-sidebar {
+  animation: hs-slide-in 0.25s var(--ease-out);
 }
 
 /* === OverlayPanel arrow === */
@@ -533,13 +541,20 @@
   border-bottom: 1px solid var(--clr-outline-variant);
 }
 
-/* === Menu (PrimeNG) dark theme === */
+/* === Menu (PrimeNG) === */
 .p-menu {
   background: var(--clr-surface-container-lowest) !important;
   border: 1px solid var(--clr-surface-container-highest) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 4px !important;
+  animation: hs-scale-in 0.12s var(--ease-out);
 }
 .p-menu .p-menu-item .p-menu-item-content {
   color: var(--clr-on-surface) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 8px 12px !important;
+  transition: background 0.12s ease;
 }
 .p-menu .p-menu-item .p-menu-item-content:hover {
   background: var(--clr-surface-container-low) !important;

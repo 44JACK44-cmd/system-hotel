@@ -112,12 +112,14 @@
   background: rgba(201,164,92,0.08);
   color: var(--aura-text-primary);
   border-left-color: rgba(201,164,92,0.3);
+  transform: translateX(2px);
 }
 .hs-sidebar__nav-item.sidebar-nav-active {
   background: linear-gradient(135deg, rgba(201,164,92,0.12), rgba(201,164,92,0.06)) !important;
   color: var(--aura-gold) !important;
   font-weight: 700;
   border-left-color: var(--aura-gold);
+  box-shadow: inset 3px 0 0 var(--aura-gold);
 }
 .hs-sidebar__nav-item .material-symbols-outlined { font-size: 22px; flex-shrink: 0; transition: transform var(--duration-normal) ease; }
 .hs-sidebar__nav-item:hover .material-symbols-outlined { transform: translateX(2px); }

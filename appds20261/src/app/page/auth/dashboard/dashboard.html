@@ -26,56 +26,56 @@
 
   <!-- KPIs Command Center -->
   <div class="dash-kpi-grid">
-    <div class="premium-card" style="padding:16px 18px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Total Hab.</span>
-        <i class="pi pi-building" style="font-size:20px;color:var(--aura-gold);opacity:0.7"></i>
+    <div class="premium-card dash-kpi">
+      <div class="dash-kpi-header">
+        <span>Total Hab.</span>
+        <i class="pi pi-building" style="color:var(--aura-gold)"></i>
       </div>
-      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--clr-on-surface)">{{ habitacionesCount.total }}</div>
+      <div class="dash-kpi-value">{{ habitacionesCount.total }}</div>
     </div>
-    <div class="premium-card" style="padding:16px 18px;border-left:3px solid var(--clr-status-available)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Disponibles</span>
-        <span class="material-symbols-outlined" style="font-size:20px;color:var(--clr-status-available);opacity:0.7">check_circle</span>
+    <div class="premium-card dash-kpi" style="border-left:3px solid var(--clr-status-available)">
+      <div class="dash-kpi-header">
+        <span>Disponibles</span>
+        <span class="material-symbols-outlined" style="color:var(--clr-status-available)">check_circle</span>
       </div>
-      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--clr-status-available)">{{ habitacionesCount.disponibles }}</div>
+      <div class="dash-kpi-value" style="color:var(--clr-status-available)">{{ habitacionesCount.disponibles }}</div>
     </div>
-    <div class="premium-card" style="padding:16px 18px;border-left:3px solid var(--clr-status-occupied)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Ocupadas</span>
-        <span class="material-symbols-outlined" style="font-size:20px;color:var(--clr-status-occupied);opacity:0.7">person</span>
+    <div class="premium-card dash-kpi" style="border-left:3px solid var(--clr-status-occupied)">
+      <div class="dash-kpi-header">
+        <span>Ocupadas</span>
+        <span class="material-symbols-outlined" style="color:var(--clr-status-occupied)">person</span>
       </div>
-      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--clr-status-occupied)">{{ habitacionesCount.ocupadas }}</div>
+      <div class="dash-kpi-value" style="color:var(--clr-status-occupied)">{{ habitacionesCount.ocupadas }}</div>
     </div>
-    <div class="premium-card" style="padding:16px 18px;border-left:3px solid var(--clr-warning)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Limpieza</span>
-        <span class="material-symbols-outlined" style="font-size:20px;color:var(--clr-warning);opacity:0.7">cleaning_services</span>
+    <div class="premium-card dash-kpi" style="border-left:3px solid var(--clr-warning)">
+      <div class="dash-kpi-header">
+        <span>Limpieza</span>
+        <span class="material-symbols-outlined" style="color:var(--clr-warning)">cleaning_services</span>
       </div>
-      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--clr-warning)">{{ habitacionesCount.limpieza }}</div>
+      <div class="dash-kpi-value" style="color:var(--clr-warning)">{{ habitacionesCount.limpieza }}</div>
     </div>
-    <div class="premium-card" style="padding:16px 18px;border-left:3px solid var(--clr-status-maintenance)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">Mantenimiento</span>
-        <span class="material-symbols-outlined" style="font-size:20px;color:var(--clr-status-maintenance);opacity:0.7">engineering</span>
+    <div class="premium-card dash-kpi" style="border-left:3px solid var(--clr-status-maintenance)">
+      <div class="dash-kpi-header">
+        <span>Mantenimiento</span>
+        <span class="material-symbols-outlined" style="color:var(--clr-status-maintenance)">engineering</span>
       </div>
-      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--clr-status-maintenance)">{{ habitacionesCount.mantenimiento }}</div>
+      <div class="dash-kpi-value" style="color:var(--clr-status-maintenance)">{{ habitacionesCount.mantenimiento }}</div>
     </div>
-    <div class="premium-card" style="padding:16px 18px;background:linear-gradient(135deg,var(--aura-gold-dark) 0%,#b8860b 100%);border-color:transparent">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(0,0,0,0.5)">Caja</span>
-        <i class="pi" [ngClass]="cajaAbierta ? 'pi-credit-card' : 'pi-lock'" style="font-size:20px;color:rgba(0,0,0,0.5);opacity:0.7"></i>
+    <div class="premium-card dash-kpi" style="background:linear-gradient(135deg,var(--aura-gold-dark) 0%,#b8860b 100%);border-color:transparent">
+      <div class="dash-kpi-header">
+        <span style="color:rgba(0,0,0,0.5)">Caja</span>
+        <i class="pi" [ngClass]="cajaAbierta ? 'pi-credit-card' : 'pi-lock'" style="font-size:20px;color:rgba(0,0,0,0.5)"></i>
       </div>
-      <div style="font-size:18px;font-weight:800;letter-spacing:-0.02em;color:rgba(0,0,0,0.85)">{{ cajaAbierta ? 'ABIERTA' : 'CERRADA' }}</div>
-      <div style="font-size:11px;color:rgba(0,0,0,0.5);font-weight:600;margin-top:4px">S/ {{ ingresosHoy | number:'1.2-2' }}</div>
+      <div style="font-size:18px;font-weight:800;color:rgba(0,0,0,0.85)">{{ cajaAbierta ? 'ABIERTA' : 'CERRADA' }}</div>
+      <div class="dash-kpi-sub" style="color:rgba(0,0,0,0.5)">S/ {{ ingresosHoy | number:'1.2-2' }}</div>
     </div>
-    <div class="premium-card" style="padding:14px 16px;border-left:3px solid var(--clr-error)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--clr-on-surface-variant)">ADELANTOS</span>
-        <i class="pi pi-wallet" style="color:var(--clr-error);font-size:20px"></i>
+    <div class="premium-card dash-kpi" style="border-left:3px solid var(--clr-error)">
+      <div class="dash-kpi-header">
+        <span>ADELANTOS</span>
+        <i class="pi pi-wallet" style="color:var(--clr-error)"></i>
       </div>
-      <p style="margin:0;font-size:22px;font-weight:800;color:var(--clr-error)">{{ deudasPendientesCount }}</p>
-      <p style="margin:2px 0 0;font-size:11px;color:var(--clr-on-surface-variant)">{{ deudasMontoTotal | number:'1.2-2' }} S/ pendientes</p>
+      <div style="margin:0;font-size:22px;font-weight:800;color:var(--clr-error)">{{ deudasPendientesCount }}</div>
+      <div class="dash-kpi-sub">{{ deudasMontoTotal | number:'1.2-2' }} S/ pendientes</div>
     </div>
   </div>
 

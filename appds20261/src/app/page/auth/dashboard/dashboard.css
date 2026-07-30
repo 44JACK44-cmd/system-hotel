@@ -8,8 +8,46 @@
 /* KPI Grid */
 .dash-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 14px;
+}
+
+/* KPI Card — consistent padding, clean layout */
+.dash-kpi {
+  padding: 16px 18px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.dash-kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.dash-kpi-header span {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--clr-on-surface-variant);
+}
+.dash-kpi-header .material-symbols-outlined,
+.dash-kpi-header i {
+  font-size: 20px;
+  opacity: 0.7;
+}
+.dash-kpi-value {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--clr-on-surface);
+}
+.dash-kpi-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--clr-on-surface-variant);
+  margin-top: 4px;
 }
 
 /* Action bar */
@@ -65,13 +103,18 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  animation: hs-card-in 0.3s var(--ease-out) both;
 }
+.dash-action-btn:nth-child(2) { animation-delay: 0.05s; }
+.dash-action-btn:nth-child(3) { animation-delay: 0.1s; }
+.dash-action-btn:nth-child(4) { animation-delay: 0.15s; }
+.dash-action-btn:nth-child(5) { animation-delay: 0.2s; }
 .dash-action-btn:hover {
   background: var(--clr-surface-container-high);
   border-color: var(--aura-gold);
   color: var(--aura-gold);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 .dash-action-btn .material-symbols-outlined { font-size: 20px; color: var(--aura-gold); transition: transform 0.15s ease; }
 .dash-action-btn:hover .material-symbols-outlined { transform: scale(1.1); }
