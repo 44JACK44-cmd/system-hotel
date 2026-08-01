@@ -28,6 +28,12 @@ export class ReporteService {
     );
   }
 
+  tendenciaOcupacion(inicio: string, fin: string): Observable<GenericResponse<any[]>> {
+    return this.http.get<any>(`${this.API}/tendencia-ocupacion?inicio=${inicio}&fin=${fin}`).pipe(
+      map(r => toGenericResponse<any[]>(r, 'listReporte'))
+    );
+  }
+
   reservasNoConcretadas(inicio: string, fin: string): Observable<GenericResponse<any>> {
     return this.http.get<any>(`${this.API}/reservasnoconcretadas?inicio=${inicio}&fin=${fin}`).pipe(
       map(r => toGenericResponse<any>(r, 'reporte'))

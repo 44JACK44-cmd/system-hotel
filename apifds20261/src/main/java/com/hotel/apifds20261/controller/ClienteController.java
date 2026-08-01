@@ -157,10 +157,10 @@ public class ClienteController {
         csv.append("ID,Nombre,Documento,Telefono,Email\n");
         for (var c : clientes) {
             csv.append(c.getId()).append(",");
-            csv.append("\"").append(c.getNombreCompleto() != null ? c.getNombreCompleto() : "").append("\",");
-            csv.append("\"").append(c.getDocumento() != null ? c.getDocumento() : "").append("\",");
-            csv.append("\"").append(c.getTelefono() != null ? c.getTelefono() : "").append("\",");
-            csv.append("\"").append(c.getEmail() != null ? c.getEmail() : "").append("\"\n");
+            csv.append("\"").append(csvSafe(c.getNombreCompleto())).append("\",");
+            csv.append("\"").append(csvSafe(c.getDocumento())).append("\",");
+            csv.append("\"").append(csvSafe(c.getTelefono())).append("\",");
+            csv.append("\"").append(csvSafe(c.getEmail())).append("\"\n");
         }
         byte[] bytes = csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
         HttpHeaders headers = new HttpHeaders();
@@ -168,6 +168,15 @@ public class ClienteController {
         headers.set(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=clientes-" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".csv");
         return ResponseEntity.ok().headers(headers).body(bytes);
+    }
+
+    private static String csvSafe(String valor) {
+        if (valor == null) return "";
+        String v = valor.replace("\"", "\"\"");
+        if (!v.isEmpty() && (v.startsWith("=") || v.startsWith("+") || v.startsWith("-") || v.startsWith("@") || v.startsWith("\t") || v.startsWith("\r"))) {
+            v = "'" + v;
+        }
+        return v;
     }
 }
 

@@ -198,7 +198,7 @@ export class HospedajesComponent implements OnInit, OnDestroy {
   loadIncidenciasLimpieza(): void {
     this.incidenciaService.listarActivas().subscribe({
       next: res => {
-        this.incidenciasLimpieza = (res.data || []).filter((i: any) => i.tipo === 'LIMPIEZA');
+        this.incidenciasLimpieza = (res.data || []).filter((i: any) => i.tipo === 'LIMPIEZA_CHECKOUT' || i.tipo === 'LIMPIEZA');
         this.cdr.detectChanges();
         this.appRef.tick();
       }
@@ -292,7 +292,7 @@ export class HospedajesComponent implements OnInit, OnDestroy {
             this.estadoActualizacion.consumoCambio({ hospedajeId: this.selectedHospedajeId });
             this.estadoActualizacion.hospedajeCambio({ hospedajeId: this.selectedHospedajeId });
           },
-          error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al eliminar consumo' })
+          error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al eliminar consumo' })
         });
       }
     });
@@ -308,6 +308,12 @@ export class HospedajesComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Validación', detail: 'Seleccione una nueva fecha de salida' });
       return;
     }
+    const actual = this.detailHospedaje?.fechaSalidaProgramada ? new Date(this.detailHospedaje.fechaSalidaProgramada) : null;
+    const nueva = new Date(this.extensionFecha);
+    if (actual && nueva <= actual) {
+      this.messageService.add({ severity: 'error', summary: 'Fecha inválida', detail: 'La nueva fecha de salida debe ser posterior a la fecha de salida programada' });
+      return;
+    }
     this.loadingExtension = true;
     this.hospedajeService.extenderEstadia(this.selectedHospedajeId, {
       nuevaFechaSalida: new Date(this.extensionFecha).toISOString()
@@ -320,7 +326,7 @@ export class HospedajesComponent implements OnInit, OnDestroy {
         this.loadActivos();
         this.estadoActualizacion.hospedajeCambio();
       },
-      error: (err) => { this.loadingExtension = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al extender' }); }
+      error: (err) => { this.loadingExtension = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al extender' }); }
     });
   }
 
@@ -341,8 +347,10 @@ export class HospedajesComponent implements OnInit, OnDestroy {
         this.loadActivos();
         this.estadoActualizacion.habitacionCambio();
         this.estadoActualizacion.hospedajeCambio();
+        this.estadoActualizacion.incidenciaCambio();
+        this.estadoActualizacion.notificacionCambio();
       },
-      error: (err) => { this.loadingCambio = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al cambiar habitación' }); }
+      error: (err) => { this.loadingCambio = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al cambiar habitación' }); }
     });
   }
 
@@ -386,8 +394,10 @@ export class HospedajesComponent implements OnInit, OnDestroy {
         this.estadoActualizacion.habitacionCambio();
         this.estadoActualizacion.reservaCambio();
         this.estadoActualizacion.hospedajeCambio();
+        this.estadoActualizacion.pagoCambio();
+        this.estadoActualizacion.cajaCambio();
       },
-      error: (err) => { this.loadingCheckIn = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error en check-in' }); }
+      error: (err) => { this.loadingCheckIn = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error en check-in' }); }
     });
   }
 
@@ -429,6 +439,14 @@ export class HospedajesComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Validación', detail: 'Seleccione cliente y habitación' });
       return;
     }
+    if (!this.directoNoches || this.directoNoches < 1 || this.directoNoches > 30) {
+      this.messageService.add({ severity: 'error', summary: 'Validación', detail: 'Las noches deben estar entre 1 y 30' });
+      return;
+    }
+    if (this.directoMontoPago < 0) {
+      this.messageService.add({ severity: 'error', summary: 'Validación', detail: 'El monto de pago no puede ser negativo' });
+      return;
+    }
     this.loadingDirecto = true;
     this.hospedajeService.checkInDirecto({
       clienteId: this.directoCliente.id,
@@ -447,8 +465,10 @@ export class HospedajesComponent implements OnInit, OnDestroy {
         this.loadActivos();
         this.estadoActualizacion.habitacionCambio();
         this.estadoActualizacion.hospedajeCambio();
+        this.estadoActualizacion.pagoCambio();
+        this.estadoActualizacion.cajaCambio();
       },
-      error: (err) => { this.loadingDirecto = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error en check-in directo' }); }
+      error: (err) => { this.loadingDirecto = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error en check-in directo' }); }
     });
   }
 

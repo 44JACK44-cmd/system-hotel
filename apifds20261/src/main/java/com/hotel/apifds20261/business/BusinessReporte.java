@@ -1,6 +1,7 @@
 package com.hotel.apifds20261.business;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -85,7 +86,32 @@ public class BusinessReporte {
         result.put("totalExtensiones", totalExtensiones);
         result.put("totalYape", totalYape);
         result.put("totalEfectivo", totalEfectivo);
+        result.put("detalles", buildDetalles(pagos));
         return result;
+    }
+
+    private List<Map<String, Object>> buildDetalles(List<EntityPago> pagos) {
+        List<Map<String, Object>> detalles = new ArrayList<>();
+        for (EntityPago p : pagos) {
+            Map<String, Object> d = new LinkedHashMap<>();
+            d.put("fecha", p.getFechaPago() != null ? p.getFechaPago().toString() : "");
+            String habitacion = "";
+            String cliente = "";
+            if (p.getHospedaje() != null) {
+                habitacion = p.getHospedaje().getHabitacion() != null ? p.getHospedaje().getHabitacion().getNumero() : "";
+                cliente = p.getHospedaje().getCliente() != null ? p.getHospedaje().getCliente().getNombreCompleto() : "";
+            } else if (p.getReserva() != null) {
+                habitacion = p.getReserva().getHabitacion() != null ? p.getReserva().getHabitacion().getNumero() : "";
+                cliente = p.getReserva().getCliente() != null ? p.getReserva().getCliente().getNombreCompleto() : "";
+            }
+            d.put("habitacion", habitacion);
+            d.put("cliente", cliente);
+            d.put("monto", p.getMonto());
+            d.put("metodo", p.getMetodo() != null ? p.getMetodo().name() : "");
+            d.put("tipo", p.getTipo() != null ? p.getTipo().name() : "");
+            detalles.add(d);
+        }
+        return detalles;
     }
 
     public Map<String, Object> ingresosPorMetodo(LocalDate inicio, LocalDate fin) {
@@ -256,5 +282,55 @@ public class BusinessReporte {
 
         rankings.sort((a, b) -> Long.compare((Long) b.get("vecesReservada"), (Long) a.get("vecesReservada")));
         return rankings;
+    }
+
+    public List<Map<String, Object>> tendenciaOcupacion(LocalDate inicio, LocalDate fin) {
+        if (inicio == null || fin == null) {
+            throw new BusinessException("Las fechas de inicio y fin son requeridas");
+        }
+        if (inicio.isAfter(fin)) {
+            throw new BusinessException("La fecha de inicio no puede ser posterior a la fecha de fin");
+        }
+
+        long totalHabitaciones = habitacionRepository.findByActivoTrueOrderByPisoAscNumeroAsc().size();
+
+        LocalDateTime inicioStart = inicio.atStartOfDay();
+        LocalDateTime finEnd = fin.plusDays(1).atStartOfDay();
+
+        List<EntityHospedaje> hospedajes = hospedajeRepository.findHospedajesEnRango(inicioStart, finEnd);
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (LocalDate d = inicio; !d.isAfter(fin); d = d.plusDays(1)) {
+            LocalDate target = d;
+
+            long ocupadas = hospedajes.stream()
+                .filter(h -> {
+                    LocalDate ingreso = h.getFechaIngreso().toLocalDate();
+                    LocalDate salidaReal = h.getFechaSalidaReal() != null
+                        ? h.getFechaSalidaReal().toLocalDate() : null;
+                    return !ingreso.isAfter(target)
+                        && (salidaReal == null || !salidaReal.isBefore(target));
+                })
+                .map(h -> h.getHabitacion().getId())
+                .distinct()
+                .count();
+
+            long disponibles = totalHabitaciones - ocupadas;
+            BigDecimal porcentaje = totalHabitaciones > 0
+                ? BigDecimal.valueOf(ocupadas)
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(BigDecimal.valueOf(totalHabitaciones), 2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("fecha", d.toString());
+            item.put("habitacionesOcupadas", ocupadas);
+            item.put("habitacionesDisponibles", disponibles);
+            item.put("totalHabitaciones", totalHabitaciones);
+            item.put("porcentaje", porcentaje);
+            result.add(item);
+        }
+
+        return result;
     }
 }

@@ -11,6 +11,7 @@ import com.hotel.apifds20261.entity.EntityHospedaje;
 import com.hotel.apifds20261.entity.EntityReserva;
 import com.hotel.apifds20261.exception.BusinessException;
 import com.hotel.apifds20261.exception.ResourceNotFoundException;
+import com.hotel.apifds20261.helper.ValidationHelper;
 import com.hotel.apifds20261.repository.RepositoryCliente;
 import com.hotel.apifds20261.repository.RepositoryHospedaje;
 import com.hotel.apifds20261.repository.RepositoryReserva;
@@ -107,8 +108,10 @@ public class BusinessCliente {
         for (int i = 0; i < max; i++) {
             EntityCliente c = entities.get(i);
             String subtitle = "";
-            if (c.getDocumento() != null) subtitle += "DNI: " + c.getDocumento();
-            if (c.getTelefono() != null) subtitle += (subtitle.isEmpty() ? "" : " | ") + "Tel: " + c.getTelefono();
+            String docLabel = "PASAPORTE".equalsIgnoreCase(c.getTipoDocumento()) ? "Pasaporte" : "DNI";
+            if (c.getDocumento() != null) subtitle += docLabel + ": " + c.getDocumento();
+            String telCompleto = (c.getCodigoPais() != null ? c.getCodigoPais() : "+51") + (c.getTelefono() != null ? c.getTelefono() : "");
+            if (c.getTelefono() != null) subtitle += (subtitle.isEmpty() ? "" : " | ") + "Tel: " + telCompleto;
             list.add(new SuggestionResponse(c.getId(), c.getNombreCompleto(), subtitle, "CLIENTE"));
         }
         return list;
@@ -117,12 +120,14 @@ public class BusinessCliente {
     @Transactional
     public ClienteResponse crear(RequestClienteInsert request) {
         String doc = (request.getDocumento() != null && !request.getDocumento().isBlank()) ? request.getDocumento().trim() : null;
-        String eml = (request.getEmail() != null && !request.getEmail().isBlank()) ? request.getEmail().trim() : null;
+        String eml = (request.getEmail() != null && !request.getEmail().isBlank()) ? request.getEmail().trim().toLowerCase() : null;
         validarClienteUnico(null, doc, eml);
-        validarDatosCliente(request.getNombreCompleto(), request.getTelefono(), doc, eml);
+        validarDatosCliente(request);
         EntityCliente cliente = new EntityCliente();
-        cliente.setNombreCompleto(request.getNombreCompleto() != null ? request.getNombreCompleto().trim() : request.getNombreCompleto());
-        cliente.setTelefono(request.getTelefono() != null ? request.getTelefono().trim() : request.getTelefono());
+        cliente.setNombreCompleto(ValidationHelper.normalizarNombre(request.getNombreCompleto()));
+        cliente.setTipoDocumento(ValidationHelper.normalizarTexto(request.getTipoDocumento()) != null ? ValidationHelper.normalizarTexto(request.getTipoDocumento()).toUpperCase() : "DNI");
+        cliente.setTelefono(ValidationHelper.normalizarTexto(request.getTelefono()));
+        cliente.setCodigoPais(ValidationHelper.normalizarTexto(request.getCodigoPais()) != null ? ValidationHelper.normalizarTexto(request.getCodigoPais()) : "+51");
         cliente.setDocumento(doc);
         cliente.setEmail(eml);
         return toResponse(clienteRepository.save(cliente));
@@ -132,50 +137,23 @@ public class BusinessCliente {
     public ClienteResponse actualizar(Long id, RequestClienteInsert request) {
         EntityCliente c = buscarOExcepcion(id);
         String doc = (request.getDocumento() != null && !request.getDocumento().isBlank()) ? request.getDocumento().trim() : null;
-        String eml = (request.getEmail() != null && !request.getEmail().isBlank()) ? request.getEmail().trim() : null;
+        String eml = (request.getEmail() != null && !request.getEmail().isBlank()) ? request.getEmail().trim().toLowerCase() : null;
         validarClienteUnico(id, doc, eml);
-        validarDatosCliente(request.getNombreCompleto(), request.getTelefono(), doc, eml);
-        c.setNombreCompleto(request.getNombreCompleto() != null ? request.getNombreCompleto().trim() : request.getNombreCompleto());
-        c.setTelefono(request.getTelefono() != null ? request.getTelefono().trim() : request.getTelefono());
+        validarDatosCliente(request);
+        c.setNombreCompleto(ValidationHelper.normalizarNombre(request.getNombreCompleto()));
+        c.setTipoDocumento(ValidationHelper.normalizarTexto(request.getTipoDocumento()) != null ? ValidationHelper.normalizarTexto(request.getTipoDocumento()).toUpperCase() : "DNI");
+        c.setTelefono(ValidationHelper.normalizarTexto(request.getTelefono()));
+        c.setCodigoPais(ValidationHelper.normalizarTexto(request.getCodigoPais()) != null ? ValidationHelper.normalizarTexto(request.getCodigoPais()) : "+51");
         c.setDocumento(doc);
         c.setEmail(eml);
         return toResponse(clienteRepository.save(c));
     }
 
-    private void validarDatosCliente(String nombreCompleto, String telefono, String documento, String email) {
-        if (nombreCompleto != null) {
-            String trimmed = nombreCompleto.trim();
-            if (trimmed.isEmpty()) {
-                throw new BusinessException("El nombre no puede estar vacío");
-            }
-            if (trimmed.length() > 150) {
-                throw new BusinessException("El nombre no puede exceder 150 caracteres");
-            }
-            if (trimmed.matches(".*\\d.*")) {
-                throw new BusinessException("El nombre no puede contener números");
-            }
-        }
-
-        if (documento != null && !documento.isBlank()) {
-            String doc = documento.trim();
-            if (!doc.matches("^\\d{8}$")) {
-                throw new BusinessException("El documento (DNI) debe contener exactamente 8 dígitos numéricos");
-            }
-        }
-
-        if (email != null && !email.isBlank()) {
-            String eml = email.trim();
-            if (!eml.matches("^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$")) {
-                throw new BusinessException("El correo electrónico no tiene un formato válido");
-            }
-        }
-
-        if (telefono != null && !telefono.isBlank()) {
-            String tel = telefono.trim();
-            if (!tel.matches("^\\+?[0-9]{7,15}$")) {
-                throw new BusinessException("El teléfono debe contener solo números y opcionalmente iniciar con +. Ej: +51987654321");
-            }
-        }
+    private void validarDatosCliente(RequestClienteInsert request) {
+        ValidationHelper.validarNombre(request.getNombreCompleto(), "nombre del cliente");
+        ValidationHelper.validarDocumento(request.getTipoDocumento(), request.getDocumento());
+        ValidationHelper.validarTelefono(request.getCodigoPais(), request.getTelefono());
+        ValidationHelper.validarEmail(request.getEmail());
     }
 
     private void validarClienteUnico(Long excludeId, String documento, String email) {
@@ -233,7 +211,9 @@ public class BusinessCliente {
         ClienteResponse r = new ClienteResponse();
         r.setId(c.getId());
         r.setNombreCompleto(c.getNombreCompleto());
+        r.setTipoDocumento(c.getTipoDocumento() != null ? c.getTipoDocumento() : "DNI");
         r.setTelefono(c.getTelefono());
+        r.setCodigoPais(c.getCodigoPais() != null ? c.getCodigoPais() : "+51");
         r.setDocumento(c.getDocumento());
         r.setEmail(c.getEmail());
         r.setCreatedAt(c.getCreatedAt());

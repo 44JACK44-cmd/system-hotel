@@ -263,10 +263,13 @@ export class CheckOutComponent implements OnInit, OnDestroy, OnChanges {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Check-out realizado correctamente' });
         this.estadoActualizacion.habitacionCambio();
         this.estadoActualizacion.hospedajeCambio();
+        this.estadoActualizacion.incidenciaCambio();
+        this.estadoActualizacion.pagoCambio();
+        this.estadoActualizacion.cajaCambio();
         this.estadoActualizacion.notificacionCambio();
         setTimeout(() => this.cerrar(), 1500);
       },
-      error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error en check-out' }); }
+      error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error en check-out' }); }
     });
   }
 

@@ -249,6 +249,7 @@ public class BusinessReserva {
             throw new BusinessException("No se puede reservar con fecha de entrada en el pasado");
         }
         if (habitacion.getEstado() == EstadoHabitacion.LIMPIEZA ||
+                habitacion.getEstado() == EstadoHabitacion.SUCIA ||
                 habitacion.getEstado() == EstadoHabitacion.MANTENIMIENTO) {
             throw new BusinessException("La habitacion esta en " + habitacion.getEstado().name().toLowerCase() +
                     " y no puede reservarse");

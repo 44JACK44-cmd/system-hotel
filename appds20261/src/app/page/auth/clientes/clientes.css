@@ -422,6 +422,7 @@
   font-size: 13px;
 }
 .field-error { color: var(--clr-error, #ef4444); font-size: 11px; margin-top: 2px; }
+.cli-field-optional { font-weight: 400; color: var(--clr-on-surface-variant); font-size: 11px; }
 
 /* Toggle switch */
 .cli-toggle-label {

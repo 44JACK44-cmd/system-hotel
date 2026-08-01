@@ -44,7 +44,7 @@
       </div>
       <div style="position:relative;max-width:200px">
         <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);z-index:1">search</span>
-        <input style="width:100%;padding:8px 10px 8px 32px;border:1px solid var(--clr-outline-variant);border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;color:var(--clr-on-surface);background:var(--clr-surface-container-lowest);outline:none;box-sizing:border-box" placeholder="Buscar hab..." type="text" [(ngModel)]="searchTerm" (input)="onSearchInput()"/>
+        <input style="width:100%;padding:8px 10px 8px 32px;border:1px solid var(--clr-outline-variant);border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;color:var(--clr-on-surface);background:var(--clr-surface-container-lowest);box-sizing:border-box" placeholder="Buscar hab..." type="text" [(ngModel)]="searchTerm" (input)="onSearchInput()" aria-label="Buscar habitación"/>
       </div>
     </div>
     <div class="room-grid">
@@ -91,8 +91,8 @@
       </h3>
       <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:20px;background:color-mix(in srgb,var(--clr-error) 15%,transparent);color:var(--clr-error);font-size:11px;font-weight:700">{{ incidenciasActivas.length }}</span>
     </div>
-    <div style="padding:0;overflow-x:auto;max-height:500px;overflow-y:auto">
-      <table style="width:100%;border-collapse:collapse;text-align:left">
+    <div class="inc-table-card" style="padding:0;overflow-x:auto;max-height:500px;overflow-y:auto">
+      <table class="premium-table" style="width:100%;border-collapse:collapse;text-align:left">
         <thead>
           <tr style="background:var(--clr-surface-container-high)">
             <th style="padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-on-surface-variant);cursor:pointer;white-space:nowrap" (click)="toggleSort('habitacionNumero')">
@@ -156,6 +156,7 @@
         <div class="premium-field">
           <label>Habitaci&oacute;n / &Aacute;rea</label>
           <p-select formControlName="habitacionId" [options]="habitaciones" optionLabel="label" optionValue="id" placeholder="Seleccionar habitación" styleClass="w-full" appendTo="body" />
+          @if (incidenciaForm.get('habitacionId')?.invalid && incidenciaForm.get('habitacionId')?.touched) { <small class="field-error">Seleccione una habitación</small> }
         </div>
         <div class="premium-field">
           <label>Tipo</label>
@@ -163,7 +164,13 @@
         </div>
         <div class="premium-field">
           <label>Descripci&oacute;n del Problema</label>
-          <textarea class="premium-input" pTextarea formControlName="motivo" rows="3" maxlength="500" placeholder="Ej: Aire acondicionado no enfría..." style="resize:vertical"></textarea>
+          <textarea class="premium-input" pTextarea formControlName="motivo" rows="3" maxlength="300" placeholder="Ej: Aire acondicionado no enfría..." style="resize:vertical" aria-label="Descripción del Problema"></textarea>
+          @if (incidenciaForm.get('motivo')?.invalid && incidenciaForm.get('motivo')?.touched) {
+            @if (incidenciaForm.get('motivo')?.errors?.['required']) { <small class="field-error">La descripción es obligatoria</small> }
+            @else if (incidenciaForm.get('motivo')?.errors?.['minlength']) { <small class="field-error">La descripción debe tener al menos 5 caracteres</small> }
+            @else if (incidenciaForm.get('motivo')?.errors?.['maxlength']) { <small class="field-error">La descripción no puede superar 300 caracteres</small> }
+            @else if (incidenciaForm.get('motivo')?.errors?.['soloEspacios']) { <small class="field-error">La descripción no puede contener solo espacios</small> }
+          }
         </div>
         <div class="premium-field">
           <label>Fotos / Evidencia</label>

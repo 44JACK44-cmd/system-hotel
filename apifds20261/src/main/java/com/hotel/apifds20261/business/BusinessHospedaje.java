@@ -106,13 +106,21 @@ public class BusinessHospedaje {
             throw new BusinessException("La fecha de entrada aun no llega. No se puede hacer check-in");
         }
 
-        EntityHabitacion habitacion = reserva.getHabitacion();
+        EntityHabitacion habitacion = habitacionRepository.findByIdForUpdate(reserva.getHabitacion().getId());
+        if (habitacion == null) {
+            throw new ResourceNotFoundException("Habitacion no encontrada");
+        }
         if (!habitacion.getActivo()) {
             throw new BusinessException("La habitacion no esta activa");
         }
         if (habitacion.getEstado() != EstadoHabitacion.DISPONIBLE) {
             throw new BusinessException("La habitacion no esta disponible");
         }
+        if (hospedajeRepository.findActivoByHabitacionId(habitacion.getId()) != null) {
+            throw new BusinessException("La habitacion ya posee un hospedaje activo");
+        }
+
+        validarSinReservaSolapada(habitacion.getId(), LocalDate.now(), reserva.getFechaSalida(), reserva.getId());
 
         if (!reserva.getCliente().isActivo()) {
             throw new BusinessException("No se puede hacer check-in con un cliente inactivo");
@@ -145,9 +153,14 @@ public class BusinessHospedaje {
         hospedaje.setUsuario(usuario);
         hospedaje.setFechaIngreso(fechaIngreso);
         hospedaje.setFechaSalidaProgramada(fechaSalidaProg);
-        hospedaje.setTotalPagado(reserva.getMontoAdelanto());
 
-        BigDecimal saldoPendiente = reserva.getMontoTotal().subtract(reserva.getMontoAdelanto());
+        BigDecimal pagadoReserva = pagoRepository.findByReservaIdOrderByFechaPagoDesc(reserva.getId())
+                .stream()
+                .map(EntityPago::getMonto)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal saldoPendiente = reserva.getMontoTotal().subtract(pagadoReserva);
+        hospedaje.setTotalPagado(pagadoReserva);
         hospedaje.setDeudaPendiente(saldoPendiente);
 
         if (request.getMontoSaldo() != null && request.getMontoSaldo().compareTo(BigDecimal.ZERO) > 0) {
@@ -196,7 +209,7 @@ public class BusinessHospedaje {
         if (cliente == null) {
             throw new ResourceNotFoundException("Cliente no encontrado");
         }
-        EntityHabitacion habitacion = habitacionRepository.findById(request.getHabitacionId()).orElse(null);
+        EntityHabitacion habitacion = habitacionRepository.findByIdForUpdate(request.getHabitacionId());
         if (habitacion == null) {
             throw new ResourceNotFoundException("Habitacion no encontrada");
         }
@@ -211,6 +224,9 @@ public class BusinessHospedaje {
 
         if (!habitacion.getActivo() || habitacion.getEstado() != EstadoHabitacion.DISPONIBLE) {
             throw new BusinessException("La habitacion no esta disponible");
+        }
+        if (hospedajeRepository.findActivoByHabitacionId(habitacion.getId()) != null) {
+            throw new BusinessException("La habitacion ya posee un hospedaje activo");
         }
 
         List<EntityHospedaje> activosCliente = hospedajeRepository.findActivosByClienteId(cliente.getId());
@@ -247,11 +263,15 @@ public class BusinessHospedaje {
         LocalDateTime fechaIngreso = LocalDateTime.now();
         LocalDateTime fechaSalidaProg = fechaIngreso.toLocalDate().plusDays(noches).atTime(LocalTime.NOON);
 
+        validarSinReservaSolapada(habitacion.getId(), fechaIngreso.toLocalDate(), fechaSalidaProg.toLocalDate(), null);
+
         if (request.getMontoPago().compareTo(total) > 0) {
             throw new BusinessException("El monto pagado no puede exceder el total");
         }
 
-        validarCajaAbierta();
+        if (request.getMontoPago().compareTo(BigDecimal.ZERO) > 0) {
+            validarCajaAbierta();
+        }
 
         EntityHospedaje hospedaje = new EntityHospedaje();
         hospedaje.setCliente(cliente);
@@ -264,15 +284,17 @@ public class BusinessHospedaje {
 
         hospedaje = hospedajeRepository.save(hospedaje);
 
-        EntityPago pago = new EntityPago();
-        pago.setHospedaje(hospedaje);
-        pago.setUsuario(usuario);
-        pago.setMonto(request.getMontoPago());
-        pago.setMetodo(MetodoPago.valueOf(request.getMetodo()));
-        pago.setReferencia(request.getReferencia());
-        pago.setTipo(TipoPago.SALDO);
-        pago.setFechaPago(LocalDateTime.now());
-        pagoRepository.save(pago);
+        if (request.getMontoPago().compareTo(BigDecimal.ZERO) > 0) {
+            EntityPago pago = new EntityPago();
+            pago.setHospedaje(hospedaje);
+            pago.setUsuario(usuario);
+            pago.setMonto(request.getMontoPago());
+            pago.setMetodo(MetodoPago.valueOf(request.getMetodo()));
+            pago.setReferencia(request.getReferencia());
+            pago.setTipo(TipoPago.SALDO);
+            pago.setFechaPago(LocalDateTime.now());
+            pagoRepository.save(pago);
+        }
 
         habitacion.setEstado(EstadoHabitacion.OCUPADA);
         habitacionRepository.save(habitacion);
@@ -282,10 +304,17 @@ public class BusinessHospedaje {
 
     @Transactional
     public HospedajeResponse checkOut(RequestHospedajeCheckOut request, Long usuarioId) {
-        EntityHospedaje hospedaje = buscarOExcepcion(request.getHospedajeId());
+        EntityHospedaje hospedaje = hospedajeRepository.findByIdForUpdate(request.getHospedajeId());
+        if (hospedaje == null) {
+            throw new ResourceNotFoundException("Hospedaje no encontrado");
+        }
 
         if (hospedaje.getEstado() != EstadoHospedaje.ACTIVO) {
             throw new BusinessException("El hospedaje ya esta finalizado");
+        }
+
+        if (request.getFechaSalidaReal().isBefore(hospedaje.getFechaIngreso())) {
+            throw new BusinessException("La fecha de salida no puede ser anterior a la fecha de ingreso");
         }
 
         EntityUsuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
@@ -377,7 +406,7 @@ public class BusinessHospedaje {
         hospedaje = hospedajeRepository.save(hospedaje);
 
         EntityHabitacion habitacion = hospedaje.getHabitacion();
-        habitacion.setEstado(EstadoHabitacion.LIMPIEZA);
+        habitacion.setEstado(EstadoHabitacion.SUCIA);
         habitacionRepository.save(habitacion);
 
         EntityIncidenciaHabitacion incidencia = new EntityIncidenciaHabitacion();
@@ -405,7 +434,10 @@ public class BusinessHospedaje {
 
     @Transactional
     public HospedajeResponse extenderEstadia(Long hospedajeId, LocalDateTime nuevaFechaSalida, Long usuarioId) {
-        EntityHospedaje hospedaje = buscarOExcepcion(hospedajeId);
+        EntityHospedaje hospedaje = hospedajeRepository.findByIdForUpdate(hospedajeId);
+        if (hospedaje == null) {
+            throw new ResourceNotFoundException("Hospedaje no encontrado");
+        }
 
         if (hospedaje.getEstado() != EstadoHospedaje.ACTIVO) {
             throw new BusinessException("No se puede extender un hospedaje finalizado");
@@ -437,6 +469,25 @@ public class BusinessHospedaje {
             throw new BusinessException("La extension debe agregar al menos una noche adicional");
         }
 
+        int maxNoches = 30;
+        try {
+            String val = parametroRepository.findByClave("hotel.maxNochesHospedaje")
+                .map(EntityParametro::getValor).orElse("30");
+            maxNoches = Integer.parseInt(val);
+        } catch (Exception e) { maxNoches = 30; }
+        if (nochesNuevas > maxNoches) {
+            throw new BusinessException("La estancia no puede superar " + maxNoches + " noches en total");
+        }
+
+        LocalDate inicioBusqueda = hospedaje.getFechaSalidaProgramada().toLocalDate().plusDays(1);
+        if (nuevaFechaSalida.toLocalDate().isAfter(inicioBusqueda)) {
+            List<EntityReserva> solapadas = reservaRepository.findSolapadas(
+                    hospedaje.getHabitacion().getId(), inicioBusqueda, nuevaFechaSalida.toLocalDate());
+            if (!solapadas.isEmpty()) {
+                throw new BusinessException("No se puede extender la estadia: la habitacion tiene una reserva confirmada para esas fechas.");
+            }
+        }
+
         BigDecimal precioNoche = hospedaje.getHabitacion().getPrecioNoche();
         BigDecimal cargoExtension = precioNoche.multiply(BigDecimal.valueOf(nochesExtra));
 
@@ -449,7 +500,10 @@ public class BusinessHospedaje {
 
     @Transactional
     public HospedajeResponse cambiarHabitacion(Long hospedajeId, Long nuevaHabitacionId, String motivo, Long usuarioId) {
-        EntityHospedaje hospedaje = buscarOExcepcion(hospedajeId);
+        EntityHospedaje hospedaje = hospedajeRepository.findByIdForUpdate(hospedajeId);
+        if (hospedaje == null) {
+            throw new ResourceNotFoundException("Hospedaje no encontrado");
+        }
 
         if (hospedaje.getEstado() != EstadoHospedaje.ACTIVO) {
             throw new BusinessException("No se puede cambiar de habitacion en un hospedaje finalizado");
@@ -460,7 +514,7 @@ public class BusinessHospedaje {
             throw new ResourceNotFoundException("Usuario no encontrado");
         }
 
-        EntityHabitacion nuevaHabitacion = habitacionRepository.findById(nuevaHabitacionId).orElse(null);
+        EntityHabitacion nuevaHabitacion = habitacionRepository.findByIdForUpdate(nuevaHabitacionId);
         if (nuevaHabitacion == null) {
             throw new ResourceNotFoundException("Habitacion no encontrada");
         }
@@ -476,6 +530,10 @@ public class BusinessHospedaje {
             throw new BusinessException("La habitacion no esta disponible");
         }
 
+        validarSinReservaSolapada(nuevaHabitacion.getId(),
+                hospedaje.getFechaIngreso().toLocalDate(),
+                hospedaje.getFechaSalidaProgramada().toLocalDate(), null);
+
         long nochesOriginales = ChronoUnit.DAYS.between(
                 hospedaje.getFechaIngreso().toLocalDate(),
                 hospedaje.getFechaSalidaProgramada().toLocalDate());
@@ -487,8 +545,28 @@ public class BusinessHospedaje {
         }
 
         EntityHabitacion habitacionAnterior = hospedaje.getHabitacion();
-        habitacionAnterior.setEstado(EstadoHabitacion.DISPONIBLE);
+        habitacionAnterior.setEstado(EstadoHabitacion.SUCIA);
         habitacionRepository.save(habitacionAnterior);
+
+        EntityIncidenciaHabitacion incidenciaLimpieza = new EntityIncidenciaHabitacion();
+        incidenciaLimpieza.setHabitacion(habitacionAnterior);
+        incidenciaLimpieza.setUsuario(usuario);
+        incidenciaLimpieza.setTipo(TipoIncidencia.LIMPIEZA_CHECKOUT);
+        incidenciaLimpieza.setMotivo("Limpieza posterior al cambio de habitacion - Hab. " + habitacionAnterior.getNumero());
+        incidenciaLimpieza.setFechaInicio(LocalDateTime.now());
+        incidenciaRepository.save(incidenciaLimpieza);
+
+        EntityNotificacion notifLimpieza = new EntityNotificacion();
+        notifLimpieza.setTitulo("Limpieza pendiente");
+        notifLimpieza.setMensaje("Habitacion " + habitacionAnterior.getNumero() + " pendiente de limpieza");
+        notifLimpieza.setTipo("LIMPIEZA");
+        notifLimpieza.setPrioridad("MEDIA");
+        notifLimpieza.setFechaCreacion(LocalDateTime.now());
+        notifLimpieza.setLeida(false);
+        notifLimpieza.setEstado("PENDIENTE");
+        notifLimpieza.setEntidadTipo("INCIDENCIA");
+        notifLimpieza.setEntidadId(incidenciaLimpieza.getId());
+        notificacionRepository.save(notifLimpieza);
 
         nuevaHabitacion.setEstado(EstadoHabitacion.OCUPADA);
         habitacionRepository.save(nuevaHabitacion);
@@ -522,6 +600,18 @@ public class BusinessHospedaje {
             throw new ResourceNotFoundException("Hospedaje no encontrado");
         }
         return h;
+    }
+
+    private void validarSinReservaSolapada(Long habitacionId, LocalDate fechaEntrada, LocalDate fechaSalida, Long excludeReservaId) {
+        List<EntityReserva> solapadas = reservaRepository.findSolapadas(habitacionId, fechaEntrada, fechaSalida);
+        if (excludeReservaId != null) {
+            solapadas.removeIf(r -> r.getId().equals(excludeReservaId));
+        }
+        if (!solapadas.isEmpty()) {
+            EntityReserva r = solapadas.get(0);
+            throw new BusinessException("La habitacion tiene una reserva confirmada para estas fechas (Reserva #" + r.getId() +
+                    " - " + r.getCliente().getNombreCompleto() + "). No se puede ocupar en este periodo.");
+        }
     }
 
     private HospedajeResponse toResponse(EntityHospedaje h) {

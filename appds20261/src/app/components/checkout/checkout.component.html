@@ -236,7 +236,7 @@
   <!-- Footer always visible -->
   <div class="hs-slide-panel__footer" style="justify-content:flex-end">
     <button class="premium-btn" style="background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);padding:10px 24px" (click)="cerrar()" [disabled]="loading">Cancelar</button>
-    <button class="premium-btn" style="padding:10px 32px" [disabled]="loading || !hospedajeEncontrado" (click)="finalizarCheckOut()">
+    <button class="premium-btn" style="padding:10px 32px" [disabled]="loading || !hospedajeEncontrado || montoPago > totalDeuda" (click)="finalizarCheckOut()">
       @if (loading) {
         <span class="material-symbols-outlined" style="animation:co-spin 1s linear infinite">sync</span>
       }

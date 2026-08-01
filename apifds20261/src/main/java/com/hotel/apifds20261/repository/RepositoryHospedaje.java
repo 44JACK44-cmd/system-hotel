@@ -10,10 +10,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface RepositoryHospedaje extends JpaRepository<EntityHospedaje, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT h FROM EntityHospedaje h WHERE h.id = :id")
+    EntityHospedaje findByIdForUpdate(@Param("id") Long id);
 
     @EntityGraph(attributePaths = {"cliente", "habitacion", "usuario"})
     List<EntityHospedaje> findByEstadoOrderByFechaIngresoDesc(EstadoHospedaje estado);
@@ -44,6 +49,10 @@ public interface RepositoryHospedaje extends JpaRepository<EntityHospedaje, Long
            "OR LOWER(h.habitacion.numero) LIKE LOWER(CONCAT('%',:valor,'%')) " +
            "OR CAST(h.id AS string) LIKE CONCAT('%',:valor,'%'))")
     List<EntityHospedaje> searchActivos(@Param("valor") String valor);
+
+    @EntityGraph(attributePaths = {"habitacion"})
+    @Query("SELECT h FROM EntityHospedaje h WHERE h.fechaIngreso < :fin AND (h.fechaSalidaReal IS NULL OR h.fechaSalidaReal >= :inicio)")
+    List<EntityHospedaje> findHospedajesEnRango(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
 
     long countByUsuarioId(Long usuarioId);
 }

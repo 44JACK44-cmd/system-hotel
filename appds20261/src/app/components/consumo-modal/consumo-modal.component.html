@@ -10,7 +10,7 @@
       <div class="cm-body">
         <div class="cm-field">
           <label class="cm-label">Tipo de Consumo</label>
-          <select class="cm-select" [(ngModel)]="tipoSeleccionado">
+          <select class="cm-select" [(ngModel)]="tipoSeleccionado" aria-label="Tipo de Consumo">
             @for (t of tipos; track t) {
               <option [ngValue]="t">{{ t }}</option>
             }
@@ -18,16 +18,16 @@
         </div>
         <div class="cm-field">
           <label class="cm-label">Descripción</label>
-          <input class="cm-input" type="text" [(ngModel)]="descripcion" placeholder="Ej: Gaseosa, llamada, lavado..." maxlength="200" required />
+          <input class="cm-input" type="text" [(ngModel)]="descripcion" placeholder="Ej: Gaseosa, llamada, lavado..." maxlength="200" required aria-label="Descripción" />
         </div>
         <div class="cm-row">
           <div class="cm-field">
             <label class="cm-label">Cantidad</label>
-            <input class="cm-input" type="number" [(ngModel)]="cantidad" min="1" max="999" inputmode="numeric" />
+            <input class="cm-input" type="number" [(ngModel)]="cantidad" min="1" max="9999" inputmode="numeric" aria-label="Cantidad" />
           </div>
           <div class="cm-field">
             <label class="cm-label">Precio Unitario (S/)</label>
-            <input class="cm-input" type="number" [(ngModel)]="precioUnitario" min="0.01" step="0.01" inputmode="decimal" />
+            <input class="cm-input" type="number" [(ngModel)]="precioUnitario" min="0.01" step="0.01" inputmode="decimal" aria-label="Precio Unitario (S/)" />
           </div>
         </div>
         @if (cantidad > 0 && precioUnitario > 0) {
@@ -37,7 +37,7 @@
         }
         <div class="cm-field">
           <label class="cm-label">Observación (opcional)</label>
-          <textarea class="cm-textarea" [(ngModel)]="observacion" placeholder="Notas adicionales..." rows="2" maxlength="500"></textarea>
+          <textarea class="cm-textarea" [(ngModel)]="observacion" placeholder="Notas adicionales..." rows="2" maxlength="500" aria-label="Observación (opcional)"></textarea>
         </div>
       </div>
       <div class="cm-footer">

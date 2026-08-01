@@ -47,15 +47,15 @@
             <div class="perfil-form">
               <div class="perfil-field">
                 <label>NOMBRE COMPLETO</label>
-                <input class="perfil-input" type="text" [(ngModel)]="editData.nombreCompleto" maxlength="150" minlength="2" autocomplete="name" />
+                <input class="perfil-input" type="text" [(ngModel)]="editData.nombreCompleto" maxlength="150" minlength="2" autocomplete="name" aria-label="NOMBRE COMPLETO" />
               </div>
               <div class="perfil-field">
                 <label>EMAIL</label>
-                <input class="perfil-input" type="email" [(ngModel)]="editData.email" maxlength="100" inputmode="email" autocomplete="email" />
+                <input class="perfil-input" type="email" [(ngModel)]="editData.email" maxlength="100" inputmode="email" autocomplete="email" aria-label="EMAIL" />
               </div>
               <div class="perfil-field">
                 <label>TELÉFONO</label>
-                <input class="perfil-input" type="tel" [(ngModel)]="editData.telefono" maxlength="20" inputmode="tel" autocomplete="tel" />
+                <input class="perfil-input" type="tel" [(ngModel)]="editData.telefono" maxlength="20" inputmode="tel" autocomplete="tel" aria-label="TELÉFONO" />
               </div>
               <div class="perfil-form-actions">
                 <button class="perfil-btn perfil-btn-outline" (click)="cancelarEdicion()" [disabled]="saving">Cancelar</button>
@@ -123,15 +123,15 @@
     <div class="perfil-modal-body">
       <div class="perfil-field">
         <label>CONTRASEÑA ACTUAL</label>
-        <input class="perfil-input" type="password" [(ngModel)]="passData.currentPassword" maxlength="100" autocomplete="current-password" />
+        <input class="perfil-input" type="password" [(ngModel)]="passData.currentPassword" maxlength="100" autocomplete="current-password" aria-label="CONTRASEÑA ACTUAL" />
       </div>
       <div class="perfil-field">
         <label>NUEVA CONTRASEÑA</label>
-        <input class="perfil-input" type="password" [(ngModel)]="passData.newPassword" maxlength="100" minlength="6" autocomplete="new-password" />
+        <input class="perfil-input" type="password" [(ngModel)]="passData.newPassword" maxlength="100" minlength="6" autocomplete="new-password" aria-label="NUEVA CONTRASEÑA" />
       </div>
       <div class="perfil-field">
         <label>CONFIRMAR NUEVA CONTRASEÑA</label>
-        <input class="perfil-input" type="password" [(ngModel)]="passData.confirmPassword" maxlength="100" minlength="6" autocomplete="new-password" />
+        <input class="perfil-input" type="password" [(ngModel)]="passData.confirmPassword" maxlength="100" minlength="6" autocomplete="new-password" aria-label="CONFIRMAR NUEVA CONTRASEÑA" />
       </div>
     </div>
     <div class="perfil-modal-footer">

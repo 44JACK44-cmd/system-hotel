@@ -58,6 +58,8 @@ export interface ClienteResponse {
   id: number;
   nombreCompleto: string;
   telefono: string;
+  codigoPais?: string;
+  tipoDocumento?: string;
   documento: string;
   email: string;
   createdAt: string;

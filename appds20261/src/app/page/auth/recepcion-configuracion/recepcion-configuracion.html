@@ -20,10 +20,12 @@
           <span class="material-symbols-outlined">settings</span>
           <span>Mis Preferencias</span>
         </button>
-        <button class="rcfg-tab" [class.rcfg-tab--active]="activeTab === 'datos-hotel'" (click)="switchTab('datos-hotel')">
-          <span class="material-symbols-outlined">hotel</span>
-          <span>Datos del Hotel</span>
-        </button>
+        @if (authService.isAdmin()) {
+          <button class="rcfg-tab" [class.rcfg-tab--active]="activeTab === 'datos-hotel'" (click)="switchTab('datos-hotel')">
+            <span class="material-symbols-outlined">hotel</span>
+            <span>Datos del Hotel</span>
+          </button>
+        }
       </nav>
 
       <section class="rcfg-content">
@@ -65,7 +67,7 @@
           </div>
         }
 
-        @if (activeTab === 'datos-hotel') {
+        @if (authService.isAdmin() && activeTab === 'datos-hotel') {
           <div class="rcfg-card">
             <div class="rcfg-card-header">
               <h3 class="rcfg-card-title">Información del Hotel</h3>
@@ -95,23 +97,23 @@
               <div class="rcfg-field-grid">
                 <div class="rcfg-field">
                   <label>NOMBRE COMERCIAL</label>
-                  <input class="rcfg-input" type="text" [(ngModel)]="params['hotel.nombre']" maxlength="100" required />
+                  <input class="rcfg-input" type="text" [(ngModel)]="params['hotel.nombre']" maxlength="100" required aria-label="NOMBRE COMERCIAL" />
                 </div>
                 <div class="rcfg-field">
                   <label>RUC / ID FISCAL</label>
-                  <input class="rcfg-input" type="text" [(ngModel)]="params['hotel.ruc']" maxlength="20" pattern="[0-9]{11}" inputmode="numeric" />
+                  <input class="rcfg-input" type="text" [(ngModel)]="params['hotel.ruc']" maxlength="20" pattern="[0-9]{11}" inputmode="numeric" aria-label="RUC / ID FISCAL" />
                 </div>
                 <div class="rcfg-field rcfg-field--full">
                   <label>DIRECCIÓN</label>
-                  <input class="rcfg-input" type="text" [(ngModel)]="params['hotel.direccion']" maxlength="200" />
+                  <input class="rcfg-input" type="text" [(ngModel)]="params['hotel.direccion']" maxlength="200" aria-label="DIRECCIÓN" />
                 </div>
                 <div class="rcfg-field">
                   <label>TELÉFONO</label>
-                  <input class="rcfg-input" type="tel" [(ngModel)]="params['hotel.telefono']" maxlength="20" inputmode="tel" />
+                  <input class="rcfg-input" type="tel" [(ngModel)]="params['hotel.telefono']" maxlength="20" inputmode="tel" aria-label="TELÉFONO" />
                 </div>
                 <div class="rcfg-field">
                   <label>EMAIL</label>
-                  <input class="rcfg-input" type="email" [(ngModel)]="params['hotel.email']" maxlength="100" inputmode="email" />
+                  <input class="rcfg-input" type="email" [(ngModel)]="params['hotel.email']" maxlength="100" inputmode="email" aria-label="EMAIL" />
                 </div>
               </div>
             </div>

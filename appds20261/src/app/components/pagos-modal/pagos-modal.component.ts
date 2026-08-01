@@ -57,16 +57,17 @@ export class PagosModalComponent implements OnInit, OnDestroy {
   hospedajeObj: any = null;
 
   puedeGuardar(): boolean {
-    return this.monto > 0;
+    return this.monto > 0 && this.monto <= 99999999.99;
   }
 
   guardar(): void {
+    if (!this.puedeGuardar()) return;
     this.loading = true;
     this.pagoService.registrar({
       tipo: this.tipo,
       monto: this.monto,
       metodo: this.metodo,
-      referencia: this.referencia || undefined,
+      referencia: this.referencia?.trim() || undefined,
       reservaId: this.reservaId || undefined,
       hospedajeId: this.hospedajeId || undefined
     }).subscribe({
@@ -78,7 +79,7 @@ export class PagosModalComponent implements OnInit, OnDestroy {
         this.estadoActualizacion.reservaCambio();
         setTimeout(() => this.cerrar(), 1000);
       },
-      error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al registrar pago' }); }
+      error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al registrar pago' }); }
     });
   }
 

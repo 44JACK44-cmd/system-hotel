@@ -7,6 +7,7 @@ import com.hotel.apifds20261.dto.response.ReservaResponse;
 import com.hotel.apifds20261.dto.response.ResponsePage;
 import com.hotel.apifds20261.dto.response.ResponseReserva;
 import com.hotel.apifds20261.dto.response.SuggestionResponse;
+import com.hotel.apifds20261.exception.BusinessException;
 import com.hotel.apifds20261.security.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,17 @@ public class ReservaController {
 
     private final BusinessReserva reservaBusiness;
     private final JwtService jwtService;
+
+    private Long validarToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new BusinessException("Token no proporcionado o formato invalido");
+        }
+        String token = authHeader.substring(7);
+        if (!jwtService.isTokenValid(token)) {
+            throw new BusinessException("Token invalido o expirado");
+        }
+        return jwtService.getUserIdFromToken(token);
+    }
 
     @GetMapping("getall")
     public ResponseEntity<ResponseReserva> actionGetAll() {
@@ -75,7 +87,7 @@ public class ReservaController {
     public ResponseEntity<ResponseReserva> actionInsert(
             @Valid @RequestBody RequestReservaInsert request,
             @RequestHeader("Authorization") String authHeader) {
-        Long usuarioId = jwtService.getUserIdFromToken(authHeader.substring(7));
+        Long usuarioId = validarToken(authHeader);
         ReservaResponse item = reservaBusiness.crear(request, usuarioId);
         ResponseReserva response = new ResponseReserva();
         response.success();
@@ -113,34 +125,28 @@ public class ReservaController {
     public ResponseEntity<ResponseReserva> actionCancel(
             @PathVariable Long id,
             @RequestHeader("Authorization") String authHeader) {
-        try {
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                ResponseReserva response = new ResponseReserva();
-                response.listMessage.add("Token no proporcionado o formato invalido");
-                return ResponseEntity.status(401).body(response);
-            }
-            String token = authHeader.substring(7);
-            if (!jwtService.isTokenValid(token)) {
-                ResponseReserva response = new ResponseReserva();
-                response.listMessage.add("Token invalido o expirado");
-                return ResponseEntity.status(401).body(response);
-            }
-            String rol = jwtService.getRolFromToken(token);
-            if (!"ADMIN".equals(rol)) {
-                ResponseReserva response = new ResponseReserva();
-                response.listMessage.add("Solo el administrador puede cancelar reservas");
-                return ResponseEntity.status(403).body(response);
-            }
-            reservaBusiness.cancelar(id);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             ResponseReserva response = new ResponseReserva();
-            response.success();
-            response.listMessage.add("Reserva cancelada exitosamente");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ResponseReserva response = new ResponseReserva();
-            response.listMessage.add("Error al procesar la solicitud");
-            return ResponseEntity.status(500).body(response);
+            response.listMessage.add("Token no proporcionado o formato invalido");
+            return ResponseEntity.status(401).body(response);
         }
+        String token = authHeader.substring(7);
+        if (!jwtService.isTokenValid(token)) {
+            ResponseReserva response = new ResponseReserva();
+            response.listMessage.add("Token invalido o expirado");
+            return ResponseEntity.status(401).body(response);
+        }
+        String rol = jwtService.getRolFromToken(token);
+        if (!"ADMIN".equals(rol)) {
+            ResponseReserva response = new ResponseReserva();
+            response.listMessage.add("Solo el administrador puede cancelar reservas");
+            return ResponseEntity.status(403).body(response);
+        }
+        reservaBusiness.cancelar(id);
+        ResponseReserva response = new ResponseReserva();
+        response.success();
+        response.listMessage.add("Reserva cancelada exitosamente");
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("search/suggestions")

@@ -13,22 +13,31 @@
       <form [formGroup]="clienteForm" style="display:flex;flex-direction:column;gap:16px">
         <div class="premium-field">
           <label>Nombre Completo</label>
-          <div class="hs-input-icon"><span class="material-symbols-outlined">person</span><input class="premium-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan Pérez" /></div>
-          @if (clienteForm.get('nombreCompleto')?.invalid && clienteForm.get('nombreCompleto')?.touched) { <p class="hs-error">El nombre es obligatorio</p> }
+          <div class="hs-input-icon"><span class="material-symbols-outlined">person</span><input class="premium-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan Pérez" maxlength="60" minlength="2" autocomplete="name" aria-label="Nombre Completo" /></div>
+          @if (clienteForm.get('nombreCompleto')?.invalid && clienteForm.get('nombreCompleto')?.touched) {
+            @if (clienteForm.get('nombreCompleto')?.errors?.['required']) { <p class="hs-error">El nombre es obligatorio</p> }
+            @else if (clienteForm.get('nombreCompleto')?.errors?.['minlength']) { <p class="hs-error">El nombre debe tener al menos 2 caracteres</p> }
+            @else if (clienteForm.get('nombreCompleto')?.errors?.['letrasInvalidas']) { <p class="hs-error">Solo se permiten letras (incluye tildes y Ñ). Sin números ni símbolos</p> }
+            @else if (clienteForm.get('nombreCompleto')?.errors?.['espaciosDobles']) { <p class="hs-error">No se permiten espacios dobles entre palabras</p> }
+          }
         </div>
         <div class="premium-field">
           <label>Teléfono</label>
-          <div class="hs-input-icon"><span class="material-symbols-outlined">phone</span><input class="premium-input" type="text" formControlName="telefono" placeholder="999 888 777" /></div>
-          @if (clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched) { <p class="hs-error">El teléfono es obligatorio</p> }
+          <div style="display:flex;gap:8px">
+            <div class="hs-input-icon" style="flex:0 0 80px"><input class="premium-input" type="text" formControlName="codigoPais" placeholder="+51" maxlength="5" inputmode="tel" style="text-align:center" aria-label="Teléfono" /></div>
+            <div class="hs-input-icon" style="flex:1"><span class="material-symbols-outlined">phone</span><input class="premium-input" type="text" formControlName="telefono" placeholder="999888777" maxlength="12" inputmode="tel" autocomplete="tel" aria-label="Teléfono" /></div>
+          </div>
+          @if (clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched) { <p class="hs-error">El teléfono debe contener solo números (6 a 12 dígitos)</p> }
+          @if (clienteForm.get('codigoPais')?.invalid && clienteForm.get('codigoPais')?.touched) { <p class="hs-error">Código de país inválido. Ej: +51</p> }
         </div>
         <div class="premium-field">
           <label>Documento (opcional)</label>
-          <div class="hs-input-icon"><span class="material-symbols-outlined">badge</span><input class="premium-input" type="text" formControlName="documento" placeholder="DNI / Pasaporte" /></div>
+          <div class="hs-input-icon"><span class="material-symbols-outlined">badge</span><input class="premium-input" type="text" formControlName="documento" placeholder="DNI / Pasaporte" maxlength="20" aria-label="Documento (opcional)" /></div>
         </div>
         <div class="premium-field">
           <label>Email (opcional)</label>
-          <div class="hs-input-icon"><span class="material-symbols-outlined">mail</span><input class="premium-input" type="email" formControlName="email" placeholder="cliente@correo.com" /></div>
-          @if (clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched) { <p class="hs-error">Email inválido</p> }
+          <div class="hs-input-icon"><span class="material-symbols-outlined">mail</span><input class="premium-input" type="email" formControlName="email" placeholder="cliente@correo.com" maxlength="100" inputmode="email" aria-label="Email (opcional)" /></div>
+          @if (clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched) { <p class="hs-error">Ingrese un correo electrónico válido</p> }
         </div>
       </form>
     </div>

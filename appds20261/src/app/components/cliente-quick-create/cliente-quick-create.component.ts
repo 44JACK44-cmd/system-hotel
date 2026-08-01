@@ -27,11 +27,21 @@ export class ClienteQuickCreateComponent implements OnInit, OnDestroy {
   loading = false;
 
   clienteForm = this.fb.group({
-    nombreCompleto: ['', Validators.required],
-    telefono: ['', Validators.required],
-    documento: [''],
-    email: ['']
+    nombreCompleto: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60), this.nombreSoloLetras]],
+    telefono: ['', [Validators.required, Validators.pattern(/^\d{6,12}$/)]],
+    documento: ['', [Validators.maxLength(20)]],
+    email: ['', [Validators.email, Validators.maxLength(100)]],
+    codigoPais: ['+51', [Validators.pattern(/^\+?[0-9]{1,4}$/)]],
+    tipoDocumento: ['DNI']
   });
+
+  private nombreSoloLetras(control: any): { [key: string]: any } | null {
+    if (!control.value) return null;
+    const v = String(control.value).trim();
+    if (/[^A-Za-zÁÉÍÓÚÜáéíóúüÑñ\s]/.test(v)) return { letrasInvalidas: true };
+    if (/\s{2,}/.test(v)) return { espaciosDobles: true };
+    return null;
+  }
 
   ngOnInit(): void {}
 
@@ -39,8 +49,17 @@ export class ClienteQuickCreateComponent implements OnInit, OnDestroy {
 
   guardar(): void {
     if (this.clienteForm.invalid) return;
+    const v = this.clienteForm.value;
+    const payload: any = {
+      nombreCompleto: v.nombreCompleto?.trim().replace(/\s{2,}/g, ' '),
+      tipoDocumento: v.tipoDocumento || 'DNI',
+      documento: v.documento?.trim() || null,
+      telefono: v.telefono?.trim(),
+      codigoPais: v.codigoPais?.trim() || '+51',
+      email: v.email?.trim().toLowerCase() || null
+    };
     this.loading = true;
-    this.clienteService.crear(this.clienteForm.value).subscribe({
+    this.clienteService.crear(payload).subscribe({
       next: (res) => {
         this.loading = false;
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Cliente creado correctamente' });
@@ -69,7 +88,7 @@ export class ClienteQuickCreateComponent implements OnInit, OnDestroy {
             }
           });
         } else {
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al crear cliente' });
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al crear cliente' });
         }
       }
     });

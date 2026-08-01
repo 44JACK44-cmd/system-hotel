@@ -63,8 +63,8 @@ export class HabitacionesComponent implements OnInit, OnDestroy {
   ];
 
   habForm = this.fb.group({
-    piso: [1, [Validators.required, Validators.min(1)]],
-    numero: ['', [Validators.required, Validators.maxLength(10)]],
+    piso: [1, [Validators.required, Validators.min(1), Validators.max(99)]],
+    numero: ['', [Validators.required, Validators.pattern(/^\d{1,4}$/)]],
     tipo: ['SIMPLE', Validators.required],
     precioNoche: [0, [Validators.required, Validators.min(0.01)]]
   });
@@ -172,16 +172,18 @@ export class HabitacionesComponent implements OnInit, OnDestroy {
 
   save(): void {
     if (this.habForm.invalid) return;
+    const v = this.habForm.value;
+    const payload = { ...v, numero: String(v.numero).trim() };
     this.loading = true;
     if (this.editing && this.editingId) {
-      this.habService.actualizar(this.editingId, this.habForm.value).subscribe({
+      this.habService.actualizar(this.editingId, payload).subscribe({
         next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Habitacion actualizada' }); this.dialogVisible = false; this.layoutState.setOverlay(false); this.loading = false; this.loadData(); this.estadoActualizacion.habitacionCambio(); },
-        error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); this.appRef.tick(); }
+        error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error' }); this.appRef.tick(); }
       });
     } else {
-      this.habService.crear(this.habForm.value).subscribe({
+      this.habService.crear(payload).subscribe({
         next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Habitacion creada' }); this.dialogVisible = false; this.layoutState.setOverlay(false); this.loading = false; this.loadData(); this.estadoActualizacion.habitacionCambio(); },
-        error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); this.appRef.tick(); }
+        error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error' }); this.appRef.tick(); }
       });
     }
   }

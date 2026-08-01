@@ -17,18 +17,17 @@
         <div style="position:relative;flex:1;min-width:200px">
           <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">search</span>
           <input class="premium-input" type="text" [(ngModel)]="searchTerm" (input)="onSearchInput()"
-            placeholder="Buscar por nombre, DNI, correo o teléfono..." style="padding-left:32px" />
+            placeholder="Buscar por nombre, DNI, correo o teléfono..." style="padding-left:32px" aria-label="Buscar cliente" />
         </div>
-        @if (isAdmin) {
-          <div class="cli-toggle-label" (click)="toggleInactivos()">
-            <span class="cli-toggle-track" [class.cli-toggle-on]="includeInactivos">
-              <span class="cli-toggle-thumb" [class.cli-toggle-thumb-on]="includeInactivos"></span>
-            </span>
-            <span class="cli-toggle-text">{{ includeInactivos ? 'Activos' : 'Inactivos' }}</span>
-          </div>
-        }
+        <div class="cli-toggle-label" (click)="toggleInactivos()" role="switch" tabindex="0" [attr.aria-checked]="includeInactivos" aria-label="Mostrar clientes inactivos" (keydown.enter)="toggleInactivos()" (keydown.space)="$event.preventDefault(); toggleInactivos()">
+          <span class="cli-toggle-track" [class.cli-toggle-on]="includeInactivos">
+            <span class="cli-toggle-thumb" [class.cli-toggle-thumb-on]="includeInactivos"></span>
+          </span>
+          <span class="cli-toggle-text">{{ includeInactivos ? 'Todos' : 'Solo activos' }}</span>
+        </div>
       </div>
       <p-toast />
+      <p-confirmDialog />
       <div class="premium-card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
         <div style="overflow-x:auto;max-height:400px;overflow-y:auto">
         <table class="premium-table">
@@ -164,6 +163,115 @@
                     <div style="text-align:right">
                       @if (r.totalPagado) { <p class="cli-history-amount">S/ {{ r.totalPagado.toFixed(2) }}</p> }
                       <span class="badge" [ngClass]="r.estado === 'CONFIRMADA' ? 'badge-confirmed' : r.estado === 'CANCELADA' ? 'badge-cancelled' : r.estado === 'REALIZADA' ? 'badge-completed' : 'badge-info'">{{ r.estado }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else { <p class="cli-empty-text">Sin estancias registradas.</p> }
+          </section>
+          @if (detailCliente.observaciones) {
+            <section class="cli-section">
+              <h3 class="cli-section-title">Notas de Recepción</h3>
+              <div class="cli-notes-card">
+                "{{ detailCliente.observaciones }}"
+              </div>
+            </section>
+          }
+        </div>
+      </aside>
+    }
+  </div>
+</div>
+@if (dialogVisible) {
+  <div class="hs-overlay" (click)="closeDialog()"></div>
+  <div class="hs-slide-panel">
+    <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:18px">{{ editing ? 'edit' : 'person_add' }}</span>
+        </div>
+        <span style="font-weight:700;font-size:16px;color:#fff">{{ editing ? 'Editar Cliente' : 'Nuevo Cliente' }}</span>
+      </div>
+      <button style="width:32px;height:32px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s" (click)="closeDialog()" (mouseenter)="$any($event.currentTarget).style.background='rgba(255,255,255,0.2)'" (mouseleave)="$any($event.currentTarget).style.background='rgba(255,255,255,0.1)'"><span class="material-symbols-outlined" style="font-size:18px">close</span></button>
+    </div>
+    <div class="hs-slide-panel__body">
+      <form [formGroup]="clienteForm" style="display:flex;flex-direction:column;gap:16px">
+        <div class="premium-field">
+          <label>Nombre Completo</label>
+          <div style="position:relative">
+            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">person</span>
+            <input class="premium-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan Pérez" maxlength="60" minlength="2" autocomplete="name" style="padding-left:32px" aria-label="Nombre Completo" />
+          </div>
+          @if (clienteForm.get('nombreCompleto')?.invalid && clienteForm.get('nombreCompleto')?.touched) {
+            @if (clienteForm.get('nombreCompleto')?.errors?.['required']) { <small class="field-error">El nombre es obligatorio</small> }
+            @else if (clienteForm.get('nombreCompleto')?.errors?.['minlength']) { <small class="field-error">El nombre debe tener al menos 2 caracteres</small> }
+            @else if (clienteForm.get('nombreCompleto')?.errors?.['maxlength']) { <small class="field-error">El nombre no puede superar 60 caracteres</small> }
+            @else if (clienteForm.get('nombreCompleto')?.errors?.['letrasInvalidas']) { <small class="field-error">Solo se permiten letras (incluye tildes y Ñ). Sin números ni símbolos</small> }
+            @else if (clienteForm.get('nombreCompleto')?.errors?.['espaciosDobles']) { <small class="field-error">No se permiten espacios dobles entre palabras</small> }
+          }
+        </div>
+        <div class="premium-field">
+          <label>Tipo de documento</label>
+          <div style="display:flex;gap:8px">
+            <button type="button" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--clr-outline-variant);background:transparent;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s"
+              [style.border-color]="clienteForm.get('tipoDocumento')?.value === 'DNI' ? 'var(--clr-status-available)' : 'var(--clr-outline-variant)'"
+              [style.background]="clienteForm.get('tipoDocumento')?.value === 'DNI' ? 'color-mix(in srgb, var(--clr-status-available) 8%, transparent)' : 'transparent'"
+              (click)="clienteForm.get('tipoDocumento')?.setValue('DNI')">
+              <span class="material-symbols-outlined" style="font-size:18px">badge</span> DNI
+            </button>
+            <button type="button" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--clr-outline-variant);background:transparent;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s"
+              [style.border-color]="clienteForm.get('tipoDocumento')?.value === 'PASAPORTE' ? 'var(--clr-tertiary)' : 'var(--clr-outline-variant)'"
+              [style.background]="clienteForm.get('tipoDocumento')?.value === 'PASAPORTE' ? 'color-mix(in srgb, var(--clr-tertiary) 8%, transparent)' : 'transparent'"
+              (click)="clienteForm.get('tipoDocumento')?.setValue('PASAPORTE')">
+              <span class="material-symbols-outlined" style="font-size:18px">flight</span> PASAPORTE
+            </button>
+          </div>
+        </div>
+        <div class="premium-field">
+          <label>N&uacute;mero de documento @if (clienteForm.get('tipoDocumento')?.value !== 'PASAPORTE') { <span class="cli-field-optional">(opcional)</span> }</label>
+          <div style="position:relative">
+            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">badge</span>
+            @if (clienteForm.get('tipoDocumento')?.value === 'PASAPORTE') {
+              <input class="premium-input" type="text" formControlName="documento" placeholder="P1234567" maxlength="20" autocomplete="off" style="padding-left:32px" aria-label="Número de documento (opcional)" />
+            } @else {
+              <input class="premium-input" type="text" formControlName="documento" placeholder="12345678" maxlength="8" minlength="8" pattern="[0-9]{8}" inputmode="numeric" autocomplete="off" style="padding-left:32px" aria-label="Número de documento (opcional)" />
+            }
+          </div>
+          @if (clienteForm.get('documento')?.invalid && clienteForm.get('documento')?.touched) {
+            @if (clienteForm.get('tipoDocumento')?.value === 'PASAPORTE') { <small class="field-error">El pasaporte no puede exceder 20 caracteres</small> }
+            @else { <small class="field-error">El DNI debe contener exactamente 8 dígitos</small> }
+          }
+        </div>
+        <div class="premium-field">
+          <label>Tel&eacute;fono</label>
+          <div style="display:flex;gap:8px">
+            <div style="position:relative;flex:0 0 90px">
+              <input class="premium-input" type="text" formControlName="codigoPais" placeholder="+51" maxlength="5" inputmode="tel" autocomplete="tel-country-code" style="text-align:center" aria-label="Teléfono" />
+            </div>
+            <div style="position:relative;flex:1">
+              <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">phone</span>
+              <input class="premium-input" type="text" formControlName="telefono" placeholder="999888777" maxlength="12" inputmode="tel" autocomplete="tel-national" style="padding-left:32px" aria-label="Teléfono" />
+            </div>
+          </div>
+          @if (clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched) { <small class="field-error">El teléfono debe contener solo números (6 a 12 dígitos)</small> }
+          @if (clienteForm.get('codigoPais')?.invalid && clienteForm.get('codigoPais')?.touched) { <small class="field-error">Código de país inválido. Ej: +51</small> }
+        </div>
+        <div class="premium-field">
+          <label>Email (opcional)</label>
+          <div style="position:relative">
+            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">mail</span>
+            <input class="premium-input" type="email" formControlName="email" placeholder="correo@ejemplo.com" maxlength="100" inputmode="email" autocomplete="email" style="padding-left:32px" aria-label="Email (opcional)" />
+          </div>
+          @if (clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched) { <small class="field-error">Ingrese un correo electrónico válido</small> }
+        </div>
+      </form>
+    </div>
+    <div class="hs-slide-panel__footer" style="border-top:1px solid var(--clr-outline-variant);padding:16px 20px;display:flex;gap:10px">
+      <button class="premium-btn" style="flex:1;background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);justify-content:center;padding:12px" (click)="closeDialog()">Cancelar</button>
+      <button class="premium-btn" style="flex:1;justify-content:center;padding:12px" [disabled]="clienteForm.invalid || loading" (click)="save()">
+        @if (loading) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
+        {{ editing ? 'Guardar Cambios' : 'Crear Cliente' }}
+      </button>
     </div>
   </div>
 }
@@ -214,11 +322,11 @@
       </div>
       <div class="premium-field">
         <label>Referencia (opcional)</label>
-        <input class="premium-input" type="text" [(ngModel)]="cobrarReferencia" placeholder="N&uacute;mero de operaci&oacute;n" maxlength="100" />
+        <input class="premium-input" type="text" [(ngModel)]="cobrarReferencia" placeholder="N&uacute;mero de operaci&oacute;n" maxlength="100" aria-label="Referencia (opcional)" />
       </div>
       <div class="premium-field">
         <label>Observaci&oacute;n (opcional)</label>
-        <textarea class="premium-input" [(ngModel)]="cobrarObservacion" rows="2" placeholder="Notas..." maxlength="500" style="resize:vertical"></textarea>
+        <textarea class="premium-input" [(ngModel)]="cobrarObservacion" rows="2" placeholder="Notas..." maxlength="500" style="resize:vertical" aria-label="Observación (opcional)"></textarea>
       </div>
     </div>
     <div class="hs-slide-panel__footer" style="padding:16px 24px;gap:12px">
@@ -232,79 +340,6 @@
         }
         <span class="material-symbols-outlined">check_circle</span>
         Registrar Pago
-      </button>
-    </div>
-  </div>
-}
-              </div>
-            } @else { <p class="cli-empty-text">Sin estancias registradas.</p> }
-          </section>
-          @if (detailCliente.observaciones) {
-            <section class="cli-section">
-              <h3 class="cli-section-title">Notas de Recepción</h3>
-              <div class="cli-notes-card">
-                "{{ detailCliente.observaciones }}"
-              </div>
-            </section>
-          }
-        </div>
-      </aside>
-    }
-  </div>
-</div>
-@if (dialogVisible) {
-  <div class="hs-overlay" (click)="closeDialog()"></div>
-  <div class="hs-slide-panel">
-    <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
-          <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:18px">{{ editing ? 'edit' : 'person_add' }}</span>
-        </div>
-        <span style="font-weight:700;font-size:16px;color:#fff">{{ editing ? 'Editar Cliente' : 'Nuevo Cliente' }}</span>
-      </div>
-      <button style="width:32px;height:32px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s" (click)="closeDialog()" (mouseenter)="$any($event.currentTarget).style.background='rgba(255,255,255,0.2)'" (mouseleave)="$any($event.currentTarget).style.background='rgba(255,255,255,0.1)'"><span class="material-symbols-outlined" style="font-size:18px">close</span></button>
-    </div>
-    <div class="hs-slide-panel__body">
-      <form [formGroup]="clienteForm" style="display:flex;flex-direction:column;gap:16px">
-        <div class="premium-field">
-          <label>Nombre Completo</label>
-          <div style="position:relative">
-            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">person</span>
-            <input class="premium-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan Pérez" maxlength="150" minlength="2" autocomplete="name" style="padding-left:32px" />
-          </div>
-          @if (clienteForm.get('nombreCompleto')?.invalid && clienteForm.get('nombreCompleto')?.touched) { <small class="field-error">El nombre es obligatorio (mín. 2 caracteres)</small> }
-        </div>
-        <div class="premium-field">
-          <label>Tel&eacute;fono</label>
-          <div style="position:relative">
-            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">phone</span>
-            <input class="premium-input" type="text" formControlName="telefono" placeholder="999 888 777" maxlength="20" inputmode="tel" autocomplete="tel" style="padding-left:32px" />
-          </div>
-          @if (clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched) { <small class="field-error">Teléfono inválido. Ej: +51987654321</small> }
-        </div>
-        <div class="premium-field">
-          <label>Documento (opcional)</label>
-          <div style="position:relative">
-            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">badge</span>
-            <input class="premium-input" type="text" formControlName="documento" placeholder="12345678" maxlength="8" minlength="8" pattern="[0-9]{8}" inputmode="numeric" autocomplete="off" style="padding-left:32px" />
-          </div>
-          @if (clienteForm.get('documento')?.invalid && clienteForm.get('documento')?.touched) { <small class="field-error">El DNI debe contener exactamente 8 dígitos</small> }
-        </div>
-        <div class="premium-field">
-          <label>Email (opcional)</label>
-          <div style="position:relative">
-            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">mail</span>
-            <input class="premium-input" type="email" formControlName="email" placeholder="correo@ejemplo.com" maxlength="100" inputmode="email" autocomplete="email" style="padding-left:32px" />
-          </div>
-          @if (clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched) { <small class="field-error">Ingrese un correo electrónico válido</small> }
-        </div>
-      </form>
-    </div>
-    <div class="hs-slide-panel__footer" style="border-top:1px solid var(--clr-outline-variant);padding:16px 20px;display:flex;gap:10px">
-      <button class="premium-btn" style="flex:1;background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);justify-content:center;padding:12px" (click)="closeDialog()">Cancelar</button>
-      <button class="premium-btn" style="flex:1;justify-content:center;padding:12px" [disabled]="clienteForm.invalid || loading" (click)="save()">
-        @if (loading) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> }
-        {{ editing ? 'Guardar Cambios' : 'Crear Cliente' }}
       </button>
     </div>
   </div>

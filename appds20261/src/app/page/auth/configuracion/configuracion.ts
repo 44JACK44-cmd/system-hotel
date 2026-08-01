@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { ConfiguracionService } from '../../../observable/configuracion.service';
 import { AppConfigService } from '../../../services/app-config.service';
+import { AlertaService, AlertaConfig } from '../../../services/alerta.service';
 import { EstadoActualizacionService } from '../../../services/estado-actualizacion.service';
 import { HabitacionService } from '../../../observable/habitacion.service';
 import { ParametroResponse, HabitacionResponse } from '../../../shared/models';
@@ -37,7 +38,11 @@ export class Configuracion implements OnInit {
   logoPreview = '';
   uploadingLogo = false;
 
+  alertaConfig: AlertaConfig = { sonidoActivado: true, tiempoActualizacionSegundos: 60, emergentesActivadas: true, duracionInformativasHoras: 24 };
+  alertaConfigGuardando = false;
+
   private appConfigSvc = inject(AppConfigService);
+  private alertaService = inject(AlertaService);
   private estadoActualizacion = inject(EstadoActualizacionService);
   private messageService = inject(MessageService);
 
@@ -60,6 +65,9 @@ export class Configuracion implements OnInit {
 
   cargarDatos() {
     this.loading = true;
+    this.alertaService.getConfiguracion().subscribe({
+      next: c => this.alertaConfig = c
+    });
     this.configSvc.listarTodos().subscribe({
       next: (res) => {
         if (res.success && res.data) {
@@ -95,6 +103,21 @@ export class Configuracion implements OnInit {
   }
 
   guardarTodo() {
+    const ruc = (this.params['hotel.ruc'] || '').trim();
+    const telefono = (this.params['hotel.telefono'] || '').trim();
+    const email = (this.params['hotel.email'] || '').trim();
+    if (ruc && !/^\d{11}$/.test(ruc)) {
+      this.messageService.add({ severity: 'error', summary: 'Validación', detail: 'El RUC debe contener exactamente 11 dígitos' });
+      return;
+    }
+    if (telefono && !/^\d{6,12}$/.test(telefono)) {
+      this.messageService.add({ severity: 'error', summary: 'Validación', detail: 'El teléfono debe contener solo números (6 a 12 dígitos)' });
+      return;
+    }
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      this.messageService.add({ severity: 'error', summary: 'Validación', detail: 'Ingrese un correo electrónico válido' });
+      return;
+    }
     this.saving = true;
     this.saved = false;
     const observables: ReturnType<typeof this.configSvc.updateValor>[] = [];
@@ -102,7 +125,7 @@ export class Configuracion implements OnInit {
     for (const clave of Object.keys(this.params)) {
       const meta = this.paramsMeta[clave];
       if (meta && meta.valor !== this.params[clave]) {
-        observables.push(this.configSvc.updateValor(clave, this.params[clave]));
+        observables.push(this.configSvc.updateValor(clave, (this.params[clave] || '').trim()));
       }
     }
 
@@ -134,6 +157,20 @@ export class Configuracion implements OnInit {
     });
   }
 
+  guardarAlertaConfig(): void {
+    this.alertaConfigGuardando = true;
+    this.alertaService.actualizarConfiguracion(this.alertaConfig).subscribe({
+      next: () => {
+        this.alertaConfigGuardando = false;
+        this.messageService.add({ severity: 'success', summary: 'Alertas', detail: 'Configuración de alertas guardada.' });
+      },
+      error: () => {
+        this.alertaConfigGuardando = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la configuración de alertas.' });
+      }
+    });
+  }
+
   descartar() {
     for (const clave of Object.keys(this.paramsMeta)) {
       this.params[clave] = this.paramsMeta[clave].valor || '';
@@ -155,8 +192,8 @@ export class Configuracion implements OnInit {
   onLogoSelected(event: any): void {
     const file = event.target?.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { alert('Solo se permiten imagenes'); return; }
-    if (file.size > 2 * 1024 * 1024) { alert('La imagen no debe superar los 2MB'); return; }
+    if (!file.type.startsWith('image/')) { this.messageService.add({ severity: 'warn', summary: 'Archivo invalido', detail: 'Solo se permiten imagenes' }); return; }
+    if (file.size > 2 * 1024 * 1024) { this.messageService.add({ severity: 'warn', summary: 'Archivo grande', detail: 'La imagen no debe superar los 2MB' }); return; }
     this.uploadingLogo = true;
     const formData = new FormData();
     formData.append('file', file);
@@ -172,7 +209,7 @@ export class Configuracion implements OnInit {
           this.estadoActualizacion.configuracionCambio();
         }
       },
-      error: (err) => { this.uploadingLogo = false; alert(err.error?.message || 'Error al subir logo'); }
+      error: (err) => { this.uploadingLogo = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al subir logo' }); }
     });
   }
 }

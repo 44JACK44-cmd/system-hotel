@@ -28,7 +28,7 @@
       <div class="premium-field" style="grid-column:span 2">
         <label>B&uacute;squeda R&aacute;pida</label>
         <input class="premium-input" type="text" placeholder="Buscar por n&uacute;mero o tipo..."
-          [(ngModel)]="filterSearch" (input)="applyFilter()" />
+          [(ngModel)]="filterSearch" (input)="applyFilter()" aria-label="Búsqueda Rápida" />
       </div>
     </div>
   </div>
@@ -118,25 +118,36 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="premium-field">
             <label>N&uacute;mero de Habitaci&oacute;n</label>
-            <input class="premium-input" type="text" formControlName="numero" placeholder="Ej: 101" maxlength="10" autocomplete="off" />
+            <input class="premium-input" type="text" formControlName="numero" placeholder="Ej: 101" maxlength="4" inputmode="numeric" autocomplete="off" aria-label="Número de Habitación" />
           </div>
-          @if (habForm.get('numero')?.invalid && habForm.get('numero')?.touched) { <small class="field-error">El número es obligatorio (máx. 10 caracteres)</small> }
+          @if (habForm.get('numero')?.invalid && habForm.get('numero')?.touched) {
+            @if (habForm.get('numero')?.errors?.['required']) { <small class="field-error">El número de habitación es obligatorio</small> }
+            @else if (habForm.get('numero')?.errors?.['pattern']) { <small class="field-error">El número debe contener de 1 a 4 dígitos numéricos</small> }
+          }
         </div>
         <div class="premium-field">
           <label>Piso</label>
           <p-select formControlName="piso" [options]="pisosOpt" optionLabel="label" optionValue="value" placeholder="Seleccionar piso" styleClass="w-full" appendTo="body" />
-          @if (habForm.get('piso')?.invalid && habForm.get('piso')?.touched) { <small class="field-error">Seleccione un piso</small> }
+          @if (habForm.get('piso')?.invalid && habForm.get('piso')?.touched) {
+            @if (habForm.get('piso')?.errors?.['required']) { <small class="field-error">Seleccione un piso</small> }
+            @else if (habForm.get('piso')?.errors?.['max']) { <small class="field-error">El piso no puede superar 99</small> }
+            @else if (habForm.get('piso')?.errors?.['min']) { <small class="field-error">El piso debe ser mayor a cero</small> }
+          }
         </div>
 
         <div class="premium-field">
           <label>Tipo de Habitaci&oacute;n</label>
           <p-select formControlName="tipo" [options]="tipos" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo" styleClass="w-full" appendTo="body" />
+          @if (habForm.get('tipo')?.invalid && habForm.get('tipo')?.touched) { <small class="field-error">Seleccione un tipo de habitación</small> }
         </div>
 
         <div class="premium-field">
           <label>Precio Base por Noche (S/)</label>
-          <p-inputnumber formControlName="precioNoche" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" inputStyleClass="premium-input" styleClass="w-full" />
-          @if (habForm.get('precioNoche')?.invalid && habForm.get('precioNoche')?.touched) { <small class="field-error">El precio debe ser mayor a S/ 0.01</small> }
+          <p-inputnumber formControlName="precioNoche" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.01" placeholder="0.00" inputStyleClass="premium-input" styleClass="w-full" />
+          @if (habForm.get('precioNoche')?.invalid && habForm.get('precioNoche')?.touched) {
+            @if (habForm.get('precioNoche')?.errors?.['required']) { <small class="field-error">El precio es obligatorio</small> }
+            @else { <small class="field-error">El precio debe ser mayor a S/ 0.01 y tener como máximo 2 decimales</small> }
+          }
         </div>
 
       </form>

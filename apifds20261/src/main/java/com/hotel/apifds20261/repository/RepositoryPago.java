@@ -22,6 +22,7 @@ public interface RepositoryPago extends JpaRepository<EntityPago, Long> {
     @EntityGraph(attributePaths = {"usuario", "reserva", "hospedaje"})
     List<EntityPago> findAllByOrderByFechaPagoDesc();
 
+    @EntityGraph(attributePaths = {"hospedaje.cliente", "hospedaje.habitacion", "reserva.cliente", "reserva.habitacion"})
     List<EntityPago> findByFechaPagoBetweenOrderByFechaPagoDesc(LocalDateTime inicio, LocalDateTime fin);
 
     List<EntityPago> findByTipoOrderByFechaPagoDesc(String tipo);

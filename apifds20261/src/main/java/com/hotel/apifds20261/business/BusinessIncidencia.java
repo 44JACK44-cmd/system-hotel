@@ -22,6 +22,7 @@ public class BusinessIncidencia {
 
     private final RepositoryIncidencia incidenciaRepository;
     private final RepositoryHabitacion habitacionRepository;
+    private final RepositoryHospedaje hospedajeRepository;
     private final RepositoryUsuario usuarioRepository;
     private final RepositoryNotificacion notificacionRepository;
 
@@ -90,17 +91,23 @@ public class BusinessIncidencia {
         TipoIncidencia tipo = TipoIncidencia.valueOf(rawTipo);
 
         if (tipo == TipoIncidencia.LIMPIEZA_CHECKOUT) {
-            if (habitacion.getEstado() != EstadoHabitacion.OCUPADA && habitacion.getEstado() != EstadoHabitacion.LIMPIEZA && habitacion.getEstado() != EstadoHabitacion.SUCIA) {
-                throw new BusinessException("La habitacion debe estar ocupada o sucia para registrar limpieza de checkout");
+            if (hospedajeRepository.findActivoByHabitacionId(habitacion.getId()) != null) {
+                throw new BusinessException("La habitacion posee un hospedaje activo. Su estado es administrado automaticamente por el sistema.");
             }
-            habitacion.setEstado(EstadoHabitacion.LIMPIEZA);
+            if (habitacion.getEstado() != EstadoHabitacion.SUCIA &&
+                    habitacion.getEstado() != EstadoHabitacion.LIMPIEZA &&
+                    habitacion.getEstado() != EstadoHabitacion.DISPONIBLE) {
+                throw new BusinessException("La habitacion debe estar sucia o libre para registrar limpieza de checkout");
+            }
+            habitacion.setEstado(EstadoHabitacion.SUCIA);
         } else if (tipo == TipoIncidencia.SERVICIO_LIMPIEZA_HUESPED) {
             if (habitacion.getEstado() != EstadoHabitacion.OCUPADA) {
                 throw new BusinessException("Solo se puede solicitar limpieza en habitaciones ocupadas");
             }
         } else if (tipo == TipoIncidencia.MANTENIMIENTO) {
-            if (habitacion.getEstado() == EstadoHabitacion.OCUPADA) {
-                throw new BusinessException("No se puede poner en mantenimiento una habitacion ocupada");
+            if (habitacion.getEstado() == EstadoHabitacion.OCUPADA ||
+                    hospedajeRepository.findActivoByHabitacionId(habitacion.getId()) != null) {
+                throw new BusinessException("No se puede poner en mantenimiento una habitacion ocupada o con hospedaje activo");
             }
             habitacion.setEstado(EstadoHabitacion.MANTENIMIENTO);
         }
@@ -146,14 +153,13 @@ public class BusinessIncidencia {
 
         EntityHabitacion habitacion = incidencia.getHabitacion();
 
-        if (incidencia.getTipo() == TipoIncidencia.LIMPIEZA_CHECKOUT) {
+        if (incidencia.getTipo() == TipoIncidencia.LIMPIEZA_CHECKOUT ||
+                incidencia.getTipo() == TipoIncidencia.MANTENIMIENTO) {
+            if (hospedajeRepository.findActivoByHabitacionId(habitacion.getId()) != null) {
+                throw new BusinessException("La habitacion posee un hospedaje activo. Su estado es administrado automaticamente por el sistema.");
+            }
             habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
             habitacionRepository.save(habitacion);
-        } else if (incidencia.getTipo() == TipoIncidencia.MANTENIMIENTO) {
-            if (habitacion.getEstado() == EstadoHabitacion.MANTENIMIENTO) {
-                habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
-                habitacionRepository.save(habitacion);
-            }
         }
 
         return toResponse(incidenciaRepository.save(incidencia));

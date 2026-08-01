@@ -135,11 +135,16 @@ export class NuevaReservaComponent implements OnInit, OnDestroy {
     const ok2 = !!fechaEntrada;
     const ok3 = !!fechaSalida;
     const ok4 = Number(adelanto) > 0;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const entrada = fechaEntrada ? new Date(fechaEntrada) : null;
+    entrada?.setHours(0, 0, 0, 0);
+    const ok6 = !entrada || entrada >= hoy;
     const nochesCalc = (!!fechaEntrada && !!fechaSalida && this.precioNoche > 0)
       ? Math.max(0, Math.ceil((new Date(fechaSalida).getTime() - new Date(fechaEntrada).getTime()) / 86400000))
       : 0;
     const ok5 = nochesCalc > 0;
-    return ok1 && ok2 && ok3 && ok4 && ok5;
+    return ok1 && ok2 && ok3 && ok4 && ok5 && ok6;
   }
 
   guardar(): void {
@@ -154,6 +159,10 @@ export class NuevaReservaComponent implements OnInit, OnDestroy {
     this.recalcular();
     if (this.noches <= 0) {
       this.messageService.add({ severity: 'error', summary: 'Fechas inválidas', detail: 'La cantidad de noches debe ser mayor a cero' });
+      return;
+    }
+    if (Number(this.reservaData.adelanto) > 0 && !/^\d+(\.\d{1,2})?$/.test(String(this.reservaData.adelanto))) {
+      this.messageService.add({ severity: 'error', summary: 'Adelanto inválido', detail: 'El adelanto debe tener como máximo 2 decimales' });
       return;
     }
     if ((this.reservaData.adelanto || 0) > this.montoMaximoAdelanto) {
@@ -217,7 +226,7 @@ export class NuevaReservaComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             this.loading = false;
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al crear reserva' });
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al crear reserva' });
           }
         });
       },

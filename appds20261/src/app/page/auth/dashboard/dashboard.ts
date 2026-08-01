@@ -9,6 +9,7 @@ import { HospedajeService } from '../../../observable/hospedaje.service';
 import { CajaService } from '../../../observable/caja.service';
 import { ReporteService } from '../../../observable/reporte.service';
 import { AuthService } from '../../../observable/auth.service';
+import { AlertaService } from '../../../services/alerta.service';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { CardModule } from 'primeng/card';
@@ -39,6 +40,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private cajaService = inject(CajaService);
   private reporteService = inject(ReporteService);
   private authService = inject(AuthService);
+  private alertaService = inject(AlertaService);
   private estadoActualizacion = inject(EstadoActualizacionService);
 
   private destroy$ = new Subject<void>();
@@ -73,6 +75,7 @@ export class Dashboard implements OnInit, OnDestroy {
   cajaInfo: any = null;
   ingresosHoy = 0;
   deudasPendientesCount: number = 0;
+  alertResumen = { urgentes: 0, criticas: 0, importantes: 0, avisos: 0, informativas: 0, exitos: 0, total: 0, noLeidas: 0, pendientes: 0, completadasHoy: 0 };
   deudasMontoTotal: number = 0;
 
   pisos: { numero: number; habitaciones: any[] }[] = [];
@@ -82,10 +85,13 @@ export class Dashboard implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarDatos();
-    this.estadoActualizacion.on('HABITACION_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => this.cargarDatos());
-    this.estadoActualizacion.on('HOSPEDAJE_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => this.cargarDatos());
-    this.estadoActualizacion.on('RESERVA_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => this.cargarDatos());
-    this.estadoActualizacion.on('PAGO_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => this.cargarDatos());
+    this.cargarAlertas();
+    const refreshAll = () => { this.cargarDatos(); this.cargarAlertas(); };
+    this.estadoActualizacion.on('HABITACION_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => refreshAll());
+    this.estadoActualizacion.on('HOSPEDAJE_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => refreshAll());
+    this.estadoActualizacion.on('RESERVA_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => refreshAll());
+    this.estadoActualizacion.on('PAGO_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => refreshAll());
+    this.estadoActualizacion.on('NOTIFICACION_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => this.cargarAlertas());
   }
 
   ngOnDestroy(): void {
@@ -107,19 +113,23 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private verificarNotificaciones(): void {
-    const ahora = new Date();
-    this.hospedajesActivos.forEach(h => {
-      const salida = new Date(h.fechaSalidaProgramada);
-      if (salida < ahora) {
-        console.log(`[DASH] Check-out vencido: ${h.clienteNombre} hab. ${h.habitacionNumero}`);
-      }
+  }
+
+  cargarAlertas(): void {
+    this.alertaService.getResumen().subscribe({
+      next: r => this.alertResumen = r
     });
+  }
+
+  abrirAlertas(filtro: string): void {
+    this.alertaService.activeFilter.set(filtro);
   }
 
   getRoomStatusColor(estado: string): string {
     const map: Record<string, string> = {
       DISPONIBLE: 'var(--clr-status-available)',
       OCUPADA: 'var(--clr-status-occupied)',
+      SUCIA: 'var(--clr-status-dirty)',
       LIMPIEZA: 'var(--clr-status-dirty)',
       MANTENIMIENTO: 'var(--clr-status-maintenance)'
     };
@@ -196,7 +206,7 @@ export class Dashboard implements OnInit, OnDestroy {
         this.cajaService.obtenerActual().pipe(takeUntil(this.destroy$)).subscribe({
           next: (res) => {
             this.cajaInfo = res.data;
-            this.cajaAbierta = res.data?.estado === 'ABIERTA';
+            this.cajaAbierta = res.data?.estado === 'ABIERTO';
             this.cdr.detectChanges();
           }
         });

@@ -56,6 +56,17 @@ public class ReporteController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("tendencia-ocupacion")
+    public ResponseEntity<ResponseReporte> actionTendenciaOcupacion(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
+        List<Map<String, Object>> data = reporteBusiness.tendenciaOcupacion(inicio, fin);
+        ResponseReporte response = new ResponseReporte();
+        response.success();
+        response.setListReporte(data);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("reservasnoconcretadas")
     public ResponseEntity<ResponseReporte> actionReservasNoConcretadas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
@@ -95,12 +106,12 @@ public class ReporteController {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> detalles = (List<Map<String, Object>>) reporte.getOrDefault("detalles", List.of());
         for (Map<String, Object> row : detalles) {
-            csv.append(row.getOrDefault("fecha", "")).append(",");
-            csv.append(row.getOrDefault("habitacion", "")).append(",");
-            csv.append("\"").append(row.getOrDefault("cliente", "")).append("\",");
-            csv.append(row.getOrDefault("monto", "0")).append(",");
-            csv.append(row.getOrDefault("metodo", "")).append(",");
-            csv.append(row.getOrDefault("tipo", "")).append("\n");
+            csv.append(csvSafe(String.valueOf(row.getOrDefault("fecha", "")))).append(",");
+            csv.append(csvSafe(String.valueOf(row.getOrDefault("habitacion", "")))).append(",");
+            csv.append("\"").append(csvSafe(String.valueOf(row.getOrDefault("cliente", "")))).append("\",");
+            csv.append(csvSafe(String.valueOf(row.getOrDefault("monto", "0")))).append(",");
+            csv.append(csvSafe(String.valueOf(row.getOrDefault("metodo", "")))).append(",");
+            csv.append(csvSafe(String.valueOf(row.getOrDefault("tipo", "")))).append("\n");
         }
         byte[] bytes = csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
         HttpHeaders headers = new HttpHeaders();
@@ -108,5 +119,14 @@ public class ReporteController {
         headers.set(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=reporte-ingresos-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".csv");
         return ResponseEntity.ok().headers(headers).body(bytes);
+    }
+
+    private static String csvSafe(String valor) {
+        if (valor == null) return "";
+        String v = valor.replace("\"", "\"\"");
+        if (!v.isEmpty() && (v.startsWith("=") || v.startsWith("+") || v.startsWith("-") || v.startsWith("@") || v.startsWith("\t") || v.startsWith("\r"))) {
+            v = "'" + v;
+        }
+        return v;
     }
 }

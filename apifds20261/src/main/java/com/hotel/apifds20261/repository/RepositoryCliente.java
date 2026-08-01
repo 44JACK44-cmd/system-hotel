@@ -22,7 +22,7 @@ public interface RepositoryCliente extends JpaRepository<EntityCliente, Long> {
            "OR LOWER(c.telefono) LIKE LOWER(CONCAT('%',:search,'%')) " +
            "OR LOWER(c.documento) LIKE LOWER(CONCAT('%',:search,'%')) " +
            "OR LOWER(c.email) LIKE LOWER(CONCAT('%',:search,'%'))) " +
-           "AND c.activo = CASE WHEN :includeInactivos = TRUE THEN FALSE ELSE TRUE END")
+            "AND (:includeInactivos = TRUE OR c.activo = TRUE)")
     Page<EntityCliente> findAllPaginated(@Param("search") String search, @Param("includeInactivos") boolean includeInactivos, Pageable pageable);
 
     Optional<EntityCliente> findByDocumento(String documento);

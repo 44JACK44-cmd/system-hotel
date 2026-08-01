@@ -141,6 +141,8 @@ export class CheckInComponent implements OnInit, OnDestroy {
         this.estadoActualizacion.habitacionCambio();
         this.estadoActualizacion.hospedajeCambio();
         this.estadoActualizacion.reservaCambio();
+        this.estadoActualizacion.pagoCambio();
+        this.estadoActualizacion.cajaCambio();
         setTimeout(() => this.cerrar(), 1000);
       },
       error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error en check-in' }); }

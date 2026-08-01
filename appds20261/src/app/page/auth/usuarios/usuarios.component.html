@@ -18,7 +18,7 @@
   <div class="premium-card" style="padding:12px 16px">
     <div style="position:relative">
       <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">search</span>
-      <input class="premium-input" type="text" placeholder="Buscar por nombre, usuario o rol..." [(ngModel)]="searchTerm" (input)="onSearchInput()" style="padding-left:32px" />
+      <input class="premium-input" type="text" placeholder="Buscar por nombre, usuario o rol..." [(ngModel)]="searchTerm" (input)="onSearchInput()" style="padding-left:32px" aria-label="Buscar usuario" />
     </div>
   </div>
   <!-- Statistics Bento Grid -->
@@ -168,39 +168,52 @@
             <label>Nombre Completo</label>
             <div style="position:relative">
               <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">person</span>
-              <input class="premium-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan P&eacute;rez" style="padding-left:32px" />
+              <input class="premium-input" type="text" formControlName="nombreCompleto" placeholder="Ej: Juan P&eacute;rez" maxlength="60" minlength="2" autocomplete="name" style="padding-left:32px" aria-label="Nombre Completo" />
             </div>
+            @if (userForm.get('nombreCompleto')?.invalid && userForm.get('nombreCompleto')?.touched) {
+              @if (userForm.get('nombreCompleto')?.errors?.['required']) { <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">El nombre es obligatorio</small> }
+              @else if (userForm.get('nombreCompleto')?.errors?.['minlength']) { <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">El nombre debe tener al menos 2 caracteres</small> }
+              @else if (userForm.get('nombreCompleto')?.errors?.['maxlength']) { <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">El nombre no puede superar 60 caracteres</small> }
+              @else if (userForm.get('nombreCompleto')?.errors?.['letrasInvalidas']) { <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">Solo se permiten letras (incluye tildes y Ñ). Sin números ni símbolos</small> }
+              @else if (userForm.get('nombreCompleto')?.errors?.['espaciosDobles']) { <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">No se permiten espacios dobles entre palabras</small> }
+            }
           </div>
 
           <div class="premium-field">
             <label>Username</label>
             <div style="position:relative">
               <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">account_circle</span>
-              <input class="premium-input" type="text" formControlName="username" placeholder="Nombre de usuario" style="padding-left:32px" />
+              <input class="premium-input" type="text" formControlName="username" placeholder="Nombre de usuario" maxlength="30" minlength="4" autocomplete="username" style="padding-left:32px" aria-label="Username" />
             </div>
+            @if (userForm.get('username')?.invalid && userForm.get('username')?.touched) {
+              @if (userForm.get('username')?.errors?.['required']) { <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">El username es obligatorio</small> }
+              @else if (userForm.get('username')?.errors?.['pattern']) { <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">El username debe tener entre 4 y 30 caracteres (letras, números, punto, guión o guión bajo) sin espacios</small> }
+            }
           </div>
 
           <div class="premium-field">
             <label>Correo Electr&oacute;nico</label>
             <div style="position:relative">
               <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">email</span>
-              <input class="premium-input" type="email" formControlName="email" placeholder="usuario@ejemplo.com" style="padding-left:32px" />
+              <input class="premium-input" type="email" formControlName="email" placeholder="usuario@ejemplo.com" maxlength="100" inputmode="email" autocomplete="email" style="padding-left:32px" aria-label="Correo Electrónico" />
             </div>
+            @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) { <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">Ingrese un correo electrónico válido</small> }
           </div>
 
           <div class="premium-field">
             <label>Tel&eacute;fono</label>
             <div style="position:relative">
               <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">phone</span>
-              <input class="premium-input" type="tel" formControlName="telefono" placeholder="+51 999 999 999" style="padding-left:32px" />
+              <input class="premium-input" type="tel" formControlName="telefono" placeholder="999888777" maxlength="12" inputmode="tel" autocomplete="tel-national" style="padding-left:32px" aria-label="Teléfono" />
             </div>
+            @if (userForm.get('telefono')?.invalid && userForm.get('telefono')?.touched) { <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">El teléfono debe contener solo números (6 a 12 dígitos)</small> }
           </div>
 
           <div class="premium-field">
             <label>{{ editing ? 'Nueva Contrase&ntilde;a (dejar vac&iacute;o para mantener)' : 'Contrase&ntilde;a' }}</label>
             <div style="position:relative">
               <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">lock</span>
-              <input class="premium-input" [type]="showNewPassword ? 'text' : 'password'" formControlName="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" style="padding-left:32px;padding-right:44px" (input)="onPasswordInput()" />
+              <input class="premium-input" [type]="showNewPassword ? 'text' : 'password'" formControlName="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" maxlength="100" style="padding-left:32px;padding-right:44px" (input)="onPasswordInput()" autocomplete="{{ editing ? 'new-password' : 'new-password' }}" aria-label="Contraseña" />
               <button type="button" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--clr-on-surface-variant);cursor:pointer;padding:4px" (click)="toggleNewPasswordVisibility()" title="{{ showNewPassword ? 'Ocultar' : 'Mostrar' }} contraseña">
                 <span class="material-symbols-outlined">{{ showNewPassword ? 'visibility_off' : 'visibility' }}</span>
               </button>
@@ -208,13 +221,31 @@
             @if (passwordError) {
               <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">{{ passwordError }}</small>
             }
+            @if (userForm.get('password')?.errors?.['required'] && userForm.get('password')?.touched) {
+              <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">La contraseña es obligatoria</small>
+            }
+            @if (userForm.get('password')?.errors?.['debil'] && userForm.get('password')?.touched) {
+              <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">La contraseña debe tener al menos 8 caracteres</small>
+            }
+            @if (userForm.get('password')?.errors?.['sinMayuscula'] && userForm.get('password')?.touched) {
+              <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">Debe incluir al menos una letra mayúscula</small>
+            }
+            @if (userForm.get('password')?.errors?.['sinMinuscula'] && userForm.get('password')?.touched) {
+              <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">Debe incluir al menos una letra minúscula</small>
+            }
+            @if (userForm.get('password')?.errors?.['sinNumero'] && userForm.get('password')?.touched) {
+              <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">Debe incluir al menos un número</small>
+            }
+            @if (userForm.get('password')?.errors?.['sinEspecial'] && userForm.get('password')?.touched) {
+              <small style="color:var(--clr-error);font-size:11px;margin-top:4px;display:block">Debe incluir al menos un carácter especial</small>
+            }
           </div>
 
           <div class="premium-field">
             <label>Confirmar Contrase&ntilde;a</label>
             <div style="position:relative">
               <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">lock_outline</span>
-              <input class="premium-input" [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword" placeholder="Repita la contraseña" style="padding-left:32px;padding-right:44px" (input)="onConfirmPasswordInput()" />
+              <input class="premium-input" [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword" placeholder="Repita la contraseña" maxlength="100" style="padding-left:32px;padding-right:44px" (input)="onConfirmPasswordInput()" autocomplete="new-password" aria-label="Confirmar Contraseña" />
               <button type="button" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--clr-on-surface-variant);cursor:pointer;padding:4px" (click)="toggleConfirmPasswordVisibility()" title="{{ showConfirmPassword ? 'Ocultar' : 'Mostrar' }} contraseña">
                 <span class="material-symbols-outlined">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</span>
               </button>
@@ -275,6 +306,54 @@
             <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;margin-right:8px">sync</span>
           }
           {{ editing ? 'Guardar Cambios' : 'Crear Usuario' }}
+        </button>
+      </div>
+    </div>
+  }
+  @if (resetDialogVisible) {
+    <div class="hs-overlay" (click)="cerrarResetDialog()"></div>
+    <div class="hs-slide-panel" style="max-width:440px">
+      <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
+            <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:18px">key</span>
+          </div>
+          <span style="font-weight:700;font-size:16px;color:#fff">Restablecer Contrase&ntilde;a</span>
+        </div>
+        <button style="width:32px;height:32px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer" (click)="cerrarResetDialog()"><span class="material-symbols-outlined" style="font-size:18px">close</span></button>
+      </div>
+      <div class="hs-slide-panel__body" style="padding:20px;display:flex;flex-direction:column;gap:16px">
+        <p style="margin:0;font-size:13px;color:var(--clr-on-surface-variant)">Nueva contrase&ntilde;a para <strong>{{ resetPasswordData?.nombreCompleto }}</strong>. Debe tener al menos 8 caracteres (may&uacute;scula, min&uacute;scula, n&uacute;mero y car&aacute;cter especial).</p>
+        <div class="premium-field">
+          <label>Nueva contrase&ntilde;a</label>
+          <div style="position:relative">
+            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">lock</span>
+            <input class="premium-input" [type]="showNewPassword ? 'text' : 'password'" [(ngModel)]="resetNewPassword" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" maxlength="100" style="padding-left:32px;padding-right:44px" aria-label="Nueva contraseña" />
+            <button type="button" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--clr-on-surface-variant);cursor:pointer;padding:4px" (click)="toggleNewPasswordVisibility()" title="{{ showNewPassword ? 'Ocultar' : 'Mostrar' }} contraseña">
+              <span class="material-symbols-outlined">{{ showNewPassword ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+        </div>
+        <div class="premium-field">
+          <label>Confirmar contrase&ntilde;a</label>
+          <div style="position:relative">
+            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">lock_outline</span>
+            <input class="premium-input" [type]="showConfirmPassword ? 'text' : 'password'" [(ngModel)]="resetConfirmPassword" placeholder="Repita la contraseña" maxlength="100" style="padding-left:32px;padding-right:44px" aria-label="Confirmar contraseña" />
+            <button type="button" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--clr-on-surface-variant);cursor:pointer;padding:4px" (click)="toggleConfirmPasswordVisibility()" title="{{ showConfirmPassword ? 'Ocultar' : 'Mostrar' }} contraseña">
+              <span class="material-symbols-outlined">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+        </div>
+        @if (resetPasswordError) {
+          <small style="color:var(--clr-error);font-size:11px;display:block">{{ resetPasswordError }}</small>
+        }
+      </div>
+      <div class="hs-slide-panel__footer" style="border-top:1px solid var(--clr-outline-variant);padding:16px 20px;display:flex;gap:10px">
+        <button class="premium-btn" style="flex:1;background:transparent;color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);justify-content:center;padding:12px" (click)="cerrarResetDialog()">Cancelar</button>
+        <button class="premium-btn" style="flex:1;justify-content:center;padding:12px" [disabled]="loadingAction || !resetNewPassword || !resetConfirmPassword" (click)="confirmarResetPassword()">
+          @if (loadingAction) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;margin-right:8px">sync</span> }
+          <span class="material-symbols-outlined" style="margin-right:8px">check_circle</span>
+          Guardar
         </button>
       </div>
     </div>

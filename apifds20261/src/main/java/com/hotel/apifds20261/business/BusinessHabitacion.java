@@ -13,11 +13,14 @@ import com.hotel.apifds20261.dto.request.RequestHabitacionInsert;
 import com.hotel.apifds20261.dto.response.HabitacionResponse;
 import com.hotel.apifds20261.dto.response.SuggestionResponse;
 import com.hotel.apifds20261.staticdata.EstadoHabitacion;
+import com.hotel.apifds20261.staticdata.EstadoHospedaje;
 import com.hotel.apifds20261.staticdata.EstadoReserva;
 import com.hotel.apifds20261.entity.EntityHabitacion;
+import com.hotel.apifds20261.entity.EntityHospedaje;
 import com.hotel.apifds20261.entity.EntityIncidenciaHabitacion;
 import com.hotel.apifds20261.entity.EntityReserva;
 import com.hotel.apifds20261.staticdata.TipoHabitacion;
+import com.hotel.apifds20261.staticdata.TipoIncidencia;
 import com.hotel.apifds20261.exception.BusinessException;
 import com.hotel.apifds20261.exception.ResourceNotFoundException;
 import com.hotel.apifds20261.repository.RepositoryHabitacion;
@@ -36,7 +39,9 @@ public class BusinessHabitacion {
     private final RepositoryReserva reservaRepository;
     private final RepositoryIncidencia incidenciaRepository;
 
+    @Transactional
     public List<HabitacionResponse> listarActivas() {
+        reconciliarEstados();
         List<EntityHabitacion> entities = habitacionRepository.findByActivoTrueOrderByPisoAscNumeroAsc();
         List<HabitacionResponse> list = new ArrayList<>();
         for (EntityHabitacion h : entities) {
@@ -45,7 +50,9 @@ public class BusinessHabitacion {
         return list;
     }
 
+    @Transactional
     public List<HabitacionResponse> listarTodas() {
+        reconciliarEstados();
         List<EntityHabitacion> entities = habitacionRepository.findAllByOrderByPisoAscNumeroAsc();
         List<HabitacionResponse> list = new ArrayList<>();
         for (EntityHabitacion h : entities) {
@@ -54,11 +61,15 @@ public class BusinessHabitacion {
         return list;
     }
 
+    @Transactional
     public HabitacionResponse obtenerPorId(Long id) {
+        reconciliarEstados();
         return toResponse(buscarOExcepcion(id));
     }
 
+    @Transactional
     public Map<Integer, List<HabitacionResponse>> obtenerMapa() {
+        reconciliarEstados();
         List<EntityHabitacion> entities = habitacionRepository.findAllByOrderByPisoAscNumeroAsc();
         Map<Integer, List<HabitacionResponse>> mapa = new LinkedHashMap<>();
         for (EntityHabitacion h : entities) {
@@ -74,13 +85,14 @@ public class BusinessHabitacion {
 
     @Transactional
     public HabitacionResponse crear(RequestHabitacionInsert request) {
-        if (habitacionRepository.existsByNumero(request.getNumero())) {
-            throw new BusinessException("Ya existe una habitacion con el numero " + request.getNumero());
+        String numero = request.getNumero().trim();
+        if (habitacionRepository.existsByNumero(numero)) {
+            throw new BusinessException("Ya existe una habitacion con el numero " + numero);
         }
         EntityHabitacion habitacion = new EntityHabitacion();
         habitacion.setPiso(request.getPiso());
-        habitacion.setNumero(request.getNumero());
-        habitacion.setTipo(TipoHabitacion.valueOf(request.getTipo()));
+        habitacion.setNumero(numero);
+        habitacion.setTipo(TipoHabitacion.valueOf(request.getTipo().toUpperCase()));
         habitacion.setPrecioNoche(request.getPrecioNoche());
         habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
         habitacion.setActivo(true);
@@ -90,13 +102,14 @@ public class BusinessHabitacion {
     @Transactional
     public HabitacionResponse actualizar(Long id, RequestHabitacionInsert request) {
         EntityHabitacion h = buscarOExcepcion(id);
-        if (!h.getNumero().equals(request.getNumero()) &&
-                habitacionRepository.existsByNumero(request.getNumero())) {
-            throw new BusinessException("Ya existe una habitacion con el numero " + request.getNumero());
+        String numero = request.getNumero().trim();
+        if (!h.getNumero().equals(numero) &&
+                habitacionRepository.existsByNumero(numero)) {
+            throw new BusinessException("Ya existe una habitacion con el numero " + numero);
         }
         h.setPiso(request.getPiso());
-        h.setNumero(request.getNumero());
-        h.setTipo(TipoHabitacion.valueOf(request.getTipo()));
+        h.setNumero(numero);
+        h.setTipo(TipoHabitacion.valueOf(request.getTipo().toUpperCase()));
         h.setPrecioNoche(request.getPrecioNoche());
         return toResponse(habitacionRepository.save(h));
     }
@@ -104,24 +117,54 @@ public class BusinessHabitacion {
     @Transactional
     public void cambiarEstado(Long id, RequestHabitacionCambioEstado request) {
         EntityHabitacion h = buscarOExcepcion(id);
-        EstadoHabitacion nuevoEstado = EstadoHabitacion.valueOf(request.getEstado());
+        EstadoHabitacion nuevoEstado;
+        try {
+            nuevoEstado = EstadoHabitacion.valueOf(request.getEstado());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException("El estado " + request.getEstado() + " no es valido");
+        }
 
-        if (h.getEstado() == EstadoHabitacion.OCUPADA &&
-                (nuevoEstado == EstadoHabitacion.LIMPIEZA || nuevoEstado == EstadoHabitacion.MANTENIMIENTO)) {
-            throw new BusinessException("No se puede cambiar a " + nuevoEstado +
-                    " una habitacion que esta OCUPADA");
+        EntityHospedaje hospedajeActivo = hospedajeRepository.findActivoByHabitacionId(id);
+
+        if (hospedajeActivo != null) {
+            if (nuevoEstado == EstadoHabitacion.OCUPADA) {
+                if (h.getEstado() != EstadoHabitacion.OCUPADA) {
+                    h.setEstado(EstadoHabitacion.OCUPADA);
+                    habitacionRepository.save(h);
+                }
+                return;
+            }
+            throw new BusinessException(
+                    "La habitacion tiene un hospedaje activo y no puede marcarse como " +
+                    (nuevoEstado == EstadoHabitacion.DISPONIBLE ? "disponible" : nuevoEstado.name().toLowerCase()) + ".");
         }
-        if (h.getEstado() == EstadoHabitacion.OCUPADA && nuevoEstado == EstadoHabitacion.DISPONIBLE) {
-            throw new BusinessException("No se puede marcar como DISPONIBLE una habitacion ocupada");
+
+        switch (nuevoEstado) {
+            case DISPONIBLE: {
+                List<EntityIncidenciaHabitacion> incidenciasActivas =
+                        incidenciaRepository.findByFechaFinIsNullAndHabitacionId(id);
+                if (!incidenciasActivas.isEmpty()) {
+                    throw new BusinessException("No se puede marcar como DISPONIBLE una habitacion con incidencias pendientes. Finalice las incidencias primero.");
+                }
+                break;
+            }
+            case OCUPADA:
+                throw new BusinessException("Una habitacion solo puede ocuparse mediante el check-in del huesped.");
+            case SUCIA:
+            case LIMPIEZA:
+                break;
+            case MANTENIMIENTO: {
+                List<EntityIncidenciaHabitacion> incidenciasActivas =
+                        incidenciaRepository.findByFechaFinIsNullAndHabitacionId(id);
+                boolean tieneMantenimiento = incidenciasActivas.stream()
+                        .anyMatch(i -> i.getTipo() == TipoIncidencia.MANTENIMIENTO);
+                if (!tieneMantenimiento) {
+                    throw new BusinessException("No se puede marcar en mantenimiento sin una incidencia de mantenimiento activa.");
+                }
+                break;
+            }
         }
-        if (nuevoEstado == EstadoHabitacion.DISPONIBLE &&
-                hospedajeRepository.findActivoByHabitacionId(id) != null) {
-            throw new BusinessException("No se puede marcar como DISPONIBLE una habitacion con hospedaje activo");
-        }
-        if (nuevoEstado == EstadoHabitacion.OCUPADA &&
-                h.getEstado() != EstadoHabitacion.DISPONIBLE) {
-            throw new BusinessException("Solo se puede ocupar una habitacion disponible");
-        }
+
         h.setEstado(nuevoEstado);
         habitacionRepository.save(h);
     }
@@ -176,6 +219,50 @@ public class BusinessHabitacion {
             throw new ResourceNotFoundException("Habitacion no encontrada");
         }
         return h;
+    }
+
+    /**
+     * Mantiene la consistencia del estado de las habitaciones:
+     * 1) Si una habitacion posee un hospedaje activo, su estado SIEMPRE debe ser OCUPADA.
+     * 2) Una habitacion OCUPADA sin hospedaje activo debe volver a un estado coherente:
+     *    MANTENIMIENTO si tiene incidencia de mantenimiento activa,
+     *    SUCIA si tiene incidencia de limpieza activa, DISPONIBLE en caso contrario.
+     */
+    private void reconciliarEstados() {
+        List<EntityHospedaje> activos = hospedajeRepository.findByEstadoOrderByFechaIngresoDesc(EstadoHospedaje.ACTIVO);
+        for (EntityHospedaje h : activos) {
+            EntityHabitacion hab = h.getHabitacion();
+            if (hab != null && hab.getActivo() && hab.getEstado() != EstadoHabitacion.OCUPADA) {
+                hab.setEstado(EstadoHabitacion.OCUPADA);
+                habitacionRepository.save(hab);
+            }
+        }
+
+        List<EntityHabitacion> habitaciones = habitacionRepository.findAllByOrderByPisoAscNumeroAsc();
+        for (EntityHabitacion hab : habitaciones) {
+            if (!hab.getActivo() || hab.getEstado() != EstadoHabitacion.OCUPADA) {
+                continue;
+            }
+            boolean tieneActivo = activos.stream()
+                    .anyMatch(a -> a.getHabitacion() != null && a.getHabitacion().getId().equals(hab.getId()));
+            if (tieneActivo) {
+                continue;
+            }
+            List<EntityIncidenciaHabitacion> incidenciasActivas =
+                    incidenciaRepository.findByFechaFinIsNullAndHabitacionId(hab.getId());
+            boolean mantenimiento = incidenciasActivas.stream()
+                    .anyMatch(i -> i.getTipo() == TipoIncidencia.MANTENIMIENTO);
+            boolean limpieza = incidenciasActivas.stream()
+                    .anyMatch(i -> i.getTipo() == TipoIncidencia.LIMPIEZA_CHECKOUT);
+            if (mantenimiento) {
+                hab.setEstado(EstadoHabitacion.MANTENIMIENTO);
+            } else if (limpieza) {
+                hab.setEstado(EstadoHabitacion.SUCIA);
+            } else {
+                hab.setEstado(EstadoHabitacion.DISPONIBLE);
+            }
+            habitacionRepository.save(hab);
+        }
     }
 
     private HabitacionResponse toResponse(EntityHabitacion h) {

@@ -79,6 +79,44 @@
     </div>
   </div>
 
+  <!-- Centro Operativo -->
+  <section class="premium-card dash-centro-operativo">
+    <div class="dash-centro-header">
+      <span class="material-symbols-outlined" style="color:var(--aura-gold);font-size:20px">dashboard_customize</span>
+      <h2 style="margin:0;font-size:14px;font-weight:700;color:var(--clr-on-surface)">CENTRO DE OPERACIONES</h2>
+    </div>
+    <div class="dash-centro-grid">
+      <div class="dash-centro-card dash-centro-card--urgente" (click)="abrirAlertas('URGENTE')" pTooltip="Ver alertas urgentes" tooltipPosition="top">
+        <span class="dash-centro-icon"><span class="material-symbols-outlined">report</span></span>
+        <div class="dash-centro-info">
+          <span class="dash-centro-valor">{{ alertResumen.urgentes }}</span>
+          <span class="dash-centro-label">Urgentes</span>
+        </div>
+      </div>
+      <div class="dash-centro-card dash-centro-card--importante" (click)="abrirAlertas('IMPORTANTE')" pTooltip="Ver alertas importantes" tooltipPosition="top">
+        <span class="dash-centro-icon"><span class="material-symbols-outlined">warning</span></span>
+        <div class="dash-centro-info">
+          <span class="dash-centro-valor">{{ alertResumen.importantes }}</span>
+          <span class="dash-centro-label">Importantes</span>
+        </div>
+      </div>
+      <div class="dash-centro-card dash-centro-card--pendientes" (click)="abrirAlertas('NOLEIDAS')" pTooltip="Ver alertas pendientes por leer" tooltipPosition="top">
+        <span class="dash-centro-icon"><span class="material-symbols-outlined">notifications</span></span>
+        <div class="dash-centro-info">
+          <span class="dash-centro-valor">{{ alertResumen.pendientes }}</span>
+          <span class="dash-centro-label">Pendientes</span>
+        </div>
+      </div>
+      <div class="dash-centro-card dash-centro-card--completadas" (click)="abrirAlertas('COMPLETADAS')" pTooltip="Ver alertas completadas hoy" tooltipPosition="top">
+        <span class="dash-centro-icon"><span class="material-symbols-outlined">task_alt</span></span>
+        <div class="dash-centro-info">
+          <span class="dash-centro-valor">{{ alertResumen.completadasHoy }}</span>
+          <span class="dash-centro-label">Completadas hoy</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Room Map -->
   <section class="premium-card dash-room-map" style="padding:0;overflow:hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--clr-outline-variant);background:var(--clr-surface-container-low)">

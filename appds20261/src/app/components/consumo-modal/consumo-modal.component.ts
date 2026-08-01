@@ -76,12 +76,16 @@ export class ConsumoModalComponent implements OnInit, OnDestroy, OnChanges {
       this.messageService.add({ severity: 'warn', summary: 'Validación', detail: 'Ingrese una descripción' });
       return;
     }
-    if (this.cantidad < 1) {
-      this.messageService.add({ severity: 'warn', summary: 'Validación', detail: 'La cantidad debe ser mayor a 0' });
+    if (this.cantidad < 1 || this.cantidad > 9999) {
+      this.messageService.add({ severity: 'warn', summary: 'Validación', detail: 'La cantidad debe estar entre 1 y 9999' });
       return;
     }
     if (this.precioUnitario <= 0) {
       this.messageService.add({ severity: 'warn', summary: 'Validación', detail: 'El precio debe ser mayor a 0' });
+      return;
+    }
+    if (this.precioUnitario > 99999999.99) {
+      this.messageService.add({ severity: 'warn', summary: 'Validación', detail: 'El precio no puede superar S/ 99,999,999.99' });
       return;
     }
 
@@ -110,7 +114,7 @@ export class ConsumoModalComponent implements OnInit, OnDestroy, OnChanges {
       },
       error: (err) => {
         this.saving = false;
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al guardar consumo' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al guardar consumo' });
       }
     });
   }

@@ -99,6 +99,16 @@
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 768px) {
+  .pag-page__header > div:last-child {
+    flex-direction: column;
+    width: 100%;
+  }
+  .pag-page__header > div:last-child .premium-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
 @media (max-width: 640px) {
   .pag-form-row {
     grid-template-columns: 1fr;

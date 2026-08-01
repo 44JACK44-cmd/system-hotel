@@ -42,14 +42,16 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/parametro/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/parametro/**").hasAnyRole("ADMIN", "RECEPCIONISTA")
+                .requestMatchers("/api/parametro/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/habitacion/**").hasAnyRole("ADMIN", "RECEPCIONISTA")
                 .requestMatchers("/api/habitacion/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/usuario/updateprofile/**", "/api/usuario/cambiarpassword/**", "/api/usuario/uploadavatar/**", "/api/usuario/tema/**").hasAnyRole("ADMIN", "RECEPCIONISTA")
                 .requestMatchers(HttpMethod.GET, "/api/usuario/getbyid/**").hasAnyRole("ADMIN", "RECEPCIONISTA")
                 .requestMatchers("/api/usuario/**").hasRole("ADMIN")
                 .requestMatchers("/api/reporte/**").hasRole("ADMIN")
+                .requestMatchers("/api/consistencia/**").hasRole("ADMIN")
                 .anyRequest().hasAnyRole("ADMIN", "RECEPCIONISTA")
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

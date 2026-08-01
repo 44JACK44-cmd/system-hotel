@@ -52,6 +52,13 @@
           <span class="material-symbols-outlined" style="font-size:20px">policy</span>
           <span>Impuestos y Pol&iacute;ticas</span>
         </button>
+        <button style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:none;border-radius:10px;background:transparent;color:var(--clr-on-surface-variant);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s ease;text-align:left"
+          [style.background]="activeTab === 'alertas' ? 'linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark))' : 'transparent'"
+          [style.color]="activeTab === 'alertas' ? 'var(--aura-dark)' : 'var(--clr-on-surface-variant)'"
+          (click)="switchTab('alertas')">
+          <span class="material-symbols-outlined" style="font-size:20px">notifications</span>
+          <span>Alertas</span>
+        </button>
       </nav>
 
       <section style="flex:1;min-width:0">
@@ -82,23 +89,26 @@
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
                 <div class="premium-field">
                   <label>Nombre Comercial</label>
-                  <input class="premium-input" type="text" pInputText [(ngModel)]="params['hotel.nombre']" maxlength="100" required />
+                  <input class="premium-input" type="text" pInputText [(ngModel)]="params['hotel.nombre']" maxlength="100" required aria-label="Nombre Comercial" />
                 </div>
                 <div class="premium-field">
                   <label>RUC / ID Fiscal</label>
-                  <input class="premium-input" type="text" pInputText [(ngModel)]="params['hotel.ruc']" maxlength="20" pattern="[0-9]{11}" inputmode="numeric" />
+                  <input class="premium-input" type="text" pInputText [(ngModel)]="params['hotel.ruc']" maxlength="11" pattern="[0-9]{11}" inputmode="numeric" aria-label="RUC / ID Fiscal" />
+                  @if (params['hotel.ruc'] && !/^\d{11}$/.test(params['hotel.ruc'])) { <small class="field-error">El RUC debe contener exactamente 11 dígitos</small> }
                 </div>
                 <div class="premium-field" style="grid-column:1/-1">
                   <label>Direcci&oacute;n F&iacute;sica</label>
-                  <input class="premium-input" type="text" pInputText [(ngModel)]="params['hotel.direccion']" maxlength="200" />
+                  <input class="premium-input" type="text" pInputText [(ngModel)]="params['hotel.direccion']" maxlength="200" aria-label="Dirección Física" />
                 </div>
                 <div class="premium-field">
                   <label>Tel&eacute;fono de Recepci&oacute;n</label>
-                  <input class="premium-input" type="tel" pInputText [(ngModel)]="params['hotel.telefono']" maxlength="20" inputmode="tel" />
+                  <input class="premium-input" type="tel" pInputText [(ngModel)]="params['hotel.telefono']" maxlength="20" inputmode="tel" aria-label="Teléfono de Recepción" />
+                  @if (params['hotel.telefono'] && !/^\d{6,12}$/.test(params['hotel.telefono'])) { <small class="field-error">El teléfono debe contener solo números (6 a 12 dígitos)</small> }
                 </div>
                 <div class="premium-field">
                   <label>Correo Electr&oacute;nico</label>
-                  <input class="premium-input" type="email" pInputText [(ngModel)]="params['hotel.email']" maxlength="100" inputmode="email" />
+                  <input class="premium-input" type="email" pInputText [(ngModel)]="params['hotel.email']" maxlength="100" inputmode="email" aria-label="Correo Electrónico" />
+                  @if (params['hotel.email'] && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(params['hotel.email'])) { <small class="field-error">Ingrese un correo electrónico válido</small> }
                 </div>
               </div>
             </div>
@@ -144,6 +154,55 @@
                 <h4 style="margin:0 0 4px;font-size:15px;font-weight:700;color:var(--clr-on-surface)">Yape</h4>
                 <p style="margin:0 0 12px;font-size:13px;color:var(--clr-on-surface-variant)">Pagos mediante c&oacute;digo QR o n&uacute;mero de celular.</p>
               </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab === 'alertas') {
+          <div class="premium-card" style="padding:0;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid rgba(201,164,92,0.15)">
+              <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--clr-on-surface)">Configuración de Alertas</h3>
+            </div>
+            <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--clr-surface-container-low);border-radius:10px">
+                <div>
+                  <span style="font-size:13px;font-weight:600;color:var(--clr-on-surface)">Sonido para alertas críticas</span>
+                  <p style="margin:2px 0 0;font-size:11px;color:var(--clr-on-surface-variant)">Reproducir sonido al recibir alertas críticas, importantes y de caja abierta</p>
+                </div>
+                <p-checkbox [binary]="true" [(ngModel)]="alertaConfig.sonidoActivado" />
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--clr-surface-container-low);border-radius:10px">
+                <div>
+                  <span style="font-size:13px;font-weight:600;color:var(--clr-on-surface)">Notificaciones emergentes</span>
+                  <p style="margin:2px 0 0;font-size:11px;color:var(--clr-on-surface-variant)">Mostrar notificaciones toast al recibir alertas</p>
+                </div>
+                <p-checkbox [binary]="true" [(ngModel)]="alertaConfig.emergentesActivadas" />
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--clr-surface-container-low);border-radius:10px">
+                <div>
+                  <span style="font-size:13px;font-weight:600;color:var(--clr-on-surface)">Tiempo de actualización (segundos)</span>
+                  <p style="margin:2px 0 0;font-size:11px;color:var(--clr-on-surface-variant)">Intervalo para refrescar alertas automáticamente</p>
+                </div>
+                <input type="number" style="width:80px;padding:6px 10px;border:1px solid var(--clr-outline-variant);border-radius:6px;font-size:13px;font-weight:600;text-align:center;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface)" [(ngModel)]="alertaConfig.tiempoActualizacionSegundos" min="10" max="300" />
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--clr-surface-container-low);border-radius:10px">
+                <div>
+                  <span style="font-size:13px;font-weight:600;color:var(--clr-on-surface)">Duración informativas (horas)</span>
+                  <p style="margin:2px 0 0;font-size:11px;color:var(--clr-on-surface-variant)">Tiempo de vida de alertas informativas antes de desaparecer</p>
+                </div>
+                <input type="number" style="width:80px;padding:6px 10px;border:1px solid var(--clr-outline-variant);border-radius:6px;font-size:13px;font-weight:600;text-align:center;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface)" [(ngModel)]="alertaConfig.duracionInformativasHoras" min="1" max="168" />
+              </div>
+              <div style="padding:12px 16px;background:color-mix(in srgb,var(--clr-tertiary) 6%,transparent);border:1px solid color-mix(in srgb,var(--clr-tertiary) 15%,transparent);border-radius:10px">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+                  <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-tertiary)">info</span>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--clr-tertiary);letter-spacing:0.04em">Gestión de Alertas</span>
+                </div>
+                <p style="margin:0;font-size:12px;color:var(--clr-on-surface-variant)">Las alertas críticas (check-out vencido, incidencias activas, deudas) nunca caducan automáticamente. Las alertas informativas y de éxito caducan según el tiempo configurado. El estado de lectura se guarda por usuario en la base de datos.</p>
+              </div>
+              <button class="premium-btn" (click)="guardarAlertaConfig()" [disabled]="alertaConfigGuardando" style="align-self:flex-end;padding:10px 24px">
+                <span class="material-symbols-outlined">save</span>
+                Guardar Configuración
+              </button>
             </div>
           </div>
         }
@@ -197,7 +256,7 @@
                 </div>
                 <div class="premium-field">
                   <label>T&eacute;rminos y Condiciones (pie de p&aacute;gina)</label>
-                  <textarea class="premium-input" pTextarea rows="4" style="resize:vertical;min-height:80px">El cliente acepta que el hotel no se hace responsable por objetos de valor no declarados en la caja fuerte de recepción. La hora de Check-out es a las 11:00 AM, penalidad de media tarifa tras 1 hora de retraso.</textarea>
+                  <textarea class="premium-input" pTextarea rows="4" style="resize:vertical;min-height:80px" aria-label="Términos y Condiciones (pie de página)">El cliente acepta que el hotel no se hace responsable por objetos de valor no declarados en la caja fuerte de recepción. La hora de Check-out es a las 11:00 AM, penalidad de media tarifa tras 1 hora de retraso.</textarea>
                 </div>
               </div>
             </div>

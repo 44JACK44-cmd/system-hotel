@@ -14,7 +14,7 @@
   <div class="act-filters">
     <div class="act-filter-group">
       <label>MÓDULO</label>
-      <select class="act-select" [(ngModel)]="filtroModulo" (change)="filtrar()">
+      <select class="act-select" [(ngModel)]="filtroModulo" (change)="filtrar()" aria-label="MÓDULO">
         @for (m of modulos; track m) {
           <option [value]="m">{{ m || 'Todos' }}</option>
         }
@@ -22,11 +22,11 @@
     </div>
     <div class="act-filter-group">
       <label>DESDE</label>
-      <input class="act-input" type="date" [(ngModel)]="filtroFechaDesde" (change)="filtrar()" />
+      <input class="act-input" type="date" [(ngModel)]="filtroFechaDesde" (change)="filtrar()" aria-label="DESDE" />
     </div>
     <div class="act-filter-group">
       <label>HASTA</label>
-      <input class="act-input" type="date" [(ngModel)]="filtroFechaHasta" (change)="filtrar()" />
+      <input class="act-input" type="date" [(ngModel)]="filtroFechaHasta" (change)="filtrar()" aria-label="HASTA" />
     </div>
     <button class="act-btn act-btn-ghost" (click)="limpiarFiltros()">
       <span class="material-symbols-outlined">clear</span> Limpiar

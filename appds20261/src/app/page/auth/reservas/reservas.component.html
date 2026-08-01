@@ -22,7 +22,7 @@
       <span class="material-symbols-outlined" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--clr-on-surface-variant);z-index:1">search</span>
       <input class="premium-input" type="text" [(ngModel)]="searchTerm" (input)="onSearchInput()"
         placeholder="Buscar por cliente, habitación o estado..."
-        style="padding-left:36px;width:100%" />
+        style="padding-left:36px;width:100%" aria-label="Buscar reserva" />
     </div>
     @if (searchTerm) {
       <button class="premium-btn" style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="searchTerm = ''; onSearchInput()">
@@ -155,13 +155,21 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="premium-field">
             <label>Fecha Entrada</label>
-            <p-datepicker formControlName="fechaEntrada" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="premium-input" styleClass="w-full" />
+            <p-datepicker formControlName="fechaEntrada" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="premium-input" styleClass="w-full" [minDate]="today" />
+            @if (reservaForm.get('fechaEntrada')?.invalid && reservaForm.get('fechaEntrada')?.touched) { <small class="field-error">La fecha de entrada es obligatoria</small> }
           </div>
           <div class="premium-field">
             <label>Fecha Salida</label>
-            <p-datepicker formControlName="fechaSalida" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="premium-input" styleClass="w-full" />
+            <p-datepicker formControlName="fechaSalida" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="premium-input" styleClass="w-full" [minDate]="reservaForm.get('fechaEntrada')?.value || today" />
+            @if (reservaForm.get('fechaSalida')?.invalid && reservaForm.get('fechaSalida')?.touched) { <small class="field-error">La fecha de salida es obligatoria</small> }
           </div>
         </div>
+        @if (reservaForm.errors?.['salidaMenorOIgual'] && reservaForm.touched) {
+          <small class="field-error">La fecha de salida debe ser posterior a la fecha de entrada</small>
+        }
+        @if (reservaForm.errors?.['entradaPasada'] && reservaForm.touched) {
+          <small class="field-error">La fecha de entrada no puede estar en el pasado</small>
+        }
 
         @if (!editMode) {
           <div class="premium-field">
@@ -176,14 +184,14 @@
             </div>
             <div class="premium-field">
               <label>Referencia</label>
-              <input class="premium-input" type="text" formControlName="referenciaPago" placeholder="Opcional" />
+              <input class="premium-input" type="text" formControlName="referenciaPago" placeholder="Opcional" aria-label="Referencia" />
             </div>
           </div>
         }
 
         <div class="premium-field">
           <label>Observaci&oacute;n</label>
-          <textarea class="premium-input" formControlName="observacion" rows="2" placeholder="Opcional" style="resize:vertical;min-height:60px"></textarea>
+          <textarea class="premium-input" formControlName="observacion" rows="2" placeholder="Opcional" style="resize:vertical;min-height:60px" aria-label="Observación"></textarea>
         </div>
 
       </form>

@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,11 +109,23 @@ public class BusinessPago {
             if (reserva == null) {
                 throw new ResourceNotFoundException("Reserva no encontrada");
             }
+            if (reserva.getEstado() != EstadoReserva.CONFIRMADA) {
+                throw new BusinessException("La reserva ya no esta confirmada. No se pueden registrar pagos sobre ella.");
+            }
+            BigDecimal pagado = pagoRepository.findByReservaIdOrderByFechaPagoDesc(reserva.getId())
+                    .stream()
+                    .map(EntityPago::getMonto)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+            BigDecimal saldoRestante = reserva.getMontoTotal().subtract(pagado);
+            if (request.getMonto().compareTo(saldoRestante) > 0) {
+                throw new BusinessException("El monto no puede exceder el saldo pendiente de la reserva (S/ " +
+                        saldoRestante.setScale(2, java.math.RoundingMode.HALF_UP) + ")");
+            }
             pago.setReserva(reserva);
         }
 
         if (request.getHospedajeId() != null) {
-            EntityHospedaje hospedaje = hospedajeRepository.findById(request.getHospedajeId()).orElse(null);
+            EntityHospedaje hospedaje = hospedajeRepository.findByIdForUpdate(request.getHospedajeId());
             if (hospedaje == null) {
                 throw new ResourceNotFoundException("Hospedaje no encontrado");
             }

@@ -15,8 +15,12 @@ public class JwtService {
     private final SecretKey secretKey;
     private final long expiration;
 
-    public JwtService(@Value("${jwt.secret:MiClaveSecretaParaJWT2026HotelGestionSegura}") String secret,
+    public JwtService(@Value("${jwt.secret}") String secret,
                       @Value("${jwt.expiration:86400000}") long expiration) {
+        if (secret == null || secret.isBlank() || secret.length() < 32) {
+            throw new IllegalStateException("jwt.secret no esta configurado o es demasiado corto. " +
+                    "Defina la variable de entorno JWT_SECRET con al menos 32 caracteres.");
+        }
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expiration = expiration;
     }

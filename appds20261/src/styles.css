@@ -11,7 +11,7 @@
   --aura-gold:                    #C9A45C;
   --aura-gold-hover:              #D7B36B;
   --aura-gold-light:              #E4C98A;
-  --aura-gold-dark:               #A8843E;
+  --aura-gold-dark:               #8A6424;
   --aura-dark:                    #181818;
   --aura-dark-surface:            #232323;
   --aura-dark-elevated:           #252525;
@@ -78,26 +78,42 @@
   --clr-outline:                  #B8B3AB;
   --clr-outline-variant:          #D5D0C8;
 
-  --clr-status-available:         var(--aura-success);
-  --clr-status-occupied:          var(--aura-danger);
-  --clr-status-dirty:             var(--aura-warning);
-  --clr-status-maintenance:       var(--aura-text-muted);
+  --clr-status-available:         #2E7D32;
+  --clr-status-occupied:          #C0392B;
+  --clr-status-dirty:             #8F6B00;
+  --clr-status-maintenance:       #6B6B6B;
+  --clr-status-info:              #2F6FB5;
 
-  --clr-error:                    var(--aura-danger);
+  --clr-error:                    #C0392B;
   --clr-on-error:                 #FFFFFF;
-  --clr-error-container:          rgba(217,83,79,0.12);
-  --clr-on-error-container:       var(--aura-danger);
+  --clr-error-container:          rgba(192,57,43,0.12);
+  --clr-on-error-container:       #C0392B;
+
+  /* Severidades del Centro de Operaciones (Light) */
+  --clr-alert-urgente:             #B71C1C;
+  --clr-alert-urgente-container:   rgba(183,28,28,0.12);
+  --clr-alert-critica:             #C0392B;
+  --clr-alert-critica-container:   rgba(192,57,43,0.12);
+  --clr-alert-importante:          #D84315;
+  --clr-alert-importante-container: rgba(216,67,21,0.12);
+  --clr-alert-aviso:               #1565C0;
+  --clr-alert-aviso-container:     rgba(21,101,192,0.12);
+  --clr-alert-informativa:         #6B6B6B;
+  --clr-alert-informativa-container: rgba(107,107,107,0.12);
+  --clr-alert-exito:               #2E7D32;
+  --clr-alert-exito-container:     rgba(46,125,50,0.12);
 
   --clr-primary-dark:             var(--aura-dark-surface);
-  --clr-success:                  var(--aura-success);
-  --clr-warning:                  var(--aura-warning);
-  --clr-danger:                   var(--aura-danger);
-  --clr-info:                     var(--aura-info);
+  --clr-success:                  #2E7D32;
+  --clr-warning:                  #8F6B00;
+  --clr-danger:                   #C0392B;
+  --clr-info:                     #2F6FB5;
   --clr-border:                   var(--clr-outline-variant);
   --clr-text:                     var(--clr-on-surface);
   --clr-muted:                    var(--clr-on-surface-variant);
   --clr-white:                    #FFFFFF;
   --clr-black:                    #000000;
+  --clr-focus:                    #6d5426;
 
   --sp-xs:   4px;
   --sp-sm:   8px;
@@ -177,14 +193,30 @@
   --clr-status-occupied:           var(--aura-danger);
   --clr-status-dirty:              var(--aura-warning);
   --clr-status-maintenance:        var(--aura-text-muted);
+  --clr-status-info:               #7FB0E8;
 
   --clr-error:                     var(--aura-danger);
   --clr-on-error:                  #FFFFFF;
   --clr-error-container:           rgba(217,83,79,0.15);
   --clr-on-error-container:        #F5A5A0;
 
+  /* Severidades del Centro de Operaciones (Dark) */
+  --clr-alert-urgente:             #FF5252;
+  --clr-alert-urgente-container:   rgba(255,82,82,0.16);
+  --clr-alert-critica:             #EF5350;
+  --clr-alert-critica-container:   rgba(239,83,80,0.16);
+  --clr-alert-importante:          #FFB74D;
+  --clr-alert-importante-container: rgba(255,183,77,0.14);
+  --clr-alert-aviso:               #64B5F6;
+  --clr-alert-aviso-container:     rgba(100,181,246,0.14);
+  --clr-alert-informativa:         #9E9E9E;
+  --clr-alert-informativa-container: rgba(158,158,158,0.12);
+  --clr-alert-exito:               #57B65E;
+  --clr-alert-exito-container:     rgba(87,182,94,0.14);
+
   --clr-white:                     #FFFFFF;
   --clr-black:                     #000000;
+  --clr-focus:                     #d4b25f;
   --clr-primary-dark:              #000000;
 
   --shadow-sm:   0 1px 3px rgba(0,0,0,0.3);
@@ -268,18 +300,18 @@ app-root { display: block; height: 100%; overflow: hidden; }
   letter-spacing: 0.05em;
   border: 1px solid transparent;
 }
-.badge-available  { background: linear-gradient(135deg, rgba(87,182,94,0.12), rgba(87,182,94,0.06)); color: var(--aura-success); border-color: rgba(87,182,94,0.2); }
-.badge-occupied   { background: linear-gradient(135deg, rgba(217,83,79,0.12), rgba(217,83,79,0.06)); color: var(--aura-danger); border-color: rgba(217,83,79,0.2); }
-.badge-dirty      { background: linear-gradient(135deg, rgba(214,167,86,0.12), rgba(214,167,86,0.06)); color: var(--aura-warning); border-color: rgba(214,167,86,0.2); }
-.badge-maintenance{ background: linear-gradient(135deg, rgba(153,153,153,0.12), rgba(153,153,153,0.06)); color: var(--aura-text-muted); border-color: rgba(153,153,153,0.2); }
-.badge-confirmed  { background: linear-gradient(135deg, rgba(74,144,226,0.12), rgba(74,144,226,0.06)); color: var(--aura-info); border-color: rgba(74,144,226,0.2); }
-.badge-pending    { background: linear-gradient(135deg, rgba(214,167,86,0.12), rgba(214,167,86,0.06)); color: var(--aura-warning); border-color: rgba(214,167,86,0.2); }
-.badge-cancelled  { background: linear-gradient(135deg, rgba(153,153,153,0.1), rgba(153,153,153,0.05)); color: var(--aura-text-muted); border-color: rgba(153,153,153,0.15); }
-.badge-active     { background: linear-gradient(135deg, rgba(87,182,94,0.12), rgba(87,182,94,0.06)); color: var(--aura-success); border-color: rgba(87,182,94,0.2); }
-.badge-completed  { background: linear-gradient(135deg, rgba(153,153,153,0.1), rgba(153,153,153,0.05)); color: var(--aura-text-muted); border-color: rgba(153,153,153,0.15); }
-.badge-success    { background: linear-gradient(135deg, rgba(87,182,94,0.12), rgba(87,182,94,0.06)); color: var(--aura-success); border-color: rgba(87,182,94,0.2); }
-.badge-error      { background: linear-gradient(135deg, rgba(217,83,79,0.12), rgba(217,83,79,0.06)); color: var(--aura-danger); border-color: rgba(217,83,79,0.2); }
-.badge-info       { background: linear-gradient(135deg, rgba(74,144,226,0.12), rgba(74,144,226,0.06)); color: var(--aura-info); border-color: rgba(74,144,226,0.2); }
+.badge-available  { background: linear-gradient(135deg, rgba(46,125,50,0.12), rgba(46,125,50,0.06)); color: var(--clr-status-available); border-color: rgba(46,125,50,0.2); }
+.badge-occupied   { background: linear-gradient(135deg, rgba(192,57,43,0.12), rgba(192,57,43,0.06)); color: var(--clr-status-occupied); border-color: rgba(192,57,43,0.2); }
+.badge-dirty      { background: linear-gradient(135deg, rgba(143,107,0,0.12), rgba(143,107,0,0.06)); color: var(--clr-status-dirty); border-color: rgba(143,107,0,0.2); }
+.badge-maintenance{ background: linear-gradient(135deg, rgba(107,107,107,0.12), rgba(107,107,107,0.06)); color: var(--clr-status-maintenance); border-color: rgba(107,107,107,0.2); }
+.badge-confirmed  { background: linear-gradient(135deg, rgba(47,111,181,0.12), rgba(47,111,181,0.06)); color: var(--clr-status-info); border-color: rgba(47,111,181,0.2); }
+.badge-pending    { background: linear-gradient(135deg, rgba(143,107,0,0.12), rgba(143,107,0,0.06)); color: var(--clr-status-dirty); border-color: rgba(143,107,0,0.2); }
+.badge-cancelled  { background: linear-gradient(135deg, rgba(107,107,107,0.1), rgba(107,107,107,0.05)); color: var(--clr-status-maintenance); border-color: rgba(107,107,107,0.15); }
+.badge-active     { background: linear-gradient(135deg, rgba(46,125,50,0.12), rgba(46,125,50,0.06)); color: var(--clr-status-available); border-color: rgba(46,125,50,0.2); }
+.badge-completed  { background: linear-gradient(135deg, rgba(107,107,107,0.1), rgba(107,107,107,0.05)); color: var(--clr-status-maintenance); border-color: rgba(107,107,107,0.15); }
+.badge-success    { background: linear-gradient(135deg, rgba(46,125,50,0.12), rgba(46,125,50,0.06)); color: var(--clr-status-available); border-color: rgba(46,125,50,0.2); }
+.badge-error      { background: linear-gradient(135deg, rgba(192,57,43,0.12), rgba(192,57,43,0.06)); color: var(--clr-status-occupied); border-color: rgba(192,57,43,0.2); }
+.badge-info       { background: linear-gradient(135deg, rgba(47,111,181,0.12), rgba(47,111,181,0.06)); color: var(--clr-status-info); border-color: rgba(47,111,181,0.2); }
 
 .hs-card {
   min-width: 0;
@@ -926,7 +958,7 @@ button, a, .hs-clickable {
 
 /* --- Focus visible for keyboard users --- */
 *:focus-visible {
-  outline: 2px solid var(--clr-secondary);
+  outline: 2px solid var(--clr-focus);
   outline-offset: 2px;
 }
 

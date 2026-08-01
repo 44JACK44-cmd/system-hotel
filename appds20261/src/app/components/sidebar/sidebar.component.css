@@ -107,6 +107,13 @@
   cursor: pointer;
   border-left: 3px solid transparent;
   position: relative;
+  width: 100%;
+  background: none;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  font: inherit;
+  text-align: left;
 }
 .hs-sidebar__nav-item:hover {
   background: rgba(201,164,92,0.08);

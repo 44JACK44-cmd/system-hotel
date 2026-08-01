@@ -11,7 +11,8 @@ export type TipoEvento =
   | 'INCIDENCIA_CAMBIO'
   | 'USUARIO_CAMBIO'
   | 'CONFIGURACION_CAMBIO'
-  | 'NOTIFICACION_CAMBIO';
+  | 'NOTIFICACION_CAMBIO'
+  | 'CAJA_CAMBIO';
 
 export interface EventoEstado {
   tipo: TipoEvento;
@@ -43,4 +44,5 @@ export class EstadoActualizacionService {
   usuarioCambio(data?: any): void { this.emitir('USUARIO_CAMBIO', data); }
   configuracionCambio(data?: any): void { this.emitir('CONFIGURACION_CAMBIO', data); }
   notificacionCambio(data?: any): void { this.emitir('NOTIFICACION_CAMBIO', data); }
+  cajaCambio(data?: any): void { this.emitir('CAJA_CAMBIO', data); }
 }

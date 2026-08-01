@@ -66,15 +66,34 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   ];
 
   userForm = this.fb.group({
-    nombreCompleto: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
-    username: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9_]+$/), Validators.maxLength(50)]],
+    nombreCompleto: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60), this.nombreSoloLetras]],
+    username: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9._-]{4,30}$/)]],
     email: ['', [Validators.maxLength(100), Validators.email]],
-    telefono: ['', [Validators.maxLength(20)]],
+    telefono: ['', [Validators.pattern(/^\d{6,12}$/)]],
     password: ['', [Validators.minLength(6), Validators.maxLength(100)]],
     confirmPassword: [''],
     rol: ['RECEPCIONISTA', Validators.required],
     activo: [true]
   });
+
+  private nombreSoloLetras(control: any): { [key: string]: any } | null {
+    if (!control.value) return null;
+    const v = String(control.value).trim();
+    if (/[^A-Za-zÁÉÍÓÚÜáéíóúüÑñ\s]/.test(v)) return { letrasInvalidas: true };
+    if (/\s{2,}/.test(v)) return { espaciosDobles: true };
+    return null;
+  }
+
+  private passwordFortaleza(control: any): { [key: string]: any } | null {
+    if (!control.value) return null;
+    const v = String(control.value);
+    if (v.length < 8) return { debil: true };
+    if (!/[A-Z]/.test(v)) return { sinMayuscula: true };
+    if (!/[a-z]/.test(v)) return { sinMinuscula: true };
+    if (!/\d/.test(v)) return { sinNumero: true };
+    if (!/[^A-Za-z0-9]/.test(v)) return { sinEspecial: true };
+    return null;
+  }
 
   switchTab(tab: 'personal' | 'historial'): void { this.activeTab = tab; }
 
@@ -153,7 +172,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.editingId = null;
     this.resetForm();
     this.userForm.reset({ rol: 'RECEPCIONISTA', activo: true });
-    this.userForm.get('password')?.setValidators(Validators.required);
+    this.userForm.get('password')?.setValidators([Validators.required, this.passwordFortaleza]);
     this.userForm.get('password')?.updateValueAndValidity();
     this.dialogVisible = true;
     this.layoutState.setOverlay(true);
@@ -227,12 +246,18 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     if (this.userForm.invalid) return;
 
     this.loading = true;
-    const data = this.userForm.value;
-
-    // Clean up empty password fields for editing
-    if (this.editing && (!data.password || data.password === '')) {
-      delete data.password;
-      delete data.confirmPassword;
+    const raw = this.userForm.value;
+    const data: any = {
+      nombreCompleto: raw.nombreCompleto?.trim().replace(/\s{2,}/g, ' '),
+      username: raw.username?.trim(),
+      email: raw.email?.trim().toLowerCase() || null,
+      telefono: raw.telefono?.trim() || null,
+      rol: raw.rol,
+      activo: raw.activo
+    };
+    if (raw.password && raw.password !== '') {
+      data.password = raw.password;
+      data.confirmPassword = raw.confirmPassword;
     }
 
     if (this.editing && this.editingId) {
@@ -248,7 +273,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.loading = false;
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al actualizar' });
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al actualizar' });
         }
       });
     } else {
@@ -264,7 +289,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.loading = false;
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al crear' });
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al crear' });
         }
       });
     }
@@ -287,47 +312,59 @@ export class UsuariosComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             this.loading = false;
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' });
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error' });
           }
         });
       }
     });
   }
 
+  resetDialogVisible = false;
+  resetPasswordData: any = null;
+  resetNewPassword = '';
+  resetConfirmPassword = '';
+  resetPasswordError = '';
+
   resetPassword(u: any): void {
-    this.confirmationService.confirm({
-      message: `¿Restablecer contraseña de ${u.nombreCompleto}? Se requerirá ingresar la nueva contraseña dos veces.`,
-      header: 'Restablecer Contraseña',
-      icon: 'pi pi-key',
-      accept: () => {
-        this.actionButtonText = 'Restablecer';
-        this.loadingAction = true;
-        // We'll use a simple prompt for this demo, but ideally a modal with form
-        const newPassword = prompt('Ingrese la nueva contraseña:');
-        if (!newPassword) {
-          this.loadingAction = false;
-          return;
-        }
-        const confirmPassword = prompt('Confirme la nueva contraseña:');
-        if (!confirmPassword) {
-          this.loadingAction = false;
-          return;
-        }
-        if (newPassword !== confirmPassword) {
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Las contraseñas no coinciden' });
-          this.loadingAction = false;
-          return;
-        }
-        this.usuarioService.resetPasswordByAdmin(u.id, newPassword, confirmPassword).subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Contraseña restablecida' });
-            this.loadingAction = false;
-          },
-          error: (err) => {
-            this.loadingAction = false;
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al restablecer' });
-          }
-        });
+    this.resetPasswordData = u;
+    this.resetNewPassword = '';
+    this.resetConfirmPassword = '';
+    this.resetPasswordError = '';
+    this.showNewPassword = false;
+    this.showConfirmPassword = false;
+    this.resetDialogVisible = true;
+  }
+
+  cerrarResetDialog(): void {
+    this.resetDialogVisible = false;
+    this.resetPasswordData = null;
+    this.resetPasswordError = '';
+  }
+
+  confirmarResetPassword(): void {
+    if (!this.resetPasswordData) return;
+    const nueva = this.resetNewPassword || '';
+    const confirma = this.resetConfirmPassword || '';
+    if (nueva.length < 8) {
+      this.resetPasswordError = 'La contraseña debe tener al menos 8 caracteres';
+      return;
+    }
+    if (nueva !== confirma) {
+      this.resetPasswordError = 'Las contraseñas no coinciden';
+      return;
+    }
+    this.resetPasswordError = '';
+    this.loadingAction = true;
+    this.actionButtonText = 'Restablecer';
+    this.usuarioService.resetPasswordByAdmin(this.resetPasswordData.id, nueva, confirma).subscribe({
+      next: () => {
+        this.loadingAction = false;
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Contraseña restablecida' });
+        this.cerrarResetDialog();
+      },
+      error: (err) => {
+        this.loadingAction = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al restablecer' });
       }
     });
   }
@@ -349,7 +386,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             this.loading = false;
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al eliminar' });
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al eliminar' });
           }
         });
       }

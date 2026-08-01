@@ -139,3 +139,105 @@
 @media (max-width: 375px) {
   .dash-page { padding: 10px 12px; }
 }
+
+/* ==================== CENTRO OPERATIVO ==================== */
+.dash-centro-operativo {
+  padding: 14px 18px;
+}
+
+.dash-centro-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.dash-centro-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .dash-centro-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .dash-centro-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
+
+.dash-centro-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.dash-centro-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.dash-centro-card--urgente {
+  background: color-mix(in srgb, var(--clr-alert-urgente) 10%, transparent);
+  border-color: color-mix(in srgb, var(--clr-alert-urgente) 30%, transparent);
+}
+.dash-centro-card--urgente:hover {
+  background: color-mix(in srgb, var(--clr-alert-urgente) 16%, transparent);
+}
+
+.dash-centro-card--importante {
+  background: color-mix(in srgb, var(--clr-alert-importante) 10%, transparent);
+  border-color: color-mix(in srgb, var(--clr-alert-importante) 30%, transparent);
+}
+.dash-centro-card--importante:hover {
+  background: color-mix(in srgb, var(--clr-alert-importante) 16%, transparent);
+}
+
+.dash-centro-card--pendientes {
+  background: color-mix(in srgb, var(--clr-alert-aviso) 10%, transparent);
+  border-color: color-mix(in srgb, var(--clr-alert-aviso) 30%, transparent);
+}
+.dash-centro-card--pendientes:hover {
+  background: color-mix(in srgb, var(--clr-alert-aviso) 16%, transparent);
+}
+
+.dash-centro-card--completadas {
+  background: color-mix(in srgb, var(--clr-alert-exito) 10%, transparent);
+  border-color: color-mix(in srgb, var(--clr-alert-exito) 30%, transparent);
+}
+.dash-centro-card--completadas:hover {
+  background: color-mix(in srgb, var(--clr-alert-exito) 16%, transparent);
+}
+
+.dash-centro-icon .material-symbols-outlined {
+  font-size: 28px;
+}
+
+.dash-centro-card--urgente .dash-centro-icon .material-symbols-outlined { color: var(--clr-alert-urgente); }
+.dash-centro-card--importante .dash-centro-icon .material-symbols-outlined { color: var(--clr-alert-importante); }
+.dash-centro-card--pendientes .dash-centro-icon .material-symbols-outlined { color: var(--clr-alert-aviso); }
+.dash-centro-card--completadas .dash-centro-icon .material-symbols-outlined { color: var(--clr-alert-exito); }
+
+.dash-centro-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-centro-valor {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--clr-on-surface);
+}
+
+.dash-centro-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--clr-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

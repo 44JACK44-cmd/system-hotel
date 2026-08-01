@@ -78,7 +78,20 @@ export class ReservasComponent implements OnInit, OnDestroy {
     metodoAdelanto: ['YAPE', Validators.required],
     referenciaPago: ['', Validators.maxLength(100)],
     observacion: ['', Validators.maxLength(500)]
-  });
+  }, { validators: this.fechaReservaValidator });
+
+  private fechaReservaValidator(form: any): { [key: string]: any } | null {
+    const entrada = form.get('fechaEntrada')?.value;
+    const salida = form.get('fechaSalida')?.value;
+    if (!entrada || !salida) return null;
+    const e = new Date(entrada);
+    const s = new Date(salida);
+    if (s <= e) return { salidaMenorOIgual: true };
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    if (e < hoy) return { entradaPasada: true };
+    return null;
+  }
 
   ngOnInit(): void {
     this.loadReservas();
@@ -240,7 +253,16 @@ export class ReservasComponent implements OnInit, OnDestroy {
       this.updateReserva();
       return;
     }
-    if (this.reservaForm.invalid) return;
+    if (this.reservaForm.invalid) {
+      if (this.reservaForm.errors?.['salidaMenorOIgual']) {
+        this.messageService.add({ severity: 'error', summary: 'Fechas inválidas', detail: 'La fecha de salida debe ser posterior a la fecha de entrada' });
+      } else if (this.reservaForm.errors?.['entradaPasada']) {
+        this.messageService.add({ severity: 'error', summary: 'Fecha inválida', detail: 'La fecha de entrada no puede estar en el pasado' });
+      } else {
+        this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos requeridos' });
+      }
+      return;
+    }
     const data = this.reservaForm.value;
     this.loading = true;
     this.reservaService.verificarDisponibilidad(data.habitacionId!, data.fechaEntrada!, data.fechaSalida!).subscribe({
@@ -280,7 +302,7 @@ export class ReservasComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             this.loading = false;
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al crear reserva' });
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al crear reserva' });
           }
         });
       },
@@ -314,7 +336,7 @@ export class ReservasComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loading = false;
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al actualizar reserva' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al actualizar reserva' });
       }
     });
   }
@@ -346,7 +368,7 @@ export class ReservasComponent implements OnInit, OnDestroy {
       accept: () => {
         this.reservaService.cancelar(r.id).subscribe({
           next: () => { this.messageService.add({ severity: 'success', summary: 'Cancelada', detail: 'Reserva cancelada' }); this.loadReservas(); this.estadoActualizacion.reservaCambio(); this.estadoActualizacion.habitacionCambio(); },
-          error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' })
+          error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error' })
         });
       }
     });

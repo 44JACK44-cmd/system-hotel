@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,9 +97,8 @@ public class BusinessCaja {
     }
 
     private void recalcular(EntityCaja caja) {
-        LocalDate hoy = caja.getFechaApertura().toLocalDate();
-        LocalDateTime inicio = hoy.atStartOfDay();
-        LocalDateTime fin = hoy.atTime(LocalTime.MAX);
+        LocalDateTime inicio = caja.getFechaApertura();
+        LocalDateTime fin = caja.getFechaCierre() != null ? caja.getFechaCierre() : LocalDateTime.now();
 
         List<EntityPago> pagos = pagoRepository.findByFechaPagoBetweenOrderByFechaPagoDesc(inicio, fin);
         List<EntityEgreso> egresos = egresoRepository.findByFechaRegistroBetweenOrderByFechaRegistroDesc(inicio, fin);

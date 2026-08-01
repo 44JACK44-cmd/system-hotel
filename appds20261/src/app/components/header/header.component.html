@@ -18,43 +18,167 @@
   <div class="hs-topbar__right">
     <div class="hs-topbar__actions">
       <div class="hs-topbar__notif-wrap">
-        <button class="hs-topbar__icon-btn" title="Notificaciones" aria-label="Notificaciones" (click)="toggleNotif()">
+        <button class="hs-topbar__icon-btn hs-topbar__icon-btn--alert" [class.hs-topbar__icon-btn--urgente]="hayAlertasUrgentes" title="Centro de Alertas" aria-label="Centro de Alertas" (click)="toggleNotif()">
           <span class="material-symbols-outlined">notifications</span>
-          @if (notifCount > 0) {
-            <span class="hs-topbar__notif-badge">{{ notifCount > 99 ? '99+' : notifCount }}</span>
+          @if (totalNoLeidas > 0) {
+            <span class="hs-topbar__notif-badge" [class.hs-topbar__notif-badge--urgente]="hayAlertasUrgentes">{{ totalNoLeidas > 99 ? '99+' : totalNoLeidas }}</span>
           }
         </button>
         @if (notifOpen) {
           <div class="hs-notif-dropdown" (click)="$event.stopPropagation()">
             <div class="hs-notif-dropdown__header">
-              <span class="hs-notif-dropdown__title">Notificaciones</span>
-              @if (notifList.length > 0) {
+              <span class="hs-notif-dropdown__title">Centro de Alertas</span>
+              @if (totalNoLeidas > 0) {
                 <button class="hs-notif-dropdown__markall" (click)="marcarTodasLeidas()">Marcar todas leídas</button>
               }
             </div>
-            <div class="hs-notif-dropdown__body" style="max-height:350px;overflow-y:auto">
-              @for (n of notifList; track n.id) {
-                <div class="hs-notif-item" [class.hs-notif-item--clickable]="n.entidadTipo === 'INCIDENCIA'" (click)="irAIncidencia(n)">
-                  <div class="hs-notif-item__icon">
-                    @switch (n.tipo) {
-                      @case ('LIMPIEZA') { <span class="material-symbols-outlined" style="color:var(--clr-secondary)">cleaning_services</span> }
-                      @case ('INCIDENCIA') { <span class="material-symbols-outlined" style="color:var(--clr-error)">report</span> }
-                      @case ('HOSPEDAJE') { <span class="material-symbols-outlined" style="color:var(--clr-on-surface)">hotel</span> }
-                      @case ('PAGO') { <span class="material-symbols-outlined" style="color:var(--clr-tertiary)">payments</span> }
-                      @default { <span class="material-symbols-outlined">notifications</span> }
+
+            <div class="hs-alert-tabs">
+              <button class="hs-alert-tab" [class.hs-alert-tab--active]="activeVista === 'alertas'" (click)="setVista('alertas')">
+                <span class="material-symbols-outlined hs-alert-tab__icon">warning</span>
+                Alertas
+                @if (totalNoLeidas > 0) {
+                  <span class="hs-alert-tab__count">{{ totalNoLeidas }}</span>
+                }
+              </button>
+              <button class="hs-alert-tab" [class.hs-alert-tab--active]="activeVista === 'actividad'" (click)="setVista('actividad')">
+                <span class="material-symbols-outlined hs-alert-tab__icon">history</span>
+                Actividad
+              </button>
+            </div>
+
+            <div class="hs-notif-dropdown__body">
+              @if (activeVista === 'alertas') {
+                @if (notifList.length > 0) {
+                  <div class="hs-alert-section-label">Notificaciones</div>
+                  @for (n of notifList; track n.id) {
+                    <div class="hs-notif-item" [class.hs-notif-item--clickable]="n.entidadTipo === 'INCIDENCIA'" (click)="irAIncidencia(n)">
+                      <div class="hs-notif-item__icon">
+                        @switch (n.tipo) {
+                          @case ('LIMPIEZA') { <span class="material-symbols-outlined" style="color:var(--clr-secondary)">cleaning_services</span> }
+                          @case ('INCIDENCIA') { <span class="material-symbols-outlined" style="color:var(--clr-error)">report</span> }
+                          @case ('HOSPEDAJE') { <span class="material-symbols-outlined" style="color:var(--clr-on-surface)">hotel</span> }
+                          @case ('PAGO') { <span class="material-symbols-outlined" style="color:var(--clr-tertiary)">payments</span> }
+                          @default { <span class="material-symbols-outlined">notifications</span> }
+                        }
+                      </div>
+                      <div class="hs-notif-item__content">
+                        <p class="hs-notif-item__title">{{ n.titulo }}</p>
+                        @if (n.mensaje) { <p class="hs-notif-item__msg">{{ n.mensaje }}</p> }
+                        <span class="hs-notif-item__date">{{ n.fechaCreacion | date:'HH:mm' }}</span>
+                      </div>
+                      <button class="hs-notif-item__dismiss" (click)="marcarLeida(n); $event.stopPropagation()" title="Marcar leída">
+                        <span class="material-symbols-outlined">check</span>
+                      </button>
+                    </div>
+                  }
+                }
+
+                <div class="hs-co-toolbar">
+                  <div class="hs-co-search">
+                    <span class="material-symbols-outlined hs-co-search__icon" aria-hidden="true">search</span>
+                    <input type="search" [(ngModel)]="busqueda" placeholder="Buscar cliente, habitación, pago..." aria-label="Buscar alertas" />
+                    @if (busqueda) {
+                      <button type="button" class="hs-co-search__clear" (click)="limpiarBusqueda()" aria-label="Limpiar búsqueda">
+                        <span class="material-symbols-outlined">close</span>
+                      </button>
                     }
                   </div>
-                  <div class="hs-notif-item__content">
-                    <p class="hs-notif-item__title">{{ n.titulo }}</p>
-                    @if (n.mensaje) { <p class="hs-notif-item__msg">{{ n.mensaje }}</p> }
-                    <span class="hs-notif-item__date">{{ n.fechaCreacion | date:'HH:mm' }}</span>
+                  <div class="hs-co-sort">
+                    <span class="material-symbols-outlined hs-co-sort__icon" aria-hidden="true">swap_vert</span>
+                    <select [(ngModel)]="orden" aria-label="Ordenar alertas">
+                      <option value="RECIENTES">Más recientes</option>
+                      <option value="ANTIGUAS">Más antiguas</option>
+                      <option value="PRIORIDAD_ALTA">Mayor prioridad</option>
+                      <option value="PRIORIDAD_BAJA">Menor prioridad</option>
+                    </select>
                   </div>
-                  <button class="hs-notif-item__dismiss" (click)="marcarLeida(n); $event.stopPropagation()" title="Marcar leída">
-                    <span class="material-symbols-outlined">check</span>
-                  </button>
                 </div>
-              } @empty {
-                <div class="hs-notif-dropdown__empty">No hay notificaciones pendientes</div>
+
+                <div class="hs-co-filtros">
+                  <div class="hs-co-filtros__grupo">
+                    @for (f of filtrosPrioridad; track f.valor) {
+                      <button type="button" class="hs-chip" [class.hs-chip--activo]="filtroTipo === f.valor" (click)="setFiltroTipo(f.valor)">{{ f.label }}</button>
+                    }
+                  </div>
+                  <div class="hs-co-filtros__grupo">
+                    @for (f of filtrosCategoria; track f.valor) {
+                      <button type="button" class="hs-chip" [class.hs-chip--activo]="filtroCategoria === f.valor" (click)="setFiltroCategoria(f.valor)">{{ f.label }}</button>
+                    }
+                  </div>
+                  <div class="hs-co-filtros__grupo">
+                    @for (f of filtrosLectura; track f.valor) {
+                      <button type="button" class="hs-chip" [class.hs-chip--activo]="filtroLectura === f.valor" (click)="setFiltroLectura(f.valor)">{{ f.label }}</button>
+                    }
+                  </div>
+                </div>
+
+                <div class="hs-co-count">
+                  <span>{{ alertasFiltradas.length }} alerta(s)</span>
+                </div>
+
+                @if (alertasFiltradas.length > 0) {
+                  @for (a of alertasFiltradas; track a.grupoId) {
+                    <div class="hs-alert-item" [class]="'hs-alert-item--' + a.tipo" (click)="navegarAlerta(a)">
+                      <div class="hs-alert-item__bar" [class]="'hs-alert-item__bar--' + a.tipo"></div>
+                      <div class="hs-alert-item__icon"><span class="material-symbols-outlined">{{ a.icono }}</span></div>
+                      <div class="hs-alert-item__content">
+                        <div class="hs-alert-item__head">
+                          <span class="hs-alert-item__title">{{ a.titulo }}</span>
+                          @if (a.cantidad > 1) { <span class="hs-alert-item__qty">×{{ a.cantidad }}</span> }
+                          @if (!a.leida) { <span class="hs-alert-item__badge" [class]="'hs-alert-item__badge--' + a.tipo">{{ etiquetaTipo(a.tipo) }}</span> }
+                        </div>
+                        <p class="hs-alert-item__desc">{{ a.descripcion }}</p>
+                        <div class="hs-alert-item__meta">
+                          <span class="hs-alert-item__rel"><span class="material-symbols-outlined hs-alert-item__rel-icon" aria-hidden="true">schedule</span>{{ tiempoRelativo(a.timestamp) }}</span>
+                          <span class="hs-alert-item__mod">{{ a.modulo }}</span>
+                        </div>
+                        @if (a.acciones && a.acciones.length > 0) {
+                          <div class="hs-alert-item__acciones" (click)="$event.stopPropagation()">
+                            @for (ac of a.acciones; track $index) {
+                              <button type="button" class="hs-alert-item__accion" (click)="ejecutarAccion(a, ac)">{{ ac.label }}</button>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <button class="hs-alert-item__dismiss" (click)="marcarAlertaLeida(a); $event.stopPropagation()" title="Marcar leída">
+                        <span class="material-symbols-outlined">check_circle</span>
+                      </button>
+                    </div>
+                  }
+                } @else {
+                  <div class="hs-notif-dropdown__empty">
+                    <span class="material-symbols-outlined" style="font-size:32px;opacity:0.3">check_circle</span>
+                    <p style="margin:4px 0 0">No hay alertas con estos filtros</p>
+                  </div>
+                }
+              }
+
+              @if (activeVista === 'actividad') {
+                @if (actividadList.length > 0) {
+                  @for (item of actividadList; track item.id) {
+                    <div class="hs-actividad-item">
+                      <div class="hs-actividad-item__icon">
+                        <span class="material-symbols-outlined">history</span>
+                      </div>
+                      <div class="hs-actividad-item__content">
+                        <p class="hs-actividad-item__accion">{{ item.accion }}</p>
+                        @if (item.detalle) {
+                          <p class="hs-actividad-item__detalle">{{ item.detalle }}</p>
+                        }
+                        <div class="hs-actividad-item__meta">
+                          <span class="hs-actividad-item__modulo">{{ item.modulo }}</span>
+                          <span class="hs-actividad-item__fecha">{{ item.fecha | date:'dd/MM HH:mm' }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                } @else {
+                  <div class="hs-notif-dropdown__empty">
+                    <span class="material-symbols-outlined" style="font-size:32px;opacity:0.3">history</span>
+                    <p style="margin:4px 0 0">No hay actividad reciente</p>
+                  </div>
+                }
               }
             </div>
           </div>

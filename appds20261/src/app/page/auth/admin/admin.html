@@ -5,8 +5,8 @@
       <p style="margin:4px 0 0;font-size:14px;color:var(--clr-on-surface-variant)">Monitoreo de ingresos y m&eacute;tricas operativas &mdash; {{ mesActual }}</p>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="premium-btn" style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);pointer-events:none;opacity:0.8">
-        <span class="material-symbols-outlined">calendar_today</span>
+      <button class="premium-btn" disabled style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);opacity:0.8">
+        <span class="material-symbols-outlined" aria-hidden="true">calendar_today</span>
         {{ mesActual }}
       </button>
       <a [routerLink]="'/admin/reportes'" class="premium-btn" style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);text-decoration:none;font-size:12px;display:inline-flex;align-items:center;gap:6px">

@@ -102,12 +102,12 @@ public class PagoController {
         csv.append("ID,Fecha,Usuario,Monto,Metodo,Tipo,Referencia\n");
         for (var p : pagos) {
             csv.append(p.getId()).append(",");
-            csv.append(p.getFechaPago() != null ? p.getFechaPago().toString() : "").append(",");
-            csv.append("\"").append(p.getUsuarioNombre() != null ? p.getUsuarioNombre() : "").append("\",");
+            csv.append(csvSafe(p.getFechaPago() != null ? p.getFechaPago().toString() : "")).append(",");
+            csv.append("\"").append(csvSafe(p.getUsuarioNombre() != null ? p.getUsuarioNombre() : "")).append("\",");
             csv.append(p.getMonto() != null ? p.getMonto() : "0").append(",");
-            csv.append(p.getMetodo() != null ? p.getMetodo() : "").append(",");
-            csv.append(p.getTipo() != null ? p.getTipo() : "").append(",");
-            csv.append("\"").append(p.getReferencia() != null ? p.getReferencia() : "").append("\"\n");
+            csv.append(csvSafe(p.getMetodo() != null ? p.getMetodo() : "")).append(",");
+            csv.append(csvSafe(p.getTipo() != null ? p.getTipo() : "")).append(",");
+            csv.append("\"").append(csvSafe(p.getReferencia() != null ? p.getReferencia() : "")).append("\"\n");
         }
         byte[] bytes = csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
         HttpHeaders headers = new HttpHeaders();
@@ -115,6 +115,15 @@ public class PagoController {
         headers.set(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=pagos-" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".csv");
         return ResponseEntity.ok().headers(headers).body(bytes);
+    }
+
+    private static String csvSafe(String valor) {
+        if (valor == null) return "";
+        String v = valor.replace("\"", "\"\"");
+        if (!v.isEmpty() && (v.startsWith("=") || v.startsWith("+") || v.startsWith("-") || v.startsWith("@") || v.startsWith("\t") || v.startsWith("\r"))) {
+            v = "'" + v;
+        }
+        return v;
     }
 }
 

@@ -66,7 +66,7 @@
         <div class="nr-adelanto-row">
           <div class="nr-monto-wrap">
             <span class="nr-monto-prefix">S/</span>
-            <input class="nr-input nr-monto-input" type="text" [(ngModel)]="reservaData.adelanto" name="adelanto" (ngModelChange)="recalcular()" placeholder="0.00" inputmode="decimal" />
+            <input class="nr-input nr-monto-input" type="text" [(ngModel)]="reservaData.adelanto" name="adelanto" (ngModelChange)="recalcular()" placeholder="0.00" inputmode="decimal" aria-label="ADELANTO (obligatorio)" />
           </div>
           <div class="nr-pago-opts">
             <p-radioButton [(ngModel)]="reservaData.metodoPago" name="metodo" value="YAPE" inputId="nr-yape" />
@@ -78,7 +78,7 @@
       </section>
 
       <section class="nr-section">
-        <textarea class="nr-input nr-textarea" [(ngModel)]="reservaData.observaciones" name="observaciones" rows="2" placeholder="Observaciones" maxlength="500"></textarea>
+        <textarea class="nr-input nr-textarea" [(ngModel)]="reservaData.observaciones" name="observaciones" rows="2" placeholder="Observaciones" maxlength="500" aria-label="Observaciones"></textarea>
       </section>
     </div>
 

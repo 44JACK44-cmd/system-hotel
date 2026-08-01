@@ -97,14 +97,22 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
 
   tipos = [
     { label: 'Limpieza', value: 'LIMPIEZA' },
-    { label: 'Mantenimiento', value: 'MANTENIMIENTO' }
+    { label: 'Mantenimiento', value: 'MANTENIMIENTO' },
+    { label: 'Servicio limpieza huésped', value: 'SERVICIO_LIMPIEZA_HUESPED' },
+    { label: 'Limpieza check-out', value: 'LIMPIEZA_CHECKOUT' }
   ];
 
   incidenciaForm = this.fb.group({
     habitacionId: [null, Validators.required],
     tipo: ['LIMPIEZA', Validators.required],
-    motivo: ['', [Validators.required, Validators.maxLength(500)]]
+    motivo: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(300), this.noSoloEspacios]]
   });
+
+  private noSoloEspacios(control: any): { [key: string]: any } | null {
+    if (!control.value) return null;
+    if (!/\S/.test(String(control.value))) return { soloEspacios: true };
+    return null;
+  }
 
   ngOnInit(): void {
     this.loadIncidencias();
@@ -162,7 +170,8 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
       return;
     }
     this.loading = true;
-    this.incidenciaService.crear(this.incidenciaForm.value).subscribe({
+    const payload = { ...this.incidenciaForm.value, motivo: this.incidenciaForm.value.motivo?.trim() };
+    this.incidenciaService.crear(payload).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Incidencia registrada' });
         this.incidenciaForm.reset({ tipo: 'LIMPIEZA' });
@@ -172,7 +181,7 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
         this.estadoActualizacion.incidenciaCambio();
         this.estadoActualizacion.notificacionCambio();
       },
-      error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); }
+      error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error' }); }
     });
   }
 
@@ -183,7 +192,7 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
       motivo: `Limpieza asignada manualmente - Hab. ${hab.numero}`
     }).subscribe({
       next: () => { this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Limpieza asignada' }); this.loadIncidencias(); this.estadoActualizacion.habitacionCambio(); this.estadoActualizacion.incidenciaCambio(); this.estadoActualizacion.notificacionCambio(); },
-      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' })
+      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error' })
     });
   }
 
@@ -213,7 +222,7 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
         this.estadoActualizacion.incidenciaCambio();
         this.estadoActualizacion.notificacionCambio();
       },
-      error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); }
+      error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error' }); }
     });
   }
 }

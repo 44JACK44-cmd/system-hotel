@@ -132,7 +132,7 @@ public class HospedajeController {
     @PutMapping("extend/{id}")
     public ResponseEntity<ResponseHospedaje> actionExtend(
             @PathVariable Long id,
-            @RequestBody RequestHospedajeExtend request,
+            @Valid @RequestBody RequestHospedajeExtend request,
             @RequestHeader("Authorization") String authHeader) {
         Long usuarioId = validarToken(authHeader);
         HospedajeResponse item = hospedajeBusiness.extenderEstadia(id, request.getNuevaFechaSalida(), usuarioId);
@@ -146,7 +146,7 @@ public class HospedajeController {
     @PutMapping("change-room/{id}")
     public ResponseEntity<ResponseHospedaje> actionChangeRoom(
             @PathVariable Long id,
-            @RequestBody RequestHospedajeChangeRoom request,
+            @Valid @RequestBody RequestHospedajeChangeRoom request,
             @RequestHeader("Authorization") String authHeader) {
         Long usuarioId = validarToken(authHeader);
         HospedajeResponse item = hospedajeBusiness.cambiarHabitacion(id, request.getNuevaHabitacionId(), request.getMotivo(), usuarioId);

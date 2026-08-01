@@ -25,7 +25,7 @@
     <div class="hos-toolbar">
       <div class="hos-search">
         <span class="material-symbols-outlined">search</span>
-        <input class="hos-search-input" type="text" [(ngModel)]="filterText" (input)="onFilterInput()" placeholder="Buscar por huésped o habitación..." />
+        <input class="hos-search-input" type="text" [(ngModel)]="filterText" (input)="onFilterInput()" placeholder="Buscar por huésped o habitación..." aria-label="Buscar hospedaje" />
       </div>
       <div style="display:flex;gap:8px">
         <button class="hos-action-btn" (click)="loadActivos()" title="Actualizar"><span class="material-symbols-outlined">refresh</span></button>
@@ -341,7 +341,7 @@
       <div class="premium-grid-2" style="margin-bottom:16px">
         <div class="premium-field">
           <label>Noches (m&aacute;x 30)</label>
-          <input class="premium-input" type="number" [(ngModel)]="directoNoches" min="1" max="30" />
+          <input class="premium-input" type="number" [(ngModel)]="directoNoches" min="1" max="30" aria-label="Noches (máx 30)" />
         </div>
         <div class="premium-field">
           <label>Monto Pagado</label>

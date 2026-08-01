@@ -89,7 +89,9 @@ export class App implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isPublicPage = this.checkPublicUrl();
-    this.configService.load();
+    if (this.authService.isLoggedIn()) {
+      this.configService.load();
+    }
     this.routerSub = this.router.events.pipe(
       filter((e: Event): e is NavigationEnd => e instanceof NavigationEnd)
     ).subscribe((e: NavigationEnd) => {

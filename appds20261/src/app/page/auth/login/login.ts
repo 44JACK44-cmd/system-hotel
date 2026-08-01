@@ -46,7 +46,6 @@ export class Login implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
-    this.appConfig.load();
     this.revealTimers = [
       setTimeout(() => { this.headerRevealed = true; }, 100),
       setTimeout(() => { this.formRevealed = true; }, 500),
@@ -74,7 +73,7 @@ export class Login implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loading = false;
-        const msg = err.error?.message || 'Credenciales incorrectas';
+        const msg = err.error?.listMessage?.[0] || err.error?.message || 'Credenciales incorrectas';
         this.messageService.add({ severity: 'error', summary: 'Error de acceso', detail: msg });
       }
     });

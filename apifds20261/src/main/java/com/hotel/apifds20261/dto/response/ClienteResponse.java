@@ -8,7 +8,9 @@ import java.time.LocalDateTime;
 public class ClienteResponse {
     private Long id;
     private String nombreCompleto;
+    private String tipoDocumento;
     private String telefono;
+    private String codigoPais;
     private String documento;
     private String email;
     private LocalDateTime createdAt;

@@ -12,10 +12,8 @@ export class UsuarioService {
 
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'X-User-Id': userId || ''
+      'Authorization': `Bearer ${token}`
     });
   }
 

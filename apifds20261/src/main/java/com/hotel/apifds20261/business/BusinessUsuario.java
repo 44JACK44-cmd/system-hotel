@@ -13,6 +13,7 @@ import com.hotel.apifds20261.entity.EntityUsuario;
 import com.hotel.apifds20261.staticdata.RolUsuario;
 import com.hotel.apifds20261.exception.BusinessException;
 import com.hotel.apifds20261.exception.ResourceNotFoundException;
+import com.hotel.apifds20261.helper.ValidationHelper;
 import com.hotel.apifds20261.repository.RepositoryCaja;
 import com.hotel.apifds20261.repository.RepositoryHospedaje;
 import com.hotel.apifds20261.repository.RepositoryPago;
@@ -70,21 +71,27 @@ public class BusinessUsuario {
 
     @Transactional
     public UsuarioResponse crear(RequestUsuarioInsert request) {
-        if (usuarioRepository.existsByUsername(request.getUsername())) {
+        validarDatosUsuario(request.getNombreCompleto(), request.getUsername(), request.getEmail(), request.getTelefono());
+        ValidationHelper.validarPassword(request.getPassword());
+
+        String username = request.getUsername().trim();
+        String email = request.getEmail() != null && !request.getEmail().isBlank() ? request.getEmail().trim().toLowerCase() : null;
+
+        if (usuarioRepository.existsByUsername(username)) {
             throw new BusinessException("El username ya esta en uso");
         }
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            usuarioRepository.findByEmail(request.getEmail().trim()).ifPresent(existing -> {
+        if (email != null) {
+            usuarioRepository.findByEmail(email).ifPresent(existing -> {
                 throw new BusinessException("El correo electrónico ya está registrado");
             });
         }
         EntityUsuario usuario = new EntityUsuario();
-        usuario.setNombreCompleto(request.getNombreCompleto());
-        usuario.setUsername(request.getUsername());
+        usuario.setNombreCompleto(ValidationHelper.normalizarNombre(request.getNombreCompleto()));
+        usuario.setUsername(username);
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
-        usuario.setRol(RolUsuario.valueOf(request.getRol()));
-        usuario.setEmail(request.getEmail());
-        usuario.setTelefono(request.getTelefono());
+        usuario.setRol(RolUsuario.valueOf(request.getRol().toUpperCase()));
+        usuario.setEmail(email);
+        usuario.setTelefono(request.getTelefono() != null ? request.getTelefono().trim() : null);
         usuario.setActivo(true);
         return toResponse(usuarioRepository.save(usuario));
     }
@@ -92,41 +99,60 @@ public class BusinessUsuario {
     @Transactional
     public UsuarioResponse actualizar(Long id, RequestUsuarioInsert request) {
         EntityUsuario usuario = buscarOExcepcion(id);
-        if (!usuario.getUsername().equals(request.getUsername()) &&
-                usuarioRepository.existsByUsername(request.getUsername())) {
+        validarDatosUsuario(request.getNombreCompleto(), request.getUsername(), request.getEmail(), request.getTelefono());
+
+        String username = request.getUsername().trim();
+        String email = request.getEmail() != null && !request.getEmail().isBlank() ? request.getEmail().trim().toLowerCase() : null;
+
+        if (!usuario.getUsername().equals(username) &&
+                usuarioRepository.existsByUsername(username)) {
             throw new BusinessException("El username ya esta en uso");
         }
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            usuarioRepository.findByEmail(request.getEmail().trim()).ifPresent(existing -> {
+        if (email != null) {
+            usuarioRepository.findByEmail(email).ifPresent(existing -> {
                 if (!existing.getId().equals(id)) {
                     throw new BusinessException("El correo electrónico ya está registrado");
                 }
             });
         }
-        usuario.setNombreCompleto(request.getNombreCompleto());
-        usuario.setUsername(request.getUsername());
-        usuario.setRol(RolUsuario.valueOf(request.getRol()));
-        usuario.setEmail(request.getEmail());
-        usuario.setTelefono(request.getTelefono());
+        usuario.setNombreCompleto(ValidationHelper.normalizarNombre(request.getNombreCompleto()));
+        usuario.setUsername(username);
+        usuario.setRol(RolUsuario.valueOf(request.getRol().toUpperCase()));
+        usuario.setEmail(email);
+        usuario.setTelefono(request.getTelefono() != null ? request.getTelefono().trim() : null);
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            ValidationHelper.validarPassword(request.getPassword());
             usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         return toResponse(usuarioRepository.save(usuario));
     }
 
+    private void validarDatosUsuario(String nombre, String username, String email, String telefono) {
+        ValidationHelper.validarNombre(nombre, "nombre del usuario");
+        ValidationHelper.validarUsername(username);
+        ValidationHelper.validarEmail(email);
+        if (telefono != null && !telefono.isBlank()) {
+            ValidationHelper.validarTelefono("+51", telefono);
+        }
+    }
+
     @Transactional
     public UsuarioResponse actualizarCompleto(Long id, RequestUsuarioUpdate request, Long currentUserId) {
         EntityUsuario usuario = buscarOExcepcion(id);
+        validarDatosUsuario(request.getNombreCompleto(), request.getUsername(), request.getEmail(), request.getTelefono());
+
+        String username = request.getUsername().trim();
+        String email = request.getEmail() != null && !request.getEmail().isBlank() ? request.getEmail().trim().toLowerCase() : null;
 
         // Validar username único
-        if (!usuario.getUsername().equals(request.getUsername()) &&
-                usuarioRepository.existsByUsername(request.getUsername())) {
+        if (!usuario.getUsername().equals(username) &&
+                usuarioRepository.existsByUsername(username)) {
             throw new BusinessException("El username ya esta en uso");
         }
 
         // Validar email único
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            usuarioRepository.findByEmail(request.getEmail().trim()).ifPresent(existing -> {
+        if (email != null) {
+            usuarioRepository.findByEmail(email).ifPresent(existing -> {
                 if (!existing.getId().equals(id)) {
                     throw new BusinessException("El correo electrónico ya está registrado");
                 }
@@ -158,24 +184,27 @@ public class BusinessUsuario {
             if (!request.getPassword().equals(request.getConfirmPassword())) {
                 throw new BusinessException("Las contraseñas no coinciden");
             }
+            ValidationHelper.validarPassword(request.getPassword());
             usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        usuario.setNombreCompleto(request.getNombreCompleto());
-        usuario.setUsername(request.getUsername());
-        usuario.setEmail(request.getEmail());
-        usuario.setTelefono(request.getTelefono());
+        usuario.setNombreCompleto(ValidationHelper.normalizarNombre(request.getNombreCompleto()));
+        usuario.setUsername(username);
+        usuario.setEmail(email);
+        usuario.setTelefono(request.getTelefono() != null ? request.getTelefono().trim() : null);
         usuario.setRol(nuevoRol);
-        usuario.setActivo(request.isActivo());
 
         // Validación al desactivar: no dejar sin administradores
-        if (usuario.getActivo() && !request.isActivo() && usuario.getRol() == RolUsuario.ADMIN) {
+        boolean vaADesactivar = usuario.getActivo() && !request.isActivo();
+        if (vaADesactivar && usuario.getRol() == RolUsuario.ADMIN) {
             long adminCount = usuarioRepository.countByRolAndActivoTrue(RolUsuario.ADMIN);
             if (adminCount <= 1) {
                 throw new BusinessException("No se puede desactivar el último administrador del sistema");
             }
             validarUsuarioSinOperacionesActivas(id);
         }
+
+        usuario.setActivo(request.isActivo());
 
         return toResponse(usuarioRepository.save(usuario));
     }
@@ -243,9 +272,7 @@ public class BusinessUsuario {
         if (!newPassword.equals(confirmPassword)) {
             throw new BusinessException("Las contraseñas no coinciden");
         }
-        if (newPassword.length() < 6 || newPassword.length() > 100) {
-            throw new BusinessException("La contraseña debe tener entre 6 y 100 caracteres");
-        }
+        ValidationHelper.validarPassword(newPassword);
 
         usuario.setPassword(passwordEncoder.encode(newPassword));
         usuarioRepository.save(usuario);

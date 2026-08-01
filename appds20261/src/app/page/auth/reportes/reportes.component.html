@@ -21,9 +21,11 @@
         </div>
         <div style="width:1px;height:24px;background:var(--clr-outline-variant);flex-shrink:0"></div>
         <div class="rep-filter-item">
-          <span class="rep-filter-label">Ocup</span>
-          <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="ocupacionFecha" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input" styleClass="custom-datepicker" /></div>
-          <button class="premium-btn" style="padding:6px 12px;min-width:auto" (click)="loadOcupacion()">
+          <span class="rep-filter-label">Tendencia</span>
+          <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="tendenciaInicio" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input" styleClass="custom-datepicker" (ngModelChange)="loadTendencia()" /></div>
+          <span class="rep-filter-sep">—</span>
+          <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="tendenciaFin" dateFormat="dd/mm/yy" [showTime]="true" [hourFormat]="'24'" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input" styleClass="custom-datepicker" (ngModelChange)="loadTendencia()" /></div>
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto" (click)="loadTendencia()">
             <span class="material-symbols-outlined" style="font-size:18px">refresh</span>
           </button>
         </div>
@@ -116,29 +118,94 @@
     </div>
   </div>
 
-  <!-- Charts Section -->
+  <!-- Charts Section - Tendencia Dashboard -->
   <div class="rep-charts-grid">
-    <!-- Bar Chart - Occupancy Trend -->
-    <div class="premium-card" style="padding:0;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
-        <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface-variant)">Tendencia de Ocupaci&oacute;n</h3>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span style="width:8px;height:8px;border-radius:50%;background:var(--aura-gold);flex-shrink:0"></span>
-          <span style="font-size:11px;color:var(--clr-on-surface-variant)">Hoy</span>
+    <!-- Tendencia de Ocupación - Full Dashboard -->
+    <div class="premium-card rep-trend-card">
+      <!-- Header -->
+      <div class="rep-trend-header">
+        <h3 class="rep-trend-title">Tendencia de Ocupaci&oacute;n</h3>
+        @if (trendLoading) {
+          <span class="rep-trend-loading">Cargando...</span>
+        }
+      </div>
+
+      <!-- KPI Strip -->
+      <div class="rep-trend-kpis">
+        <div class="rep-trend-kpi">
+          <span class="rep-trend-kpi-label">Promedio</span>
+          <span class="rep-trend-kpi-value">{{ avgOccupancy }}%</span>
+        </div>
+        <div class="rep-trend-kpi">
+          <span class="rep-trend-kpi-label">M&aacute;xima</span>
+          <span class="rep-trend-kpi-value rep-trend-kpi-max">{{ maxOccupancy }}%</span>
+        </div>
+        <div class="rep-trend-kpi">
+          <span class="rep-trend-kpi-label">M&iacute;nima</span>
+          <span class="rep-trend-kpi-value rep-trend-kpi-min">{{ minOccupancy }}%</span>
+        </div>
+        <div class="rep-trend-kpi">
+          <span class="rep-trend-kpi-label">Pico</span>
+          <span class="rep-trend-kpi-value">{{ peakDay }}</span>
+        </div>
+        <div class="rep-trend-kpi">
+          <span class="rep-trend-kpi-label">D&iacute;as</span>
+          <span class="rep-trend-kpi-value">{{ totalDays }}</span>
         </div>
       </div>
-      <div style="padding:20px;min-height:120px;display:flex;align-items:flex-end;gap:16px">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:80px">
-          <div style="width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--aura-gold),var(--aura-gold-dark));transition:height 0.5s ease;min-height:4px;position:relative" [style.height.%]="ocupacion?.porcentajeOcupacion || 0">
-            <div style="position:absolute;top:-24px;left:50%;transform:translateX(-50%);background:var(--clr-surface-container-low);padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;color:var(--clr-on-surface);white-space:nowrap">Hoy: {{ ocupacion?.porcentajeOcupacion || 0 }}%</div>
+
+      <!-- Chart Canvas -->
+      <div class="rep-trend-chart-wrapper">
+        @if (tendenciaData.length) {
+          <canvas #tendenciaCanvas class="rep-trend-canvas"></canvas>
+        } @else if (!trendLoading) {
+          <div class="rep-trend-empty">
+            <span class="material-symbols-outlined" style="font-size:32px;opacity:0.3">insights</span>
+            <p>Seleccione un rango de fechas para ver la tendencia</p>
           </div>
-          <span style="font-size:10px;font-weight:700;color:var(--clr-on-surface-variant)">Hoy</span>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:80px">
-          <div style="width:100%;height:100%;border-radius:6px 6px 0 0;background:color-mix(in srgb,var(--clr-outline-variant) 30%,transparent)"></div>
-          <span style="font-size:10px;font-weight:700;color:var(--clr-on-surface-variant)">100%</span>
-        </div>
+        }
       </div>
+
+      <!-- Stats Cards -->
+      @if (tendenciaData.length) {
+        <div class="rep-trend-stats">
+          <div class="rep-trend-stat">
+            <span class="material-symbols-outlined rep-trend-stat-icon rep-trend-stat-icon--up">trending_up</span>
+            <div>
+              <span class="rep-trend-stat-label">D&iacute;a mayor ocupaci&oacute;n</span>
+              <span class="rep-trend-stat-value">{{ peakDay }} &middot; {{ maxOccupancy }}%</span>
+            </div>
+          </div>
+          <div class="rep-trend-stat">
+            <span class="material-symbols-outlined rep-trend-stat-icon rep-trend-stat-icon--dn">trending_down</span>
+            <div>
+              <span class="rep-trend-stat-label">D&iacute;a menor ocupaci&oacute;n</span>
+              <span class="rep-trend-stat-value">{{ lowestDay }} &middot; {{ minOccupancy }}%</span>
+            </div>
+          </div>
+          <div class="rep-trend-stat">
+            <span class="material-symbols-outlined rep-trend-stat-icon">insights</span>
+            <div>
+              <span class="rep-trend-stat-label">Promedio del per&iacute;odo</span>
+              <span class="rep-trend-stat-value">{{ avgOccupancy }}% ocupaci&oacute;n</span>
+            </div>
+          </div>
+          <div class="rep-trend-stat">
+            <span class="material-symbols-outlined rep-trend-stat-icon">bed</span>
+            <div>
+              <span class="rep-trend-stat-label">Hab. disponibles promedio</span>
+              <span class="rep-trend-stat-value">{{ avgAvailable }} hab.</span>
+            </div>
+          </div>
+          <div class="rep-trend-stat">
+            <span class="material-symbols-outlined rep-trend-stat-icon">hotel</span>
+            <div>
+              <span class="rep-trend-stat-label">Total habitaciones</span>
+              <span class="rep-trend-stat-value">{{ totalRooms }} hab.</span>
+            </div>
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Origen de Reservas -->

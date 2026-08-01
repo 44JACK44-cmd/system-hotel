@@ -3,8 +3,9 @@ import { ClienteService } from '../../../observable/cliente.service';
 import { AuthService } from '../../../observable/auth.service';
 import { PagoService } from '../../../observable/pago.service';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from "primeng/toast";
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { PaginatorModule } from 'primeng/paginator';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CommonModule } from '@angular/common';
@@ -17,7 +18,8 @@ import { EstadoActualizacionService } from '../../../services/estado-actualizaci
 @Component({
   selector: 'app-clientes',
   standalone: true,
-  imports: [ToastModule, PaginatorModule, FormsModule, ReactiveFormsModule, CommonModule, InputNumberModule],
+  imports: [ToastModule, ConfirmDialogModule, PaginatorModule, FormsModule, ReactiveFormsModule, CommonModule, InputNumberModule],
+  providers: [ConfirmationService],
   templateUrl: './clientes.html',
   styleUrl: './clientes.css',
 })
@@ -27,6 +29,7 @@ export class Clientes implements OnInit, OnDestroy {
   private pagoService = inject(PagoService);
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
   private router = inject(Router);
   private layoutState = inject(LayoutStateService);
   private cdr = inject(ChangeDetectorRef);
@@ -39,7 +42,7 @@ export class Clientes implements OnInit, OnDestroy {
   editing = false;
   editingId: number | null = null;
   searchTerm = '';
-  includeInactivos = localStorage.getItem('cli_includeInactivos') === 'true';
+  includeInactivos = localStorage.getItem('cli_includeInactivos') !== 'false';
   historialVisible = false;
   selectedCliente: any = null;
   historialReservas: any[] = [];
@@ -67,11 +70,21 @@ export class Clientes implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   clienteForm = this.fb.group({
-    nombreCompleto: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
-    telefono: ['', [Validators.required, Validators.pattern(/^\+?[0-9]{7,15}$/)]],
-    documento: ['', [Validators.maxLength(8), Validators.minLength(8), Validators.pattern(/^\d{8}$/)]],
+    nombreCompleto: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60), this.nombreSoloLetras]],
+    tipoDocumento: ['DNI'],
+    documento: ['', [Validators.maxLength(20)]],
+    telefono: ['', [Validators.required, Validators.pattern(/^\d{6,12}$/)]],
+    codigoPais: ['+51', [Validators.pattern(/^\+?[0-9]{1,4}$/)]],
     email: ['', [Validators.email, Validators.maxLength(100)]]
   });
+
+  private nombreSoloLetras(control: any): { [key: string]: any } | null {
+    if (!control.value) return null;
+    const v = String(control.value).trim();
+    if (/[^A-Za-zÁÉÍÓÚÜáéíóúüÑñ\s]/.test(v)) return { letrasInvalidas: true };
+    if (/\s{2,}/.test(v)) return { espaciosDobles: true };
+    return null;
+  }
 
   ngOnInit(): void {
     this.loadClientes();
@@ -92,7 +105,7 @@ export class Clientes implements OnInit, OnDestroy {
 
   loadClientes(): void {
     this.loading = true;
-    this.clienteService.listarPaginado(this.page, this.pageSize, this.sortField || undefined, this.sortDir, this.searchTerm || undefined, !this.includeInactivos || undefined).subscribe({
+    this.clienteService.listarPaginado(this.page, this.pageSize, this.sortField || undefined, this.sortDir, this.searchTerm || undefined, this.includeInactivos).subscribe({
       next: (res: PageResponse<any>) => {
         const data = res.content || [];
         const total = res.totalElements ?? 0;
@@ -147,7 +160,14 @@ export class Clientes implements OnInit, OnDestroy {
 
   editCliente(c: any): void {
     this.editing = true; this.editingId = c.id;
-    this.clienteForm.patchValue(c);
+    this.clienteForm.patchValue({
+      nombreCompleto: c.nombreCompleto,
+      tipoDocumento: c.tipoDocumento || 'DNI',
+      documento: c.documento,
+      telefono: c.telefono,
+      codigoPais: c.codigoPais || '+51',
+      email: c.email
+    });
     this.dialogVisible = true;
     this.layoutState.setOverlay(true);
   }
@@ -164,16 +184,25 @@ export class Clientes implements OnInit, OnDestroy {
 
   save(): void {
     if (this.clienteForm.invalid) return;
+    const v = this.clienteForm.value;
+    const payload: any = {
+      nombreCompleto: v.nombreCompleto?.trim().replace(/\s{2,}/g, ' '),
+      tipoDocumento: v.tipoDocumento || 'DNI',
+      documento: v.documento?.trim() || null,
+      telefono: v.telefono?.trim(),
+      codigoPais: v.codigoPais?.trim() || '+51',
+      email: v.email?.trim().toLowerCase() || null
+    };
     this.loading = true;
     if (this.editing && this.editingId) {
-      this.clienteService.actualizar(this.editingId, this.clienteForm.value).subscribe({
+      this.clienteService.actualizar(this.editingId, payload).subscribe({
         next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente actualizado' }); this.dialogVisible = false; this.layoutState.setOverlay(false); this.loading = false; this.loadClientes(); this.estadoActualizacion.clienteCambio(); },
-        error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); }
+        error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error' }); }
       });
     } else {
-      this.clienteService.crear(this.clienteForm.value).subscribe({
+      this.clienteService.crear(payload).subscribe({
         next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente creado' }); this.dialogVisible = false; this.layoutState.setOverlay(false); this.loading = false; this.loadClientes(); this.estadoActualizacion.clienteCambio(); },
-        error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error' }); }
+        error: (err) => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error' }); }
       });
     }
   }
@@ -226,26 +255,50 @@ export class Clientes implements OnInit, OnDestroy {
   }
 
   confirmarDesactivar(c: any): void {
-    if (!confirm(`¿Está seguro de desactivar al cliente "${c.nombreCompleto}"? Dejará de aparecer en búsquedas.`)) return;
-    this.clienteService.deactivate(c.id).subscribe({
-      next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente desactivado' }); this.loadClientes(); this.estadoActualizacion.clienteCambio(); if (this.detailCliente?.id === c.id) { this.detailCliente = null; } },
-      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || 'Error al desactivar' })
+    this.confirmationService.confirm({
+      message: `¿Está seguro de desactivar al cliente "${c.nombreCompleto}"? Dejará de aparecer en búsquedas.`,
+      header: 'Desactivar cliente',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, desactivar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.clienteService.deactivate(c.id).subscribe({
+          next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente desactivado' }); this.loadClientes(); this.estadoActualizacion.clienteCambio(); if (this.detailCliente?.id === c.id) { this.detailCliente = null; } },
+          error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || 'Error al desactivar' })
+        });
+      }
     });
   }
 
   confirmarReactivar(c: any): void {
-    if (!confirm(`¿Reactivar al cliente "${c.nombreCompleto}"?`)) return;
-    this.clienteService.activate(c.id).subscribe({
-      next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente reactivado' }); this.loadClientes(); this.estadoActualizacion.clienteCambio(); if (this.detailCliente?.id === c.id) { this.detailCliente = null; } },
-      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || 'Error al reactivar' })
+    this.confirmationService.confirm({
+      message: `¿Reactivar al cliente "${c.nombreCompleto}"?`,
+      header: 'Reactivar cliente',
+      icon: 'pi pi-info-circle',
+      acceptLabel: 'Sí, reactivar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.clienteService.activate(c.id).subscribe({
+          next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente reactivado' }); this.loadClientes(); this.estadoActualizacion.clienteCambio(); if (this.detailCliente?.id === c.id) { this.detailCliente = null; } },
+          error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || 'Error al reactivar' })
+        });
+      }
     });
   }
 
   confirmarEliminacion(c: any): void {
-    if (!confirm(`¿Eliminar permanentemente al cliente "${c.nombreCompleto}"? Esta acción no se puede deshacer.`)) return;
-    this.clienteService.safeDelete(c.id).subscribe({
-      next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente eliminado' }); this.loadClientes(); this.estadoActualizacion.clienteCambio(); if (this.detailCliente?.id === c.id) { this.detailCliente = null; } },
-      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || 'Error al eliminar' })
+    this.confirmationService.confirm({
+      message: `¿Eliminar permanentemente al cliente "${c.nombreCompleto}"? Esta acción no se puede deshacer.`,
+      header: 'Eliminar cliente',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, eliminar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.clienteService.safeDelete(c.id).subscribe({
+          next: () => { this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Cliente eliminado' }); this.loadClientes(); this.estadoActualizacion.clienteCambio(); if (this.detailCliente?.id === c.id) { this.detailCliente = null; } },
+          error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || 'Error al eliminar' })
+        });
+      }
     });
   }
 

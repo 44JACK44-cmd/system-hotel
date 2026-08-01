@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { ConfiguracionService } from '../observable/configuracion.service';
+import { AuthService } from '../observable/auth.service';
 
 export interface HotelConfig {
   nombre: string;
@@ -32,10 +33,11 @@ export class AppConfigService {
     eslogan: '',
   });
 
-  constructor(private configSvc: ConfiguracionService) {}
+  constructor(private configSvc: ConfiguracionService, private authService: AuthService) {}
 
   load(): void {
     if (this.loaded) return;
+    if (!this.authService.isLoggedIn()) return;
     this.fetchConfig();
   }
 

@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReporteService } from '../../../observable/reporte.service';
@@ -7,6 +7,9 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { MessageService } from 'primeng/api';
 import { Subject, merge, auditTime, takeUntil } from 'rxjs';
 import { EstadoActualizacionService } from '../../../services/estado-actualizacion.service';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-reportes',
@@ -93,11 +96,87 @@ export class ReportesComponent implements OnInit, OnDestroy {
     }
   };
 
+  /* ---- Tendencia de Ocupación ---- */
+  @ViewChild('tendenciaCanvas', { static: false }) tendenciaCanvas!: ElementRef<HTMLCanvasElement>;
+  chart: Chart | null = null;
+  tendenciaInicio: Date | null = null;
+  tendenciaFin: Date | null = null;
+  tendenciaData: any[] = [];
+  trendLoading = false;
+  private themeObserver: MutationObserver | null = null;
+
+  get trendDates(): string[] {
+    return this.tendenciaData.map(d => d.fecha);
+  }
+  get trendPercentages(): number[] {
+    return this.tendenciaData.map(d => Number(d.porcentajeOcupacion) || 0);
+  }
+  get trendOccupied(): number[] {
+    return this.tendenciaData.map(d => Number(d.ocupadas) || 0);
+  }
+  get trendAvailable(): number[] {
+    return this.tendenciaData.map(d => Number(d.disponibles) || 0);
+  }
+
+  get avgOccupancy(): number {
+    const pcts = this.trendPercentages;
+    return pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0;
+  }
+  get maxOccupancy(): number {
+    return this.trendPercentages.length ? Math.round(Math.max(...this.trendPercentages)) : 0;
+  }
+  get minOccupancy(): number {
+    return this.trendPercentages.length ? Math.round(Math.min(...this.trendPercentages)) : 0;
+  }
+  get peakDay(): string {
+    if (!this.tendenciaData.length) return '—';
+    const max = Math.max(...this.trendPercentages);
+    const idx = this.trendPercentages.indexOf(max);
+    return this.fmtDateShort(this.tendenciaData[idx].fecha);
+  }
+  get lowestDay(): string {
+    if (!this.tendenciaData.length) return '—';
+    const min = Math.min(...this.trendPercentages);
+    const idx = this.trendPercentages.indexOf(min);
+    return this.fmtDateShort(this.tendenciaData[idx].fecha);
+  }
+  get avgAvailable(): number {
+    const av = this.trendAvailable;
+    return av.length ? Math.round(av.reduce((a, b) => a + b, 0) / av.length) : 0;
+  }
+  get totalRooms(): number {
+    return this.tendenciaData.length ? (this.tendenciaData[0].totalHabitaciones || 0) : 0;
+  }
+  get totalDays(): number {
+    return this.tendenciaData.length;
+  }
+
   private toDateStr(d: Date): string {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
+  }
+
+  private fmtDateShort(dateStr: string): string {
+    const [, m, d] = dateStr.split('-');
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    return `${parseInt(d)} ${months[parseInt(m) - 1]}`;
+  }
+
+  private fmtDateFull(dateStr: string): string {
+    const [, m, d] = dateStr.split('-');
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    return `${parseInt(d)} de ${months[parseInt(m) - 1]}`;
+  }
+
+  trendChange(idx: number): 'up' | 'down' | 'same' {
+    if (idx <= 0) return 'same';
+    const prev = this.trendPercentages[idx - 1];
+    const curr = this.trendPercentages[idx];
+    if (curr > prev) return 'up';
+    if (curr < prev) return 'down';
+    return 'same';
   }
 
   ngOnInit(): void {
@@ -108,6 +187,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.metodoInicio = this.toDateStr(firstDay);
     this.metodoFin = this.toDateStr(today);
     this.ocupacionFecha = today;
+    this.tendenciaInicio = new Date(today.getFullYear(), today.getMonth(), 1);
+    this.tendenciaFin = today;
     this.noConcretadasInicio = firstDay;
     this.noConcretadasFin = today;
     this.loadIngresos();
@@ -116,6 +197,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.loadNoConcretadas();
     this.loadIncidencias();
     this.loadRanking();
+    this.loadTendencia();
     merge(
       this.estadoActualizacion.on('PAGO_CAMBIO'),
       this.estadoActualizacion.on('HOSPEDAJE_CAMBIO'),
@@ -126,7 +208,19 @@ export class ReportesComponent implements OnInit, OnDestroy {
     ).pipe(auditTime(0), takeUntil(this.destroy$)).subscribe(() => this.recargar());
   }
 
-  ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
+  ngAfterViewInit(): void {
+    this.themeObserver = new MutationObserver(() => {
+      if (this.chart && this.tendenciaData.length) this.initChart();
+    });
+    this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    if (this.chart) { this.chart.destroy(); this.chart = null; }
+    if (this.themeObserver) this.themeObserver.disconnect();
+  }
 
   private recargar(): void {
     this.loadIngresos();
@@ -135,6 +229,172 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.loadNoConcretadas();
     this.loadIncidencias();
     this.loadRanking();
+    this.loadTendencia();
+  }
+
+  loadTendencia(): void {
+    if (!this.tendenciaInicio || !this.tendenciaFin) return;
+    this.trendLoading = true;
+    this.reporteService.tendenciaOcupacion(
+      this.toDateStr(this.tendenciaInicio),
+      this.toDateStr(this.tendenciaFin)
+    ).subscribe({
+      next: (res) => {
+        this.tendenciaData = (res.data || []).map((item: any) => ({
+          fecha: item.fecha,
+          ocupadas: item.habitacionesOcupadas,
+          disponibles: item.habitacionesDisponibles,
+          totalHabitaciones: item.totalHabitaciones,
+          porcentajeOcupacion: item.porcentaje
+        }));
+        this.trendLoading = false;
+        this.cdr.detectChanges();
+        this.appRef.tick();
+        this.initChart();
+      },
+      error: () => {
+        this.trendLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private getCSSVar(name: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  private colorWithAlpha(varName: string, alpha: number): string {
+    const c = this.getCSSVar(varName);
+    if (c.startsWith('#')) {
+      const r = parseInt(c.slice(1, 3), 16);
+      const g = parseInt(c.slice(3, 5), 16);
+      const b = parseInt(c.slice(5, 7), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+    if (c.startsWith('rgb(')) return c.replace('rgb(', 'rgba(').replace(')', `,${alpha})`);
+    return c;
+  }
+
+  private initChart(): void {
+    if (!this.tendenciaCanvas?.nativeElement || !this.tendenciaData.length) return;
+    const ctx = this.tendenciaCanvas.nativeElement.getContext('2d');
+    if (!ctx) return;
+    if (this.chart) { this.chart.destroy(); this.chart = null; }
+
+    const lineColor = this.getCSSVar('--clr-secondary') || '#C9A45C';
+    const gridColor = this.getCSSVar('--clr-outline-variant') || '#D5D0C8';
+    const textColor = this.getCSSVar('--clr-on-surface-variant') || '#6B6B6B';
+
+    const labels = this.tendenciaData.map(d => this.fmtDateShort(d.fecha));
+    const pcts = this.trendPercentages;
+
+    this.chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Ocupación %',
+          data: pcts,
+          borderColor: lineColor,
+          backgroundColor: (context) => {
+            const { ctx: c, chartArea } = context.chart;
+            if (!chartArea) return 'transparent';
+            const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            g.addColorStop(0, this.colorWithAlpha('--clr-secondary', 0.25));
+            g.addColorStop(1, 'transparent');
+            return g;
+          },
+          borderWidth: 2.5,
+          tension: 0.35,
+          fill: true,
+          pointBackgroundColor: pcts.map((_, i) => {
+            const chg = this.trendChange(i);
+            if (chg === 'up') return '#57B65E';
+            if (chg === 'down') return '#D9534F';
+            return lineColor;
+          }),
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 7,
+          pointHitRadius: 12,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 800,
+          easing: 'easeInOutQuart'
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            enabled: true,
+            backgroundColor: this.getCSSVar('--clr-surface-container-lowest') || '#ffffff',
+            titleColor: this.getCSSVar('--clr-on-surface') || '#232323',
+            bodyColor: this.getCSSVar('--clr-on-surface-variant') || '#6B6B6B',
+            borderColor: gridColor,
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 8,
+            displayColors: false,
+            titleFont: { weight: 'bold', size: 13 },
+            bodyFont: { size: 12 },
+            callbacks: {
+              title: (items) => {
+                const d = this.tendenciaData[items[0].dataIndex];
+                return d ? this.fmtDateFull(d.fecha) : '';
+              },
+              label: () => '',
+              afterBody: (items) => {
+                const d = this.tendenciaData[items[0].dataIndex];
+                if (!d) return [];
+                const chg = this.trendChange(items[0].dataIndex);
+                const arrow = chg === 'up' ? '↑' : chg === 'down' ? '↓' : '→';
+                const arrowColor = chg === 'up' ? '#57B65E' : chg === 'down' ? '#D9534F' : '#999';
+                return [
+                  `Habitaciones ocupadas: ${d.ocupadas}`,
+                  `Disponibles: ${d.disponibles}`,
+                  `Ocupación: ${d.porcentajeOcupacion}%`,
+                ];
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: textColor,
+              font: { size: 10, weight: 'bold' },
+              maxTicksLimit: 8,
+              maxRotation: 0
+            },
+            grid: { display: false }
+          },
+          y: {
+            min: 0,
+            max: 100,
+            ticks: {
+              color: textColor,
+              font: { size: 10 },
+              stepSize: 25,
+              callback: (value) => `${value}%`,
+              maxTicksLimit: 5
+            },
+            border: { display: false },
+            grid: {
+              color: gridColor,
+              lineWidth: 1
+            }
+          }
+        }
+      }
+    });
   }
 
   loadIngresos(): void {

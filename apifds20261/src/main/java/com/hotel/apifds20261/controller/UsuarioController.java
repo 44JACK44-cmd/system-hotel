@@ -7,10 +7,13 @@ import com.hotel.apifds20261.dto.response.ResponsePage;
 import com.hotel.apifds20261.dto.response.ResponseUsuario;
 import com.hotel.apifds20261.dto.response.SuggestionResponse;
 import com.hotel.apifds20261.dto.response.UsuarioResponse;
+import com.hotel.apifds20261.security.JwtService;
+import com.hotel.apifds20261.security.SecurityUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +27,7 @@ import java.util.Map;
 public class UsuarioController {
 
     private final BusinessUsuario usuarioBusiness;
+    private final JwtService jwtService;
 
     @GetMapping("getall")
     public ResponseEntity<ResponseUsuario> actionGetAll() {
@@ -83,8 +87,8 @@ public class UsuarioController {
 
     @PutMapping("updatecompleto/{id}")
     public ResponseEntity<ResponseUsuario> actionUpdateCompleto(
-            @PathVariable Long id, @Valid @RequestBody RequestUsuarioUpdate request,
-            @RequestHeader("X-User-Id") Long currentUserId) {
+            @PathVariable Long id, @Valid @RequestBody RequestUsuarioUpdate request) {
+        Long currentUserId = SecurityUtil.getCurrentUserId(jwtService);
         UsuarioResponse item = usuarioBusiness.actualizarCompleto(id, request, currentUserId);
         ResponseUsuario response = new ResponseUsuario();
         response.success();
@@ -103,8 +107,8 @@ public class UsuarioController {
     }
 
     @DeleteMapping("delete/{id}")
-    public ResponseEntity<ResponseUsuario> actionDelete(
-            @PathVariable Long id, @RequestHeader("X-User-Id") Long currentUserId) {
+    public ResponseEntity<ResponseUsuario> actionDelete(@PathVariable Long id) {
+        Long currentUserId = SecurityUtil.getCurrentUserId(jwtService);
         usuarioBusiness.eliminar(id, currentUserId);
         ResponseUsuario response = new ResponseUsuario();
         response.success();
@@ -115,6 +119,7 @@ public class UsuarioController {
     @PatchMapping("updateprofile/{id}")
     public ResponseEntity<ResponseUsuario> actionUpdateProfile(
             @PathVariable Long id, @RequestBody Map<String, String> body) {
+        verificarPerfilPropio(id);
         String nombre = body.get("nombreCompleto");
         String email = body.get("email");
         String telefono = body.get("telefono");
@@ -129,6 +134,7 @@ public class UsuarioController {
     @PatchMapping("cambiarpassword/{id}")
     public ResponseEntity<ResponseUsuario> actionCambiarPassword(
             @PathVariable Long id, @RequestBody Map<String, String> body) {
+        verificarPerfilPropio(id);
         String currentPassword = body.get("currentPassword");
         String newPassword = body.get("newPassword");
         if (currentPassword == null || newPassword == null ||
@@ -144,8 +150,8 @@ public class UsuarioController {
 
     @PatchMapping("resetpassword/{id}")
     public ResponseEntity<ResponseUsuario> actionResetPasswordByAdmin(
-            @PathVariable Long id, @RequestBody Map<String, String> body,
-            @RequestHeader("X-User-Id") Long currentUserId) {
+            @PathVariable Long id, @RequestBody Map<String, String> body) {
+        Long currentUserId = SecurityUtil.getCurrentUserId(jwtService);
         String newPassword = body.get("newPassword");
         String confirmPassword = body.get("confirmPassword");
         usuarioBusiness.resetPasswordByAdmin(id, newPassword, confirmPassword, currentUserId);
@@ -158,6 +164,7 @@ public class UsuarioController {
     @PostMapping(value = "uploadavatar/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseUsuario> actionUploadAvatar(
             @PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        verificarPerfilPropio(id);
         if (file.isEmpty()) {
             throw new com.hotel.apifds20261.exception.BusinessException("Debe seleccionar un archivo");
         }
@@ -186,6 +193,7 @@ public class UsuarioController {
     @PatchMapping("tema/{id}")
     public ResponseEntity<ResponseUsuario> actionActualizarTema(
             @PathVariable Long id, @RequestBody Map<String, String> body) {
+        verificarPerfilPropio(id);
         String tema = body.get("tema");
         UsuarioResponse item = usuarioBusiness.actualizarTema(id, tema);
         ResponseUsuario response = new ResponseUsuario();
@@ -201,6 +209,13 @@ public class UsuarioController {
         ResponseUsuario response = new ResponseUsuario();
         response.success();
         return ResponseEntity.ok(response);
+    }
+
+    private void verificarPerfilPropio(Long id) {
+        Long currentUserId = SecurityUtil.getCurrentUserId(jwtService);
+        if (!currentUserId.equals(id)) {
+            throw new AccessDeniedException("Solo puede modificar su propio perfil");
+        }
     }
 }
 

@@ -3,7 +3,9 @@ package com.hotel.apifds20261.business;
 import com.hotel.apifds20261.dto.request.RequestParametroUpsert;
 import com.hotel.apifds20261.dto.response.ParametroResponse;
 import com.hotel.apifds20261.entity.EntityParametro;
+import com.hotel.apifds20261.exception.BusinessException;
 import com.hotel.apifds20261.exception.ResourceNotFoundException;
+import com.hotel.apifds20261.helper.ValidationHelper;
 import com.hotel.apifds20261.repository.RepositoryParametro;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -48,12 +50,36 @@ public class BusinessParametro {
         return list;
     }
 
+    private void validarValorPorClave(String clave, String valor) {
+        if (valor == null) {
+            return;
+        }
+        switch (clave) {
+            case "hotel.ruc":
+                ValidationHelper.validarRuc(valor);
+                break;
+            case "hotel.telefono":
+                if (!valor.isBlank()) {
+                    ValidationHelper.validarTelefono("+51", valor);
+                }
+                break;
+            case "hotel.email":
+                if (!valor.isBlank()) {
+                    ValidationHelper.validarEmail(valor);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
     @Transactional
     public ParametroResponse crear(RequestParametroUpsert request) {
         if (parametroRepository.existsByClave(request.getClave())) {
             EntityParametro existente = parametroRepository.findByClave(request.getClave()).orElseThrow();
             return actualizar(existente.getId(), request);
         }
+        validarValorPorClave(request.getClave(), request.getValor());
         EntityParametro parametro = new EntityParametro();
         parametro.setClave(request.getClave());
         parametro.setValor(request.getValor());
@@ -67,8 +93,9 @@ public class BusinessParametro {
     public ParametroResponse actualizar(Long id, RequestParametroUpsert request) {
         EntityParametro parametro = buscarOExcepcion(id);
         if (!parametro.getEditable()) {
-            throw new RuntimeException("Este parametro no es editable");
+            throw new BusinessException("Este parametro no es editable");
         }
+        validarValorPorClave(request.getClave(), request.getValor());
         parametro.setClave(request.getClave());
         parametro.setValor(request.getValor());
         parametro.setDescripcion(request.getDescripcion());
@@ -83,8 +110,9 @@ public class BusinessParametro {
             throw new ResourceNotFoundException("Parametro no encontrado: " + clave);
         }
         if (!p.getEditable()) {
-            throw new RuntimeException("Este parametro no es editable");
+            throw new BusinessException("Este parametro no es editable");
         }
+        validarValorPorClave(clave, valor);
         p.setValor(valor);
         return toResponse(parametroRepository.save(p));
     }
