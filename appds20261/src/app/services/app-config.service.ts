@@ -57,6 +57,11 @@ export class AppConfigService {
         this.raw.set(map);
         this.buildConfig(map);
         this.loaded = true;
+      },
+      error: err => {
+        if (err.status === 401 || err.status === 403) {
+          this.authService.logout();
+        }
       }
     });
   }
