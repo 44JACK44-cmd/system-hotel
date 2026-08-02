@@ -16,6 +16,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.io.IOException;
@@ -99,6 +102,26 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ResponseError> handleMissingParam(MissingServletRequestParameterException ex, HttpServletResponse response) {
         addCorsHeaders(response);
         return badRequest("Falta el parámetro requerido: " + ex.getParameterName());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ResponseError> handleMaxUpload(MaxUploadSizeExceededException ex, HttpServletResponse response) {
+        addCorsHeaders(response);
+        log.error("MaxUploadSizeExceeded en subida de archivo: {}", ex.getMessage());
+        return badRequest("El archivo supera el tamaño máximo permitido.");
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ResponseError> handleMultipart(MultipartException ex, HttpServletResponse response) {
+        addCorsHeaders(response);
+        log.error("Error multipart: {}", ex.getMessage(), ex);
+        return badRequest("Error al procesar la subida del archivo: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ResponseError> handleMissingPart(MissingServletRequestPartException ex, HttpServletResponse response) {
+        addCorsHeaders(response);
+        return badRequest("Falta la parte del archivo requerida: " + ex.getRequestPartName());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

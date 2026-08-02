@@ -16,7 +16,7 @@ public class EntityParametro {
     @Column(length = 100, nullable = false, unique = true)
     private String clave;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String valor;
 
     @Column(length = 255)

@@ -44,6 +44,9 @@ public class EntityIncidenciaHabitacion {
     @Column(length = 500, nullable = false)
     private String motivo;
 
+    @Column(name = "foto", columnDefinition = "MEDIUMTEXT")
+    private String foto;
+
     @Column(name = "fecha_inicio", nullable = false)
     private LocalDateTime fechaInicio;
 

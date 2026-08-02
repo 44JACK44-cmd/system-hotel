@@ -59,7 +59,7 @@ public class EntityUsuario {
     @Column(length = 20)
     private String telefono;
 
-    @Column(name = "foto_perfil", columnDefinition = "TEXT")
+    @Column(name = "foto_perfil", columnDefinition = "MEDIUMTEXT")
     private String fotoPerfil;
 
     @Column(length = 5)

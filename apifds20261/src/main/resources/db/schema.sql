@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100),
     telefono VARCHAR(20),
-    foto_perfil TEXT,
+    foto_perfil MEDIUMTEXT,
     rol VARCHAR(20) NOT NULL DEFAULT 'RECEPCIONISTA',
     activo BOOLEAN DEFAULT TRUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -169,3 +169,10 @@ INSERT INTO usuarios (nombre_completo, username, password, email, telefono, rol)
 -- Usuario recepcionista por defecto (password: recep123)
 INSERT INTO usuarios (nombre_completo, username, password, email, telefono, rol) VALUES
 ('Recepcionista', 'recepcionista', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'recepcion@hotel.com', '999999998', 'RECEPCIONISTA');
+
+-- ==========================================
+-- MIGRACION: ampliar columnas para guardar data-URIs de imagenes (logo/avatar)
+-- (Necesario en bases existentes; ddl-auto=update no altera el tipo de columna)
+-- ==========================================
+ALTER TABLE usuarios MODIFY COLUMN foto_perfil MEDIUMTEXT;
+ALTER TABLE parametros MODIFY COLUMN valor MEDIUMTEXT;

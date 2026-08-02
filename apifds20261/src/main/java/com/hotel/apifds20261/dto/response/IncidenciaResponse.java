@@ -17,4 +17,6 @@ public class IncidenciaResponse {
     private LocalDateTime fechaInicio;
     private LocalDateTime fechaFin;
     private String estado;
+
+    private String foto;
 }

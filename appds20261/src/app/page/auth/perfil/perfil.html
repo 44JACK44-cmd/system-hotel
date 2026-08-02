@@ -109,6 +109,90 @@
           </button>
         </div>
       </div>
+
+      <div class="perfil-card">
+        <div class="perfil-card-header">
+          <h3>Mi Actividad</h3>
+          <button class="perfil-btn perfil-btn-outline" (click)="irHistorial()">
+            <span class="material-symbols-outlined">open_in_new</span> Ver historial completo
+          </button>
+        </div>
+        <div class="perfil-card-body">
+          @if (actividadesLoading) {
+            <div class="perfil-activity-loading">
+              <span class="material-symbols-outlined">sync</span>
+              <p>Cargando actividad...</p>
+            </div>
+          } @else if (actividades.length === 0) {
+            <div class="perfil-activity-empty">
+              <span class="material-symbols-outlined">history</span>
+              <p>No hay actividad registrada</p>
+            </div>
+          } @else {
+            <div class="perfil-activity-list">
+              @for (a of actividades; track a.id) {
+                <div class="perfil-activity-item">
+                  <span class="perfil-activity-icon">
+                    <span class="material-symbols-outlined">history</span>
+                  </span>
+                  <div class="perfil-activity-content">
+                    <p class="perfil-activity-accion">{{ a.accion }}</p>
+                    @if (a.detalle) {
+                      <p class="perfil-activity-detalle">{{ a.detalle }}</p>
+                    }
+                    <div class="perfil-activity-meta">
+                      <span class="perfil-activity-modulo">{{ a.modulo || '—' }}</span>
+                      <span class="perfil-activity-fecha">{{ a.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (isAdmin) {
+        <div class="perfil-card perfil-card--admin">
+          <div class="perfil-card-header">
+            <h3 style="display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined">admin_panel_settings</span> Herramientas Administrativas</h3>
+          </div>
+          <div class="perfil-card-body perfil-admin-grid">
+            <button class="perfil-admin-btn" (click)="irA('/admin/configuracion')">
+              <span class="material-symbols-outlined">settings</span>
+              <strong>Configuración del sistema</strong>
+              <small>Parámetros del hotel, logo, políticas</small>
+            </button>
+            <button class="perfil-admin-btn" (click)="irA('/admin/usuarios')">
+              <span class="material-symbols-outlined">groups</span>
+              <strong>Gestión de usuarios</strong>
+              <small>Crear y administrar cuentas</small>
+            </button>
+            <button class="perfil-admin-btn" (click)="irA('/admin/habitaciones')">
+              <span class="material-symbols-outlined">meeting_room</span>
+              <strong>Habitaciones</strong>
+              <small>Tarifas, pisos y disponibilidad</small>
+            </button>
+            <button class="perfil-admin-btn" (click)="irA('/admin/reportes')">
+              <span class="material-symbols-outlined">bar_chart</span>
+              <strong>Reportes</strong>
+              <small>Centro de inteligencia y análisis</small>
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="perfil-card perfil-card--restricted">
+          <div class="perfil-card-body">
+            <div class="perfil-restricted">
+              <span class="material-symbols-outlined">lock</span>
+              <div>
+                <strong>Acceso restringido</strong>
+                <p>La configuración global, gestión de usuarios y parámetros del sistema están reservados para el Administrador.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   }
 </div>

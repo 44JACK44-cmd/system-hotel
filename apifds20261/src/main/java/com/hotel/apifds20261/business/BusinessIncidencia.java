@@ -116,8 +116,9 @@ public class BusinessIncidencia {
         incidencia.setHabitacion(habitacion);
         incidencia.setUsuario(usuario);
         incidencia.setTipo(tipo);
-        incidencia.setMotivo(request.getMotivo());
-        incidencia.setFechaInicio(LocalDateTime.now());
+          incidencia.setMotivo(request.getMotivo());
+          incidencia.setFoto(validarFoto(request.getFoto()));
+          incidencia.setFechaInicio(LocalDateTime.now());
 
         habitacionRepository.save(habitacion);
         IncidenciaResponse saved = toResponse(incidenciaRepository.save(incidencia));
@@ -174,10 +175,25 @@ public class BusinessIncidencia {
         r.setUsuarioId(i.getUsuario().getId());
         r.setUsuarioNombre(i.getUsuario().getNombreCompleto());
         r.setTipo(i.getTipo().name());
-        r.setMotivo(i.getMotivo());
+         r.setMotivo(i.getMotivo());
+        r.setFoto(i.getFoto());
         r.setFechaInicio(i.getFechaInicio());
         r.setFechaFin(i.getFechaFin());
         r.setEstado(i.getFechaFin() == null ? "ACTIVA" : "FINALIZADA");
         return r;
+    }
+
+    private String validarFoto(String foto) {
+        if (foto == null || foto.isBlank()) {
+            return null;
+        }
+        String value = foto.trim();
+        if (!value.matches("^data:image/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$")) {
+            throw new com.hotel.apifds20261.exception.BusinessException("La foto no es una imagen válida");
+        }
+        if (value.length() > 5 * 1024 * 1024) {
+            throw new com.hotel.apifds20261.exception.BusinessException("La imagen no debe superar los 5MB");
+        }
+        return value;
     }
 }

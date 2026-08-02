@@ -35,8 +35,8 @@ export class ConfiguracionService {
   }
 
   updateValor(clave: string, valor: string): Observable<GenericResponse<ParametroResponse>> {
-    return this.http.patch<any>(`${this.API}/updatevalor/${clave}`, `"${valor}"`, {
-      headers: { 'Content-Type': 'application/json' }
+    return this.http.patch<any>(`${this.API}/updatevalor/${clave}`, valor, {
+      headers: { 'Content-Type': 'text/plain' }
     }).pipe(
       map(r => toGenericResponse<ParametroResponse>(r, raw => raw?.listParametro?.[0]))
     );

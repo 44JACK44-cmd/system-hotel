@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
 import { PaginatorModule } from 'primeng/paginator';
+import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { EstadoActualizacionService } from '../../../services/estado-actualizacion.service';
@@ -17,7 +18,7 @@ import { EstadoActualizacionService } from '../../../services/estado-actualizaci
 @Component({
   selector: 'app-incidencias',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastModule, SelectModule, TextareaModule, PaginatorModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastModule, SelectModule, TextareaModule, PaginatorModule, DialogModule],
   providers: [MessageService],
   templateUrl: './incidencias.component.html',
   styleUrls: ['./incidencias.component.css']
@@ -41,6 +42,15 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
   searchTerm = '';
   loadingHabitaciones = false;
 
+  // Foto / evidencia de la incidencia (opcional)
+  fotoArchivo: File | null = null;
+  fotoPreview: string | null = null;
+  fotoError: string | null = null;
+
+  // Detalle incidencia
+  detalleIncidencia: any = null;
+  detalleDialog = false;
+
   /* Pagination */
   page = 0;
   pageSize = 10;
@@ -49,6 +59,42 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
   /* Sort */
   sortField = '';
   sortDir: 'asc' | 'desc' = 'asc';
+
+  onFotoSeleccionada(event: Event): void {
+    this.fotoError = null;
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      this.fotoArchivo = null;
+      this.fotoPreview = null;
+      return;
+    }
+    const file = input.files[0];
+    const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.type)) {
+      this.fotoError = 'Formato no válido (PNG/JPEG/WEBP/GIF)';
+      this.fotoArchivo = null;
+      this.fotoPreview = null;
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.fotoError = 'La imagen no debe superar los 5MB';
+      this.fotoArchivo = null;
+      this.fotoPreview = null;
+      return;
+    }
+    this.fotoArchivo = file;
+    const reader = new FileReader();
+    reader.onload = () => (this.fotoPreview = reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  limpiarFoto(): void {
+    this.fotoArchivo = null;
+    this.fotoPreview = null;
+    this.fotoError = null;
+    const input = document.querySelector<HTMLInputElement>('#fotoIncidenciaInput');
+    if (input) input.value = '';
+  }
 
   /** Paginated slice for the table (in-memory, since active incidents are inherently limited) */
   get paginatedIncidencias(): any[] {
@@ -264,10 +310,14 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
     }
     this.loading = true;
     const payload = { ...this.incidenciaForm.value, motivo: this.incidenciaForm.value.motivo?.trim() };
+    if (this.fotoPreview) {
+      (payload as any).foto = this.fotoPreview;
+    }
     this.incidenciaService.crear(payload).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Exito', detail: 'Incidencia registrada' });
         this.incidenciaForm.reset({ tipo: 'LIMPIEZA' });
+        this.limpiarFoto();
         this.loading = false;
         this.loadIncidencias();
         this.estadoActualizacion.habitacionCambio();
@@ -290,9 +340,13 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
   }
 
   verReporte(inc: any): void {
-    if (inc?.habitacionNumero) {
-      this.messageService.add({ severity: 'info', summary: 'Incidencia', detail: `Reporte de Hab. ${inc.habitacionNumero}: ${inc.motivo}` });
-    }
+    this.detalleIncidencia = inc;
+    this.detalleDialog = true;
+  }
+
+  closeDetalle(): void {
+    this.detalleIncidencia = null;
+    this.detalleDialog = false;
   }
 
   verDetalles(hab: any): void {

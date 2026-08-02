@@ -135,6 +135,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     eventos.forEach(evt => {
       this.estadoActualizacion.on(evt).pipe(takeUntil(this.destroy$)).subscribe(() => refrescar());
     });
+    // Reflejar inmediatamente cambios de perfil (nombre/foto) tras guardar
+    this.estadoActualizacion.on('USUARIO_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.cargarUsuarioSesion();
+    });
   }
 
   get totalNoLeidas(): number {

@@ -161,7 +161,7 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping(value = "uploadavatar/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+@PostMapping(value = "uploadavatar/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseUsuario> actionUploadAvatar(
             @PathVariable Long id, @RequestParam("file") MultipartFile file) {
         verificarPerfilPropio(id);

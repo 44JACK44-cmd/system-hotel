@@ -21,4 +21,7 @@ public class RequestIncidenciaInsert {
     @Size(min = 5, max = 300, message = "El motivo debe tener entre 5 y 300 caracteres")
     @Pattern(regexp = ".*\\S.*", message = "El motivo no puede contener solo espacios")
     private String motivo;
+
+    // Foto / evidencia en formato data-URI base64 (imagen). Opcional.
+    private String foto;
 }

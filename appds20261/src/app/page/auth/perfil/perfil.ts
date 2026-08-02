@@ -5,7 +5,9 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { AuthService } from '../../../observable/auth.service';
 import { UsuarioService } from '../../../observable/usuario.service';
+import { AuditoriaService } from '../../../observable/auditoria.service';
 import { Router } from '@angular/router';
+import { AuditoriaResponse } from '../../../shared/models';
 import { EstadoActualizacionService } from '../../../services/estado-actualizacion.service';
 
 @Component({
@@ -19,6 +21,7 @@ import { EstadoActualizacionService } from '../../../services/estado-actualizaci
 export class Perfil implements OnInit {
   private authService = inject(AuthService);
   private usuarioService = inject(UsuarioService);
+  private auditoriaService = inject(AuditoriaService);
   private router = inject(Router);
   private messageService = inject(MessageService);
   private estadoActualizacion = inject(EstadoActualizacionService);
@@ -35,8 +38,12 @@ export class Perfil implements OnInit {
 
   uploadingAvatar = false;
 
+  actividades: AuditoriaResponse[] = [];
+  actividadesLoading = true;
+
   ngOnInit(): void {
     this.cargarPerfil();
+    this.cargarActividad();
   }
 
   cargarPerfil(): void {
@@ -76,6 +83,8 @@ export class Perfil implements OnInit {
         this.saving = false;
         if (res.success && res.data) {
           this.usuario = res.data;
+          this.authService.actualizarPerfilSesion(res.data);
+          this.estadoActualizacion.usuarioCambio({ userId: id });
           this.editing = false;
           this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Perfil actualizado exitosamente' });
         }
@@ -150,5 +159,30 @@ export class Perfil implements OnInit {
 
   get rolLabel(): string {
     return this.usuario.rol === 'ADMIN' ? 'Administrador' : 'Recepcionista';
+  }
+
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  irA(ruta: string): void {
+    this.router.navigate([ruta]);
+  }
+
+  cargarActividad(): void {
+    const id = this.authService.getUserId();
+    if (!id) { this.actividadesLoading = false; return; }
+    this.actividadesLoading = true;
+    this.auditoriaService.listarPaginado(id, undefined, undefined, undefined, 0, 10, 'fecha', 'desc').subscribe({
+      next: (res) => {
+        this.actividades = res.content || [];
+        this.actividadesLoading = false;
+      },
+      error: () => { this.actividadesLoading = false; }
+    });
+  }
+
+  irHistorial(): void {
+    this.router.navigate(['/actividad']);
   }
 }
