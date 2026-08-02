@@ -1,5 +1,34 @@
 <div class="dash-page">
 
+  <!-- Operación por fecha -->
+  <div class="ope-banner">
+    <div class="ope-datepicker-wrap">
+      <button type="button" class="ove-date-btn" (click)="calendarioAbierto = !calendarioAbierto" pTooltip="Seleccionar fecha de operaci&oacute;n" tooltipPosition="bottom">
+        <span class="material-symbols-outlined">calendar_month</span>
+        <span class="ove-date-btn__txt">
+          <span class="ove-date-btn__label">Operando sobre</span>
+          <span class="ove-date-btn__fecha">{{ fechaLabelOperativa }}</span>
+        </span>
+        <span class="material-symbols-outlined ove-date-btn__arrow">expand_more</span>
+      </button>
+      @if (calendarioAbierto) {
+        <div class="ope-calendar-pop">
+          <div class="ope-quick-row">
+            <button type="button" class="ope-quick-btn" (click)="setFechaAyer()">Ayer</button>
+            <button type="button" class="ope-quick-btn ope-quick-btn--active" (click)="setFechaHoy()">Hoy</button>
+            <button type="button" class="ope-quick-btn" (click)="setFechaManana()">Ma&ntilde;ana</button>
+          </div>
+          <p-datepicker [(ngModel)]="fechaOperativa" (ngModelChange)="seleccionarFecha($event)" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="premium-input" styleClass="w-full" appendTo="body"></p-datepicker>
+        </div>
+      }
+    </div>
+    <span class="ope-indicator" [class]="'ope-indicator--' + modoOperativo" pTooltip="Operando sobre" tooltipPosition="bottom">
+      <span class="material-symbols-outlined">schedule</span>
+      <span>{{ indicadorOperando }}</span>
+      @if (!esHoy) { <span class="ope-indicator__fecha">{{ fechaLabelOperativa }}</span> }
+    </span>
+  </div>
+
   <!-- Accesos Rápidos -->
   <div class="dash-actions-bar">
     <button class="dash-action-btn dash-action-btn--nueva" (click)="showNuevaReserva = true" pTooltip="Nueva Reserva" tooltipPosition="bottom">

@@ -29,7 +29,7 @@
           <p-autocomplete [(ngModel)]="hospedajeEncontrado" [suggestions]="searchResults"
             (completeMethod)="buscarHospedaje($event)" (onSelect)="onSelect($event)"
             (focus)="onSearchFocus()"
-            optionLabel="displayLabel" [dropdown]="false" [minQueryLength]="2"
+            optionLabel="displayLabel" [dropdown]="false" [minQueryLength]="1"
             placeholder="N&deg; habitaci&oacute;n, hu&eacute;sped o ID..."
             inputStyleClass="premium-input" styleClass="suggest-fullwidth" />
         </div>

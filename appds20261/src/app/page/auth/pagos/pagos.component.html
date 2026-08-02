@@ -2,8 +2,8 @@
 
   <div class="pag-page__header">
     <div>
-      <h1 class="page-title">Gesti&oacute;n de Caja Diaria</h1>
-      <p class="page-subtitle">Control de ingresos, egresos y cierre de turno.</p>
+      <h1 class="pag-page__title">Gesti&oacute;n de Caja Diaria</h1>
+      <p class="pag-page__subtitle">Control de ingresos, egresos y cierre de turno.</p>
     </div>
     <div style="display:flex;gap:12px;align-items:center">
       @if (!cajaActual) {
@@ -121,12 +121,21 @@
     <div class="premium-card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
       <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--clr-surface-container-low)">
         <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface)">Historial de Transacciones</h3>
-        <div class="premium-field" style="max-width:260px;margin:0">
-          <div style="position:relative">
-            <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">search</span>
-            <input class="premium-input" type="text" placeholder="Buscar por ID, tipo, m&eacute;todo o referencia..."
-              [(ngModel)]="searchTerm" (input)="onSearchInput()" style="padding-left:32px" aria-label="Buscar pago" />
+        <div class="pag-filter-row">
+          <div class="premium-field" style="max-width:220px;margin:0">
+            <div style="position:relative">
+              <span class="material-symbols-outlined" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--clr-on-surface-variant);pointer-events:none">search</span>
+              <input class="premium-input" type="text" placeholder="Buscar por ID, tipo, m&eacute;todo o referencia..."
+                [(ngModel)]="searchTerm" (input)="onSearchInput()" style="padding-left:32px" aria-label="Buscar pago" />
+            </div>
           </div>
+          <p-select [(ngModel)]="filterTipo" [options]="tipoOptions" optionLabel="label" optionValue="value" placeholder="Tipo" styleClass="pag-filter-select" [showClear]="true" appendTo="body" (ngModelChange)="onFilterChange()" />
+          <p-select [(ngModel)]="filterMetodo" [options]="metodoOptions" optionLabel="label" optionValue="value" placeholder="M&eacute;todo" styleClass="pag-filter-select" [showClear]="true" appendTo="body" (ngModelChange)="onFilterChange()" />
+          <p-datepicker [(ngModel)]="filterInicio" dateFormat="dd/mm/yy" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="pag-filter-date" styleClass="custom-datepicker" placeholder="Desde" (ngModelChange)="onFilterChange()" />
+          <p-datepicker [(ngModel)]="filterFin" dateFormat="dd/mm/yy" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="pag-filter-date" styleClass="custom-datepicker" placeholder="Hasta" (ngModelChange)="onFilterChange()" />
+          <button class="premium-btn" style="padding:6px 10px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);min-width:auto" (click)="resetFilters()" pTooltip="Limpiar filtros">
+            <span class="material-symbols-outlined" style="font-size:16px">restart_alt</span>
+          </button>
         </div>
       </div>
       <div style="overflow-x:auto;max-height:500px;overflow-y:auto">
@@ -141,7 +150,16 @@
             </tr>
           </thead>
           <tbody>
-            @for (p of pagos; track p.id) {
+            @if (loading && pagos.length === 0) {
+              @for (i of [1,2,3,4,5]; track i) {
+                <tr><td colspan="5"><div class="pag-skel-line"></div></td></tr>
+              }
+            } @else if (!loading && pagos.length === 0) {
+              <tr>
+                <td colspan="5" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">No hay pagos registrados.</td>
+              </tr>
+            } @else {
+              @for (p of pagos; track p.id) {
               <tr>
                 <td data-label="Hora" class="text-data-tabular">{{ p.fechaPago | date:'HH:mm' }}</td>
                 <td data-label="Concepto">
@@ -170,12 +188,7 @@
                   </span>
                 </td>
               </tr>
-            } @empty {
-              <tr>
-                <td colspan="5" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
-                  @if (loading) { Cargando... } @else { No hay pagos registrados. }
-                </td>
-              </tr>
+              }
             }
           </tbody>
         </table>
@@ -297,7 +310,7 @@
             <label>Reserva</label>
             <p-autocomplete [(ngModel)]="pagoReservaObj" [suggestions]="reservasBuscadas"
               (completeMethod)="buscarReservas($event)" (onSelect)="onReservaSelect($event)"
-              optionLabel="label" [dropdown]="false" [minQueryLength]="2"
+              optionLabel="label" [dropdown]="false" [minQueryLength]="1" [delay]="300"
               placeholder="Buscar reserva..." inputStyleClass="premium-input" styleClass="suggest-fullwidth"
               [ngModelOptions]="{standalone: true}" />
           </div>
@@ -305,7 +318,7 @@
             <label>Hospedaje</label>
             <p-autocomplete [(ngModel)]="pagoHospedajeObj" [suggestions]="hospedajesBuscados"
               (completeMethod)="buscarHospedajes($event)" (onSelect)="onHospedajeSelect($event)"
-              optionLabel="label" [dropdown]="false" [minQueryLength]="2"
+              optionLabel="label" [dropdown]="false" [minQueryLength]="1" [delay]="300"
               placeholder="Buscar hospedaje..." inputStyleClass="premium-input" styleClass="suggest-fullwidth"
               [ngModelOptions]="{standalone: true}" />
           </div>

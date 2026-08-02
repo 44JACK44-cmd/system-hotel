@@ -5,7 +5,9 @@ import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { ReservaService } from '../../../observable/reserva.service';
 import { ClienteService } from '../../../observable/cliente.service';
 import { HabitacionService } from '../../../observable/habitacion.service';
+import { HospedajeService } from '../../../observable/hospedaje.service';
 import { AuthService } from '../../../observable/auth.service';
+import { PagoService } from '../../../observable/pago.service';
 import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { AutoCompleteModule } from 'primeng/autocomplete';
@@ -18,6 +20,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil, filter } from 'rxjs';
 import { PageResponse } from '../../../shared/models';
 import { LayoutStateService } from '../../../services/layout-state.service';
+import { BoletoService, moneda } from '../../../services/boleto.service';
 import { EstadoActualizacionService } from '../../../services/estado-actualizacion.service';
 
 @Component({
@@ -32,6 +35,8 @@ export class ReservasComponent implements OnInit, OnDestroy {
   private reservaService = inject(ReservaService);
   private clienteService = inject(ClienteService);
   private habService = inject(HabitacionService);
+  private hospedajeService = inject(HospedajeService);
+  private pagoService = inject(PagoService);
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
@@ -41,6 +46,7 @@ export class ReservasComponent implements OnInit, OnDestroy {
   private appRef = inject(ApplicationRef);
   private route = inject(ActivatedRoute);
   private estadoActualizacion = inject(EstadoActualizacionService);
+  private boletoSvc = inject(BoletoService);
   private router = inject(Router);
 
   private accionPendiente: { entidadId?: number; accion?: string; cantidad?: number } | null = null;
@@ -71,6 +77,10 @@ export class ReservasComponent implements OnInit, OnDestroy {
 
   clienteSeleccionado: any = null;
   today = new Date();
+  metodosPago = [
+    { label: 'EFECTIVO', value: 'EFECTIVO' },
+    { label: 'YAPE', value: 'YAPE' }
+  ];
 
   reservaForm = this.fb.group({
     clienteId: [null as number | null, Validators.required],
@@ -265,7 +275,8 @@ export class ReservasComponent implements OnInit, OnDestroy {
           ...c,
           nombreCompleto: c.nombreCompleto || `${c.documento || ''} ${c.email || ''}`.trim() || 'Sin nombre'
         }));
-      }
+      },
+      error: () => this.clientesBuscados = []
     });
   }
 
@@ -417,5 +428,168 @@ export class ReservasComponent implements OnInit, OnDestroy {
         });
       }
     });
+  }
+
+  /* ---- Acciones extendidas ---- */
+
+  copiarReserva(r: any): void {
+    const texto =
+      `RESERVA #${r.id}\n` +
+      `Cliente: ${r.clienteNombre}\n` +
+      `Tel: ${r.clienteTelefono || 'N/A'}\n` +
+      `Habitación: ${r.habitacionNumero} (${r.habitacionTipo || ''})\n` +
+      `Entrada: ${this.fmtFecha(r.fechaEntrada)}\n` +
+      `Salida: ${this.fmtFecha(r.fechaSalida)}\n` +
+      `Total: S/ ${r.montoTotal}\n` +
+      `Adelanto: S/ ${r.montoAdelanto}\n` +
+      `Estado: ${r.estado}`;
+    navigator.clipboard.writeText(texto).then(
+      () => this.messageService.add({ severity: 'success', summary: 'Copiado', detail: 'Datos de la reserva copiados' }),
+      () => this.messageService.add({ severity: 'info', summary: 'Copiado', detail: 'Datos disponibles' })
+    );
+  }
+
+  imprimirReserva(r: any): void {
+    const noct = this.diasEntre(r.fechaEntrada, r.fechaSalida) || 1;
+    this.boletoSvc.abrirComprobante({
+      tipoDocumento: 'BOLETO',
+      numero: String(r.id).padStart(6, '0'),
+      hospedajeId: r.id,
+      recepcionista: this.authService.getNombreCompleto() || r.usuarioNombre || '',
+      cliente: [
+        { label: 'Nombre completo', value: r.clienteNombre },
+        { label: 'Teléfono', value: r.clienteTelefono },
+        { label: 'Documento', value: r.clienteDocumento || null },
+      ],
+      hospedaje: [
+        { label: 'Habitación', value: r.habitacionNumero },
+        { label: 'Tipo', value: r.habitacionTipo },
+        { label: 'Entrada', value: this.fmtFecha(r.fechaEntrada) },
+        { label: 'Salida', value: this.fmtFecha(r.fechaSalida) },
+        { label: 'Noches', value: noct },
+        { label: 'Estado', value: r.estado },
+      ],
+      habitacion: [
+        { label: 'Número', value: r.habitacionNumero },
+        { label: 'Tipo', value: r.habitacionTipo },
+        { label: 'Precio por noche', value: moneda(r.habitacionPrecio) },
+      ],
+      detalle: [
+        { concepto: 'Reserva de habitación', cantidad: noct, precioUnitario: r.habitacionPrecio, subtotal: r.montoTotal || (r.habitacionPrecio * noct) },
+      ],
+      consumos: [],
+      totalConsumos: 0,
+      pagos: [],
+      resumen: [
+        { label: 'Subtotal reserva', value: moneda(r.montoTotal) },
+        { label: 'Adelanto', value: moneda(r.montoAdelanto) },
+        { label: 'TOTAL GENERAL', value: moneda(r.montoTotal) },
+        { label: 'Saldo por adelantar', value: moneda((r.montoTotal || 0) - (r.montoAdelanto || 0)) },
+      ],
+      observaciones: r.observacion,
+      pie: 'Gracias por su preferencia'
+    });
+  }
+
+  /* Pago / Check-in desde la fila */
+  accionReserva: any = null;
+  accionTipo: 'pago' | 'checkin' | null = null;
+  accionMonto = 0;
+  accionMetodo = 'EFECTIVO';
+  accionReferencia = '';
+  accionLoading = false;
+
+  registrarPagoReserva(r: any): void {
+    this.accionReserva = r;
+    this.accionTipo = 'pago';
+    this.accionMonto = 0;
+    this.accionMetodo = 'EFECTIVO';
+    this.accionReferencia = '';
+    this.accionLoading = false;
+  }
+
+  checkInReserva(r: any): void {
+    this.accionReserva = r;
+    this.accionTipo = 'checkin';
+    this.accionMonto = 0;
+    this.accionMetodo = 'EFECTIVO';
+    this.accionReferencia = '';
+  }
+
+  confirmarAccionReserva(): void {
+    if (!this.accionReserva || !this.accionTipo) return;
+    const r = this.accionReserva;
+    if (this.accionTipo === 'pago') {
+      if (this.accionMonto <= 0) {
+        this.messageService.add({ severity: 'warn', summary: 'Validación', detail: 'Ingrese un monto mayor a cero' });
+        return;
+      }
+      this.accionLoading = true;
+      this.pagoService.registrar({
+        tipo: 'ADELANTO',
+        monto: this.accionMonto,
+        metodo: this.accionMetodo,
+        referencia: this.accionReferencia || null,
+        reservaId: r.id,
+        observacion: 'Pago desde Gestión de Reservas'
+      }).subscribe({
+        next: () => {
+          this.accionLoading = false;
+          this.messageService.add({ severity: 'success', summary: 'Pago registrado', detail: 'El pago se registró correctamente' });
+          this.accionTipo = null; this.accionReserva = null;
+          this.layoutState.setOverlay(false);
+          this.loadReservas();
+          this.estadoActualizacion.pagoCambio();
+        },
+        error: (err) => {
+          this.accionLoading = false;
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error al registrar pago' });
+        }
+      });
+    } else {
+      this.accionLoading = true;
+      this.hospedajeService.checkIn({
+        reservaId: r.id,
+        montoSaldo: this.accionMonto || null,
+        metodoSaldo: this.accionMonto ? this.accionMetodo : null,
+        referencia: this.accionReferencia || null
+      }).subscribe({
+        next: () => {
+          this.accionLoading = false;
+          this.messageService.add({ severity: 'success', summary: 'Check-in', detail: `Reserva convertida a hospedaje` });
+          this.accionTipo = null; this.accionReserva = null;
+          this.layoutState.setOverlay(false);
+          this.loadReservas();
+          this.estadoActualizacion.reservaCambio();
+          this.estadoActualizacion.habitacionCambio();
+          this.estadoActualizacion.hospedajeCambio();
+        },
+        error: (err) => {
+          this.accionLoading = false;
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.listMessage?.[0] || err.error?.message || 'Error en check-in' });
+        }
+      });
+    }
+  }
+
+  cerrarAccionReserva(): void {
+    this.accionTipo = null;
+    this.accionReserva = null;
+    this.layoutState.setOverlay(false);
+  }
+
+  private fmtFecha(d: any): string {
+    if (!d) return 'N/A';
+    const date = new Date(d);
+    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+  }
+
+  private diasEntre(a: any, b: any): number {
+    if (!a || !b) return 1;
+    const d1 = new Date(a).getTime();
+    const d2 = new Date(b).getTime();
+    if (isNaN(d1) || isNaN(d2)) return 1;
+    const diff = Math.round((d2 - d1) / 86400000);
+    return Math.max(1, diff);
   }
 }

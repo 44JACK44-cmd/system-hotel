@@ -50,8 +50,12 @@ public class PagoController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortField,
             @RequestParam(defaultValue = "desc") String sortDir,
-            @RequestParam(required = false) String search) {
-        ResponsePage<PagoResponse> response = pagoBusiness.listarPaginado(search, page, size, sortField, sortDir);
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) String metodo,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate inicio,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fin) {
+        ResponsePage<PagoResponse> response = pagoBusiness.listarPaginado(search, tipo, metodo, inicio, fin, page, size, sortField, sortDir);
         return ResponseEntity.ok(response);
     }
 

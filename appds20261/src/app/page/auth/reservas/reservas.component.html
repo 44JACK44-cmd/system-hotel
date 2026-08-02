@@ -4,8 +4,8 @@
   <!-- Page header -->
   <div class="res-page__header">
     <div>
-      <h1 class="page-title">Gesti&oacute;n de Reservas</h1>
-      <p class="page-subtitle">Administre y supervise todas las reservas del hotel.</p>
+      <h1 class="res-page__title">Gesti&oacute;n de Reservas</h1>
+      <p class="res-page__subtitle">Administre y supervise todas las reservas del hotel.</p>
     </div>
     <button class="premium-btn" (click)="showNewDialog()">
       <span class="material-symbols-outlined">add</span>
@@ -68,6 +68,13 @@
         </tr>
       </thead>
       <tbody>
+        @if (loading) {
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <tr style="border-bottom:1px solid var(--clr-outline-variant)">
+              <td colspan="8"><div class="res-skel-line"></div></td>
+            </tr>
+          }
+        } @else {
         @for (r of reservas; track r.id) {
           <tr>
             <td data-label="Cliente" class="text-body-md" style="font-weight:600">{{ r.clienteNombre }}</td>
@@ -81,28 +88,43 @@
             </td>
             <td data-label="" style="text-align:right">
               <div style="display:flex;gap:4px;justify-content:flex-end">
-                <button class="res-action-btn res-action-btn--view" (click)="showDetail(r)" pTooltip="Ver detalle">
+                <button class="res-action-btn res-action-btn--view" (click)="showDetail(r)" pTooltip="Ver detalle" [disabled]="loading">
                   <span class="material-symbols-outlined">visibility</span>
                 </button>
                 @if (r.estado === 'CONFIRMADA') {
-                  <button class="res-action-btn res-action-btn--edit" (click)="showEditDialog(r)" pTooltip="Editar">
+                  <button class="res-action-btn res-action-btn--edit" (click)="showEditDialog(r)" pTooltip="Editar" [disabled]="loading">
                     <span class="material-symbols-outlined">edit</span>
                   </button>
                 }
                 @if (r.estado === 'CONFIRMADA' && isAdmin) {
-                  <button class="res-action-btn res-action-btn--cancel" (click)="cancelReserva(r)" pTooltip="Cancelar">
+                  <button class="res-action-btn res-action-btn--cancel" (click)="cancelReserva(r)" pTooltip="Cancelar" [disabled]="loading">
                     <span class="material-symbols-outlined">cancel</span>
+                  </button>
+                }
+                <button class="res-action-btn res-action-btn--view" (click)="copiarReserva(r)" pTooltip="Copiar datos" [disabled]="loading">
+                  <span class="material-symbols-outlined">content_copy</span>
+                </button>
+                <button class="res-action-btn res-action-btn--view" (click)="imprimirReserva(r)" pTooltip="Imprimir / PDF" [disabled]="loading">
+                  <span class="material-symbols-outlined">print</span>
+                </button>
+                @if (r.estado === 'CONFIRMADA') {
+                  <button class="res-action-btn res-action-btn--edit" (click)="registrarPagoReserva(r)" pTooltip="Registrar pago" [disabled]="loading">
+                    <span class="material-symbols-outlined">payments</span>
+                  </button>
+                  <button class="res-action-btn res-action-btn--checkin" (click)="checkInReserva(r)" pTooltip="Check-in desde reserva" [disabled]="loading">
+                    <span class="material-symbols-outlined">meeting_room</span>
                   </button>
                 }
               </div>
             </td>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="8" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
-              {{ searchTerm ? 'No se encontraron reservas con ese criterio.' : 'No hay reservas registradas.' }}
-            </td>
-          </tr>
+} @empty {
+            <tr>
+              <td colspan="8" style="text-align:center;padding:32px;color:var(--clr-on-surface-variant)">
+                {{ searchTerm ? 'No se encontraron reservas con ese criterio.' : 'No hay reservas registradas.' }}
+              </td>
+            </tr>
+          }
         }
       </tbody>
     </table>
@@ -277,6 +299,72 @@
           }
         </div>
       }
+    </div>
+
+  </div>
+}
+
+<!-- ============ SLIDE PANEL: Pago / Check-in desde Reserva ============ -->
+@if (accionTipo && accionReserva) {
+  <div class="hs-overlay" (click)="cerrarAccionReserva()"></div>
+  <div class="hs-slide-panel" style="max-width:440px">
+
+    <div class="hs-slide-panel__header" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--aura-gold),var(--aura-gold-dark));display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:var(--aura-dark);font-size:20px">{{ accionTipo === 'pago' ? 'payments' : 'meeting_room' }}</span>
+        </div>
+        <div>
+          <span style="font-weight:700;font-size:16px;color:white">{{ accionTipo === 'pago' ? 'Registrar pago' : 'Check-in desde reserva' }}</span>
+          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.5)">Reserva #{{ accionReserva.id }} &middot; {{ accionReserva.clienteNombre }}</p>
+        </div>
+      </div>
+      <button class="hs-topbar__icon-btn" (click)="cerrarAccionReserva()">
+        <span class="material-symbols-outlined" style="color:rgba(255,255,255,0.6)">close</span>
+      </button>
+    </div>
+
+    <div class="hs-slide-panel__body" style="display:flex;flex-direction:column;gap:16px;padding:24px">
+
+      <div class="res-detail-row">
+        <span class="res-detail-label">Habitación</span>
+        <span class="res-detail-value">{{ accionReserva.habitacionNumero }} ({{ accionReserva.habitacionTipo }})</span>
+      </div>
+      <div class="res-detail-row">
+        <span class="res-detail-label">Total</span>
+        <span class="res-detail-value" style="font-weight:700">S/ {{ accionReserva.montoTotal }}</span>
+      </div>
+
+      @if (accionTipo === 'checkin') {
+        <div class="res-detail-row">
+          <span class="res-detail-label">Adelanto pagado</span>
+          <span class="res-detail-value">S/ {{ accionReserva.montoAdelanto }}</span>
+        </div>
+      }
+
+      <label class="res-modal-field">
+        <span>Monto {{ accionTipo === 'pago' ? 'del pago' : 'de saldo' }}</span>
+        <p-inputNumber [(ngModel)]="accionMonto" [min]="0" [minFractionDigits]="2" [maxFractionDigits]="2" inputId="monto" styleClass="res-input" />
+      </label>
+
+      @if (accionMonto > 0) {
+        <label class="res-modal-field">
+          <span>Método</span>
+          <p-select [(ngModel)]="accionMetodo" [options]="metodosPago" optionLabel="label" optionValue="value" styleClass="res-input" />
+        </label>
+        <label class="res-modal-field">
+          <span>Referencia (opcional)</span>
+          <input class="res-input" type="text" [(ngModel)]="accionReferencia" placeholder="N° de operación" />
+        </label>
+      }
+    </div>
+
+    <div class="hs-slide-panel__footer" style="padding:16px 24px;gap:12px">
+      <button class="res-btn--ghost" (click)="cerrarAccionReserva()">Cancelar</button>
+      <button class="res-btn res-btn--checkin" [disabled]="accionLoading" (click)="confirmarAccionReserva()">
+        <span *ngIf="accionLoading" class="material-symbols-outlined" style="font-size:16px">progress_activity</span>
+        {{ accionLoading ? 'Procesando...' : (accionTipo === 'pago' ? 'Registrar pago' : 'Realizar check-in') }}
+      </button>
     </div>
 
   </div>

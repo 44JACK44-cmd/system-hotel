@@ -1,15 +1,31 @@
-<div class="admin-page">
+﻿<div class="admin-page">
   <div class="admin-page__header">
     <div>
       <h1 style="margin:0;font-size:24px;font-weight:800;color:var(--clr-on-surface)">Panel de Administraci&oacute;n</h1>
       <p style="margin:4px 0 0;font-size:14px;color:var(--clr-on-surface-variant)">Monitoreo de ingresos y m&eacute;tricas operativas &mdash; {{ mesActual }}</p>
     </div>
-    <div style="display:flex;gap:8px">
-      <button class="premium-btn" disabled style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);opacity:0.8">
-        <span class="material-symbols-outlined" aria-hidden="true">calendar_today</span>
-        {{ mesActual }}
-      </button>
-      <a [routerLink]="'/admin/reportes'" class="premium-btn" style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);text-decoration:none;font-size:12px;display:inline-flex;align-items:center;gap:6px">
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="ope-datepicker-wrap">
+        <button type="button" class="premium-btn" style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="calendarioAbierto = !calendarioAbierto" pTooltip="Seleccionar fecha de operaci&oacute;n" tooltipPosition="bottom">
+          <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+          {{ mesActual }}
+        </button>
+        @if (calendarioAbierto) {
+          <div class="ope-calendar-pop">
+            <div class="ope-quick-row">
+              <button type="button" class="ope-quick-btn" (click)="setFechaAyer()">Ayer</button>
+              <button type="button" class="ope-quick-btn ope-quick-btn--active" (click)="setFechaHoy()">Hoy</button>
+              <button type="button" class="ope-quick-btn" (click)="setFechaManana()">Ma&ntilde;ana</button>
+            </div>
+            <p-datepicker [(ngModel)]="fechaOperativa" (ngModelChange)="seleccionarFecha($event)" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="premium-input" styleClass="w-full" appendTo="body"></p-datepicker>
+          </div>
+        }
+      </div>
+      <span class="ope-indicator" [class]="'ope-indicator--' + modoOperativo" pTooltip="Operando sobre" tooltipPosition="bottom">
+        <span class="material-symbols-outlined">schedule</span>
+        <span>{{ indicadorOperando }}</span>
+      </span>
+      <a (click)="exportarReporte()" href="javascript:void(0)" class="premium-btn" style="padding:8px 14px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);text-decoration:none;font-size:12px;display:inline-flex;align-items:center;gap:6px">
         <span class="material-symbols-outlined">download</span>
         Exportar Reporte
       </a>
@@ -113,30 +129,26 @@
     </div>
     <div style="padding:16px">
       <div class="admin-reports-grid">
-        <a [routerLink]="'/admin/reportes'" class="admin-report-btn">
+        <button type="button" class="admin-report-btn" (click)="irFacturacion()">
           <span class="material-symbols-outlined">receipt_long</span>
           <span>Facturaci&oacute;n</span>
-        </a>
-        <a [routerLink]="'/admin/reportes'" class="admin-report-btn">
+        </button>
+        <button type="button" class="admin-report-btn" (click)="irLibroImpuestos()">
           <span class="material-symbols-outlined">account_balance_wallet</span>
           <span>Libro de Impuestos</span>
-        </a>
-        <a [routerLink]="'/admin/reportes'" class="admin-report-btn">
+        </button>
+        <button type="button" class="admin-report-btn" (click)="irTendencias()">
           <span class="material-symbols-outlined">monitoring</span>
           <span>Tendencias</span>
-        </a>
-        <a [routerLink]="'/recepcion/incidencias'" class="admin-report-btn">
-          <span class="material-symbols-outlined">inventory_2</span>
-          <span>Suministros</span>
-        </a>
-        <a [routerLink]="'/admin/usuarios'" class="admin-report-btn">
+        </button>
+        <button type="button" class="admin-report-btn" (click)="irRegistros()">
           <span class="material-symbols-outlined">history</span>
           <span>Registros</span>
-        </a>
-        <a [routerLink]="'/admin/habitaciones'" class="admin-report-btn">
+        </button>
+        <button type="button" class="admin-report-btn" (click)="irAjustes()">
           <span class="material-symbols-outlined">engineering</span>
           <span>Ajustes</span>
-        </a>
+        </button>
       </div>
     </div>
   </div>

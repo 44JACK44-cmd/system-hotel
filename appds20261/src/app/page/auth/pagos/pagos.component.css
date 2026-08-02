@@ -12,6 +12,20 @@
   flex-wrap: wrap;
   gap: 12px;
 }
+.pag-page__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--clr-on-surface);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.pag-page__subtitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--clr-on-surface-variant);
+  opacity: 0.7;
+  margin: 4px 0 0;
+}
 /* KPI Grid */
 .pag-kpi-grid {
   display: grid;
@@ -174,3 +188,9 @@
   height: 1px;
   background: var(--clr-outline-variant);
 }
+.pag-filter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pag-filter-select .p-select-label{font-size:12px;padding:6px 10px;min-width:90px}
+.pag-filter-date{max-width:120px}
+.pag-skel-line{height:14px;border-radius:6px;background:linear-gradient(90deg,var(--clr-surface-container-low) 25%,var(--clr-surface-container-high) 50%,var(--clr-surface-container-low) 75%);background-size:200% 100%;animation:pag-shimmer 1.4s infinite}
+@keyframes pag-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@media (max-width: 768px){.pag-filter-row{flex-direction:column;align-items:stretch}.pag-filter-row .premium-field,.pag-filter-row .p-select,.pag-filter-row .p-datepicker,.pag-filter-row .pag-filter-date{max-width:100%;width:100%}}

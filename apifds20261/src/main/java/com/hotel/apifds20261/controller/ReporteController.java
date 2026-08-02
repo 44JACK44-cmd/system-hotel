@@ -79,8 +79,15 @@ public class ReporteController {
     }
 
     @GetMapping("incidencias")
-    public ResponseEntity<ResponseReporte> actionIncidencias() {
-        List<Map<String, Object>> data = reporteBusiness.historialIncidencias();
+    public ResponseEntity<ResponseReporte> actionIncidencias(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin,
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String usuario,
+            @RequestParam(required = false) String habitacion,
+            @RequestParam(required = false) String search) {
+        List<Map<String, Object>> data = reporteBusiness.historialIncidencias(inicio, fin, tipo, estado, usuario, habitacion, search);
         ResponseReporte response = new ResponseReporte();
         response.success();
         response.setListReporte(data);
@@ -88,8 +95,10 @@ public class ReporteController {
     }
 
     @GetMapping("rankinghabitaciones")
-    public ResponseEntity<ResponseReporte> actionRankingHabitaciones() {
-        List<Map<String, Object>> data = reporteBusiness.rankingHabitaciones();
+    public ResponseEntity<ResponseReporte> actionRankingHabitaciones(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
+        List<Map<String, Object>> data = reporteBusiness.rankingHabitaciones(inicio, fin);
         ResponseReporte response = new ResponseReporte();
         response.success();
         response.setListReporte(data);

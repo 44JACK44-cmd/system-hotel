@@ -2,10 +2,15 @@ import { Component, inject, Input, Output, EventEmitter, OnInit, OnDestroy, OnCh
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { HospedajeService } from '../../observable/hospedaje.service';
 import { IncidenciaService } from '../../observable/incidencia.service';
 import { ConsumoService, ConsumoResponse } from '../../observable/consumo.service';
+import { PagoService } from '../../observable/pago.service';
+import { ClienteService } from '../../observable/cliente.service';
+import { AuthService } from '../../observable/auth.service';
 import { AppConfigService } from '../../services/app-config.service';
+import { BoletoService, fmtFecha, moneda } from '../../services/boleto.service';
 import { ConsumoModalComponent } from '../consumo-modal/consumo-modal.component';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -35,9 +40,13 @@ export class CheckOutComponent implements OnInit, OnDestroy, OnChanges {
   private hospedajeService = inject(HospedajeService);
   private incidenciaService = inject(IncidenciaService);
   private consumoService = inject(ConsumoService);
+  private pagoService = inject(PagoService);
+  private clienteService = inject(ClienteService);
+  private authService = inject(AuthService);
   private messageService = inject(MessageService);
   private layoutState = inject(LayoutStateService);
   private configService = inject(AppConfigService);
+  private boletoSvc = inject(BoletoService);
   protected cfg = this.configService.config;
   private estadoActualizacion = inject(EstadoActualizacionService);
 
@@ -183,14 +192,15 @@ export class CheckOutComponent implements OnInit, OnDestroy, OnChanges {
 
   buscarHospedaje(event: any): void {
     const valor = event.query?.trim() || '';
-    if (!valor || valor.length < 2) return;
+    if (!valor) { this.searchResults = []; return; }
     this.hospedajeService.search(valor).subscribe({
       next: (res) => {
         this.searchResults = (res.data || []).map((h: any) => ({
           ...h,
           displayLabel: `Hab ${h.habitacionNumero} - ${h.clienteNombre} (#${h.id})`
         }));
-      }
+      },
+      error: () => this.searchResults = []
     });
   }
 
@@ -276,42 +286,91 @@ export class CheckOutComponent implements OnInit, OnDestroy, OnChanges {
   imprimirFactura(): void {
     if (!this.hospedajeEncontrado) return;
     const h = this.hospedajeEncontrado;
-    const hotel = this.hotelData;
-    const factura = `${hotel.nombre}
-RUC: ${hotel.ruc}
-${hotel.direccion}
-Tel: ${hotel.telefono}
-${'='.repeat(35)}
-HOSPEDAJE #${h.id}
-Huésped: ${h.clienteNombre}
-Habitación: ${h.habitacionNumero} - ${h.habitacionTipo}
-Ingreso: ${this.formatFecha(h.fechaIngreso)}
-Salida: ${this.formatFechaDesdeStr(h.fechaSalidaProgramada)}
-Total Pagado: S/ ${(h.totalPagado || 0).toFixed(2)}
-Deuda: S/ ${(h.deudaPendiente || 0).toFixed(2)}
-${this.esExtension ? `Cargo Extensión: S/ ${this.cargoExtension.toFixed(2)}` : ''}
-TOTAL A PAGAR: S/ ${this.totalDeuda.toFixed(2)}`;
-    const win = window.open('', '_blank');
-    if (win) {
-      win.document.write(`<html><head><title>Factura #${h.id}</title><style>body{font-family:monospace;padding:40px;max-width:500px;margin:auto}hr{border:none;border-top:1px dashed #000}h2{text-align:center;margin-bottom:4px}.hotel-data{text-align:center;font-size:12px;color:#555;margin:0 0 16px}</style></head><body>`);
-      win.document.write(`<h2>${hotel.nombre}</h2>`);
-      win.document.write(`<div class="hotel-data">RUC: ${hotel.ruc}<br>${hotel.direccion}<br>Tel: ${hotel.telefono}</div>`);
-      win.document.write(`<hr><h2 style="margin:4px 0">FACTURA</h2><p>Hospedaje #${h.id}</p><hr>`);
-      win.document.write(`<p><strong>Huésped:</strong> ${h.clienteNombre}</p>`);
-      win.document.write(`<p><strong>Habitación:</strong> ${h.habitacionNumero} - ${h.habitacionTipo}</p>`);
-      win.document.write(`<p><strong>Ingreso:</strong> ${this.formatFecha(h.fechaIngreso)}</p>`);
-      win.document.write(`<p><strong>Salida Prog.:</strong> ${this.formatFechaDesdeStr(h.fechaSalidaProgramada)}</p><hr>`);
-      win.document.write(`<p><strong>Total Hospedaje:</strong> S/ ${((h.totalPagado || 0)+(h.deudaPendiente || 0)).toFixed(2)}</p>`);
-      win.document.write(`<p><strong>Pagado:</strong> -S/ ${(h.totalPagado || 0).toFixed(2)}</p>`);
-      if (this.esExtension && this.cargoExtension > 0) {
-        win.document.write(`<p><strong>Extensión:</strong> +S/ ${this.cargoExtension.toFixed(2)}</p>`);
-      }
-      win.document.write(`<hr><p class="total">TOTAL: S/ ${this.totalDeuda.toFixed(2)}</p>`);
-      win.document.write(`<p style="text-align:center;margin-top:40px;color:#666">Gracias por su preferencia</p>`);
-      win.document.write('</body></html>');
-      win.document.close();
-      win.print();
-    }
+    const cargas: any[] = [
+      this.pagoService.listarPorHospedaje(h.id),
+      this.consumoService.listarPorHospedaje(h.id),
+    ];
+    if (h.clienteId) cargas.push(this.clienteService.obtenerPorId(h.clienteId));
+
+    forkJoin(cargas).subscribe({
+      next: (res: any[]) => {
+        const pagos = res[0]?.data || [];
+        const consumos = res[1]?.data || [];
+        const cliente = h.clienteId ? (res[2]?.data || null) : null;
+        this.ensamblarFactura(h, pagos, consumos, cliente);
+      },
+      error: () => this.ensamblarFactura(h, [], [], null)
+    });
+  }
+
+  private ensamblarFactura(h: any, pagos: any[], consumos: any[], cliente: any): void {
+    cliente = cliente || {};
+    const noct = h.fechaIngreso ? Math.max(1, Math.round((new Date(h.fechaSalidaProgramada || h.fechaIngreso).getTime() - new Date(h.fechaIngreso).getTime()) / 86400000)) : 0;
+    const precioNoche = Number(h.habitacionPrecio || 0);
+    const subtotalConsumos = (consumos || []).reduce((s, c) => s + (c.subtotal || 0), 0);
+    const subtotalExtension = this.cargoExtension;
+    const totalGeneral = Number(h.totalPagado || 0) + Number(h.deudaPendiente || 0);
+
+    this.boletoSvc.abrirComprobante({
+      tipoDocumento: 'FACTURA',
+      numero: String(h.id).padStart(6, '0'),
+      hospedajeId: h.id,
+      recepcionista: this.authService.getNombreCompleto() || h.usuarioNombre || '',
+      cliente: [
+        { label: 'Nombre completo', value: cliente.nombreCompleto || h.clienteNombre },
+        { label: 'Documento', value: cliente.documento || null },
+        { label: 'Tipo documento', value: cliente.tipoDocumento || null },
+        { label: 'Teléfono', value: cliente.telefono || h.clienteTelefono },
+        { label: 'Correo', value: cliente.email || null },
+      ],
+      hospedaje: [
+        { label: 'Habitación', value: h.habitacionNumero },
+        { label: 'Tipo', value: h.habitacionTipo },
+        { label: 'Piso', value: h.habitacionPiso },
+        { label: 'Check-In', value: fmtFecha(h.fechaIngreso) },
+        { label: 'Check-Out prog.', value: fmtFecha(h.fechaSalidaProgramada) },
+        { label: 'Noches', value: noct },
+        { label: 'Estado', value: h.estado },
+      ],
+      habitacion: [
+        { label: 'Número', value: h.habitacionNumero },
+        { label: 'Tipo', value: h.habitacionTipo },
+        { label: 'Precio por noche', value: moneda(precioNoche) },
+      ],
+      detalle: [
+        { concepto: 'Alojamiento (' + noct + ' noche(s))', cantidad: noct, precioUnitario: precioNoche, subtotal: precioNoche * noct },
+        ...(this.esExtension && this.cargoExtension > 0 ? [{ concepto: 'Extensión', cantidad: 1, precioUnitario: this.cargoExtension, subtotal: this.cargoExtension }] : []),
+      ],
+      consumos: (consumos || []).map(c => ({
+        fecha: c.fechaRegistro,
+        producto: c.descripcion,
+        cantidad: c.cantidad,
+        precio: c.precioUnitario,
+        subtotal: c.subtotal,
+      })),
+      totalConsumos: subtotalConsumos,
+      pagos: (pagos || []).map(p => ({
+        fecha: p.fechaPago,
+        metodo: p.metodo,
+        tipo: p.tipo,
+        monto: p.monto,
+        usuario: p.usuarioNombre,
+      })),
+      resumen: [
+        { label: 'Subtotal hospedaje', value: moneda(precioNoche * noct) },
+        { label: 'Subtotal consumos', value: moneda(subtotalConsumos) },
+        { label: 'Subtotal extensiones', value: moneda(subtotalExtension) },
+        { label: 'Descuentos', value: moneda(0) },
+        { label: 'Impuestos', value: moneda(0) },
+        { label: 'TOTAL GENERAL', value: moneda(totalGeneral) },
+        { label: 'Total pagado', value: moneda(h.totalPagado || 0) },
+        { label: 'Saldo pendiente', value: moneda(h.deudaPendiente || 0) },
+        { label: 'Cambio', value: moneda(0) },
+      ],
+      observaciones: h.observacion,
+      pie: 'Gracias por hospedarse con nosotros.',
+      autoImpresion: true,
+    });
   }
 
   reportarSucio(): void {

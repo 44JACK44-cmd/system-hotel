@@ -37,17 +37,28 @@ public class BusinessPago {
         return list;
     }
 
-    public ResponsePage<PagoResponse> listarPaginado(String search, int page, int size, String sortField, String sortDir) {
+    public ResponsePage<PagoResponse> listarPaginado(String search, String tipo, String metodo, java.time.LocalDate inicio, java.time.LocalDate fin, int page, int size, String sortField, String sortDir) {
         org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(
                 sortDir.equalsIgnoreCase("desc") ? org.springframework.data.domain.Sort.Direction.DESC : org.springframework.data.domain.Sort.Direction.ASC,
-                sortField == null || sortField.isBlank() ? "id" : sortField);
+                sortField == null || sortField.isBlank() ? "p.id" : sortField);
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sort);
-        org.springframework.data.domain.Page<EntityPago> pagina = pagoRepository.findAllPaginated(search, pageable);
+        java.time.LocalDateTime inicioDt = inicio != null ? inicio.atStartOfDay() : null;
+        java.time.LocalDateTime finDt = fin != null ? fin.plusDays(1).atStartOfDay() : null;
+        org.springframework.data.domain.Page<Object[]> pagina = pagoRepository.findAllPaginated(
+                blankToNull(search), blankToNull(tipo), blankToNull(metodo), inicioDt, finDt, pageable);
         List<PagoResponse> list = new ArrayList<>();
-        for (EntityPago p : pagina.getContent()) {
+        for (Object[] row : pagina.getContent()) {
+            Long id = row[0] != null ? ((Number) row[0]).longValue() : null;
+            if (id == null) continue;
+            EntityPago p = pagoRepository.findById(id).orElse(null);
+            if (p == null) continue;
             list.add(toResponse(p));
         }
         return new ResponsePage<>(list, pagina.getNumber(), pagina.getSize(), pagina.getTotalElements(), pagina.getTotalPages());
+    }
+
+    private String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s.trim();
     }
 
     public PagoResponse obtenerPorId(Long id) {

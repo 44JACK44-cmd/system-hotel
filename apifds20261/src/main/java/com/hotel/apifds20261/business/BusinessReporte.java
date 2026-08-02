@@ -208,39 +208,42 @@ public class BusinessReporte {
         return result;
     }
 
-    public List<Map<String, Object>> historialIncidencias() {
+    public List<Map<String, Object>> historialIncidencias(LocalDate inicio, LocalDate fin,
+            String tipo, String estado, String usuario, String habitacion, String search) {
         // Usamos query nativa para evitar IllegalArgumentException cuando la BD
         // contiene valores de 'tipo' legacy (ej: 'LIMPIEZA') que ya no están
         // en el enum TipoIncidencia actual.
-        List<Object[]> rows = incidenciaRepository.findAllForReporte();
+        Boolean resuelta = null;
+        if (estado != null && !estado.isBlank()) {
+            String e = estado.trim().toUpperCase();
+            if (e.equals("RESUELTA") || e.equals("RESUELTO") || e.equals("CERRADA")) {
+                resuelta = Boolean.TRUE;
+            } else if (e.equals("EN CURSO") || e.equals("PENDIENTE") || e.equals("ABIERTA")) {
+                resuelta = Boolean.FALSE;
+            }
+        }
+        java.sql.Date iniSql = inicio != null ? java.sql.Date.valueOf(inicio) : null;
+        java.sql.Date finSql = fin != null ? java.sql.Date.valueOf(fin) : null;
+        List<Object[]> rows = incidenciaRepository.findAllFiltrado(
+                iniSql, finSql, blankToNull(tipo), resuelta, blankToNull(usuario), blankToNull(habitacion), blankToNull(search));
         List<Map<String, Object>> list = new ArrayList<>();
         for (Object[] row : rows) {
-            // índices: 0=habitacion, 1=tipo, 2=motivo, 3=fechaInicio, 4=fechaFin
-            String habitacion = row[0] != null ? row[0].toString() : "N/A";
-            String tipo       = row[1] != null ? row[1].toString() : "DESCONOCIDO";
-            String motivo     = row[2] != null ? row[2].toString() : "";
-            Object rawInicio = row[3];
-            LocalDateTime fechaInicio = null;
-            if (rawInicio instanceof java.sql.Timestamp ts) {
-                fechaInicio = ts.toLocalDateTime();
-            } else if (rawInicio instanceof java.time.LocalDateTime ldt) {
-                fechaInicio = ldt;
-            }
-
-            Object rawFin = row[4];
-            LocalDateTime fechaFin = null;
-            if (rawFin instanceof java.sql.Timestamp ts) {
-                fechaFin = ts.toLocalDateTime();
-            } else if (rawFin instanceof java.time.LocalDateTime ldt) {
-                fechaFin = ldt;
-            }
+            // índices: 0=habitacion, 1=tipo, 2=motivo, 3=fechaInicio, 4=fechaFin, 5=usuario
+            String hab = row[0] != null ? row[0].toString() : "N/A";
+            String tipoV = row[1] != null ? row[1].toString() : "DESCONOCIDO";
+            String motivo = row[2] != null ? row[2].toString() : "";
+            LocalDateTime fechaInicio = toLocalDateTime(row[3]);
+            LocalDateTime fechaFin = toLocalDateTime(row[4]);
+            String responsable = row[5] != null ? row[5].toString() : "";
 
             Map<String, Object> m = new LinkedHashMap<>();
-            m.put("habitacion", habitacion);
-            m.put("tipo", tipo);
+            m.put("habitacion", hab);
+            m.put("tipo", tipoV);
             m.put("motivo", motivo);
             m.put("fechaInicio", fechaInicio);
             m.put("fechaFin", fechaFin);
+            m.put("usuario", responsable);
+            m.put("estado", fechaFin != null ? "RESUELTA" : "EN CURSO");
             m.put("duracionHoras", (fechaInicio != null && fechaFin != null)
                     ? Duration.between(fechaInicio, fechaFin).toHours()
                     : null);
@@ -249,12 +252,28 @@ public class BusinessReporte {
         return list;
     }
 
-    public List<Map<String, Object>> rankingHabitaciones() {
+    private LocalDateTime toLocalDateTime(Object raw) {
+        if (raw instanceof java.sql.Timestamp ts) return ts.toLocalDateTime();
+        if (raw instanceof LocalDateTime ldt) return ldt;
+        return null;
+    }
+
+    private String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s.trim();
+    }
+
+    public List<Map<String, Object>> rankingHabitaciones(LocalDate inicio, LocalDate fin) {
         List<EntityHospedaje> todos = hospedajeRepository.findAllByOrderByFechaIngresoDesc();
 
         Map<Long, List<EntityHospedaje>> porHabitacion = new LinkedHashMap<>();
         for (EntityHospedaje h : todos) {
             Long habId = h.getHabitacion().getId();
+            if (inicio != null && h.getFechaIngreso().isBefore(inicio.atStartOfDay())) {
+                continue;
+            }
+            if (fin != null && h.getFechaIngreso().isAfter(fin.atTime(LocalTime.MAX))) {
+                continue;
+            }
             if (!porHabitacion.containsKey(habId)) {
                 porHabitacion.put(habId, new ArrayList<>());
             }

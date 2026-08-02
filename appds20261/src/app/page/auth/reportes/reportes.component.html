@@ -7,6 +7,10 @@
       <p class="rep-subtitle">Visión general del rendimiento operativo y financiero.</p>
     </div>
     <div class="rep-header-actions">
+      <div class="rep-updated" title="Los datos se recargan automáticamente ante cambios">
+        <span class="rep-updated-dot"></span>
+        Actualizado {{ updatedAgo }}
+      </div>
       <!-- Filter Bar -->
       <div class="rep-filter-bar">
         <div class="rep-filter-item">
@@ -56,6 +60,17 @@
   <p-toast />
 
   <!-- KPI Metrics Grid -->
+  @if (loading) {
+    <div class="rep-kpi-grid">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="premium-card rep-skeleton">
+          <div class="rep-skeleton-line" style="width:40%"></div>
+          <div class="rep-skeleton-line" style="width:60%;height:28px;margin-top:10px"></div>
+          <div class="rep-skeleton-line" style="width:80%"></div>
+        </div>
+      }
+    </div>
+  } @else {
   <div class="rep-kpi-grid">
     <!-- Ocupación -->
     <div class="premium-card" style="padding:16px">
@@ -117,11 +132,12 @@
       <div style="font-size:11px;color:rgba(0,0,0,0.4);margin-top:2px">Canceladas: {{ noConcretadas?.canceladas || 0 }} &middot; No Show: {{ noConcretadas?.noShow || 0 }}</div>
     </div>
   </div>
+  }
 
   <!-- Charts Section - Tendencia Dashboard -->
   <div class="rep-charts-grid">
     <!-- Tendencia de Ocupación - Full Dashboard -->
-    <div class="premium-card rep-trend-card">
+    <div class="premium-card rep-trend-card" id="rep-tendencia">
       <!-- Header -->
       <div class="rep-trend-header">
         <h3 class="rep-trend-title">Tendencia de Ocupaci&oacute;n</h3>
@@ -264,7 +280,7 @@
   </div>
 
   <!-- Revenue Breakdown Table -->
-    <div class="premium-card" style="padding:0;overflow:hidden">
+    <div class="premium-card" style="padding:0;overflow:hidden" id="rep-impuestos">
       <div style="padding:12px 16px;border-bottom:1px solid var(--clr-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--clr-surface-container-low)">
         <h3 style="margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--clr-on-surface-variant)">Desglose de Ingresos Mensuales</h3>
         <div style="display:flex;align-items:center;gap:6px">
@@ -333,13 +349,53 @@
           Historial de Incidencias
         </h3>
         <div style="display:flex;gap:6px">
-          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadIncidencias()">
-            <span class="material-symbols-outlined" style="font-size:14px">refresh</span>
-            Cargar
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadIncidencias()" [disabled]="incLoading">
+            @if (incLoading) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;font-size:14px">sync</span> }
+            @if (!incLoading) { <span class="material-symbols-outlined" style="font-size:14px">refresh</span> }
+            {{ incLoading ? 'Cargando' : 'Cargar' }}
           </button>
-          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportCSV(historialIncidencias, 'incidencias', ['habitacion','tipo','motivo','fechaInicio','duracionHoras'])">
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportCSV(historialIncidencias, 'incidencias', ['habitacion','tipo','motivo','fechaInicio','duracionHoras','usuario','estado'])">
             <span class="material-symbols-outlined" style="font-size:14px">download</span>
             CSV
+          </button>
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportPDF(historialIncidencias, 'Historial de Incidencias', ['habitacion','tipo','motivo','estado','duracionHoras','usuario'])">
+            <span class="material-symbols-outlined" style="font-size:14px">picture_as_pdf</span>
+            PDF
+          </button>
+        </div>
+      </div>
+      <div style="padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--clr-surface-container-lowest);border-bottom:1px solid var(--clr-outline-variant)">
+        <div class="rep-filter-item">
+          <span class="rep-filter-label">Desde</span>
+          <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="incFiltroInicio" dateFormat="dd/mm/yy" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="custom-datepicker" /></div>
+        </div>
+        <div class="rep-filter-item">
+          <span class="rep-filter-label">Hasta</span>
+          <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="incFiltroFin" dateFormat="dd/mm/yy" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="custom-datepicker" /></div>
+        </div>
+        <div class="rep-filter-item">
+          <span class="rep-filter-label">Tipo</span>
+          <p-select [(ngModel)]="incFiltroTipo" [options]="incTipoOptions" optionLabel="label" optionValue="value" placeholder="Todos" styleClass="rep-select-sm" [showClear]="true" appendTo="body" />
+        </div>
+        <div class="rep-filter-item">
+          <span class="rep-filter-label">Estado</span>
+          <p-select [(ngModel)]="incFiltroEstado" [options]="incEstadoOptions" optionLabel="label" optionValue="value" placeholder="Todos" styleClass="rep-select-sm" [showClear]="true" appendTo="body" />
+        </div>
+        <div class="rep-filter-item" style="flex:1;min-width:140px">
+          <span class="material-symbols-outlined rep-filter-icon">search</span>
+          <input class="rep-input" type="text" [(ngModel)]="incFiltroHabitacion" placeholder="Habitaci&oacute;n" style="max-width:120px" />
+        </div>
+        <div class="rep-filter-item" style="flex:1;min-width:160px">
+          <input class="rep-input" type="text" [(ngModel)]="incFiltroBusqueda" placeholder="Motivo o usuario..." style="max-width:180px" />
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadIncidencias()">
+            <span class="material-symbols-outlined" style="font-size:14px">filter_alt</span>
+            Aplicar
+          </button>
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="resetIncFilters()">
+            <span class="material-symbols-outlined" style="font-size:14px">restart_alt</span>
+            Limpiar
           </button>
         </div>
       </div>
@@ -349,6 +405,11 @@
             <tr><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortHist('habitacion')">Habitaci&oacute;n @if (histSortField === 'habitacion') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortHist('tipo')">Tipo @if (histSortField === 'tipo') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortHist('motivo')">Motivo @if (histSortField === 'motivo') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ histSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);white-space:nowrap">Inicio</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);white-space:nowrap">Duraci&oacute;n</th></tr>
           </thead>
           <tbody>
+            @if (incLoading) {
+              @for (i of [1,2,3,4,5]; track i) {
+                <tr><td colspan="5" style="padding:10px 12px;border-bottom:1px solid var(--clr-outline-variant)"><div class="rep-skeleton-line" style="height:14px;width:100%"></div></td></tr>
+              }
+            } @else {
             @for (i of sortedHistorial; track $index) {
               <tr>
                 <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--clr-on-surface);border-bottom:1px solid var(--clr-outline-variant)">{{ i.habitacion }}</td>
@@ -359,8 +420,9 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="5" style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">Cargue el historial para ver datos.</td>
+                <td colspan="5" style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">No hay incidencias con los filtros aplicados.</td>
               </tr>
+            }
             }
           </tbody>
         </table>
@@ -375,9 +437,17 @@
           Ranking de Habitaciones
         </h3>
         <div style="display:flex;gap:6px">
-          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadRanking()">
+          <div class="rep-filter-item">
+            <span class="rep-filter-label">Desde</span>
+            <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="rankInicio" dateFormat="dd/mm/yy" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="custom-datepicker" /></div>
+          </div>
+          <div class="rep-filter-item">
+            <span class="rep-filter-label">Hasta</span>
+            <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="rankFin" dateFormat="dd/mm/yy" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="custom-datepicker" /></div>
+          </div>
+          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadRanking()" [disabled]="rankLoading">
             <span class="material-symbols-outlined" style="font-size:14px">refresh</span>
-            Cargar
+            {{ rankLoading ? 'Cargando' : 'Cargar' }}
           </button>
           <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportCSV(ranking, 'ranking-habitaciones', ['numero','tipo','vecesReservada','ingresoGenerado'])">
             <span class="material-symbols-outlined" style="font-size:14px">download</span>
@@ -391,6 +461,11 @@
             <tr><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap">#</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortRank('numero')">Habitaci&oacute;n @if (rankSortField === 'numero') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortRank('tipo')">Tipo @if (rankSortField === 'tipo') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortRank('vecesReservada')">Veces Reservada @if (rankSortField === 'vecesReservada') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th><th style="padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--clr-on-surface-variant);background:var(--clr-surface-container-low);border-bottom:2px solid var(--clr-outline-variant);cursor:pointer;user-select:none;white-space:nowrap" (click)="toggleSortRank('ingresoGenerado')">Ingreso Generado @if (rankSortField === 'ingresoGenerado') {<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-left:2px;color:var(--aura-gold)">{{ rankSortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>}</th></tr>
         </thead>
         <tbody>
+          @if (rankLoading) {
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr><td colspan="5" style="padding:10px 12px;border-bottom:1px solid var(--clr-outline-variant)"><div class="rep-skeleton-line" style="height:14px;width:100%"></div></td></tr>
+            }
+          } @else {
           @for (r of sortedRanking; track $index; let i = $index) {
             <tr>
               <td style="padding:10px 12px;font-size:13px;font-weight:700;color:var(--clr-on-surface-variant);border-bottom:1px solid var(--clr-outline-variant);font-family:'Inter',monospace">{{ i + 1 }}</td>
@@ -401,8 +476,9 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="5" style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">Cargue el ranking para ver datos.</td>
+              <td colspan="5" style="text-align:center;padding:24px;color:var(--clr-on-surface-variant)">No hay datos de ranking para el per&iacute;odo.</td>
             </tr>
+          }
           }
         </tbody>
       </table>

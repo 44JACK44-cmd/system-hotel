@@ -72,7 +72,7 @@ export class CheckInComponent implements OnInit, OnDestroy {
 
   buscarReserva(event: any): void {
     const valor = event.query?.trim() || this.searchTerm?.trim();
-    if (!valor || valor.length < 2) {
+    if (!valor) {
       this.searchResults = [];
       return;
     }
@@ -82,7 +82,8 @@ export class CheckInComponent implements OnInit, OnDestroy {
           ...r,
           displayLabel: `${r.clienteNombre} - Reserva #${r.id} - Hab ${r.habitacionNumero}`
         }));
-      }
+      },
+      error: () => this.searchResults = []
     });
   }
 

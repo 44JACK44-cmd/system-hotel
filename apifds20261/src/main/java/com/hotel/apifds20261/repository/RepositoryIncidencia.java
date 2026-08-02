@@ -50,5 +50,38 @@ public interface RepositoryIncidencia extends JpaRepository<EntityIncidenciaHabi
            "OR LOWER(i.motivo) LIKE LOWER(CONCAT('%',:search,'%')))")
     Page<EntityIncidenciaHabitacion> findAllPaginated(@Param("search") String search, Pageable pageable);
 
+    /**
+     * Historial de incidencias con filtros (fechas, tipo, estado, usuario,
+     * habitación y búsqueda). Devuelve tipo/estado como String raw para evitar
+     * el mapeo de enum con valores legacy.
+     */
+    @Query(value = """
+            SELECT h.numero AS habitacion,
+                   i.tipo   AS tipo,
+                   i.motivo AS motivo,
+                   i.fecha_inicio AS fechaInicio,
+                   i.fecha_fin    AS fechaFin,
+                   u.nombre_completo AS usuario
+            FROM incidencias_habitacion i
+            INNER JOIN habitaciones h ON h.id = i.habitacion_id
+            LEFT JOIN usuarios u ON u.id = i.usuario_id
+            WHERE (:inicio IS NULL OR i.fecha_inicio >= :inicio)
+              AND (:fin IS NULL OR i.fecha_inicio < DATE_ADD(:fin, INTERVAL 1 DAY))
+              AND (:tipo IS NULL OR LOWER(i.tipo) = LOWER(:tipo))
+              AND (:resuelta IS NULL OR (:resuelta = true AND i.fecha_fin IS NOT NULL) OR (:resuelta = false AND i.fecha_fin IS NULL))
+              AND (:usuario IS NULL OR LOWER(u.nombre_completo) LIKE LOWER(CONCAT('%',:usuario,'%')))
+              AND (:habitacion IS NULL OR LOWER(h.numero) LIKE LOWER(CONCAT('%',:habitacion,'%')))
+              AND (:search IS NULL OR LOWER(i.motivo) LIKE LOWER(CONCAT('%',:search,'%')))
+            ORDER BY i.fecha_inicio DESC
+            """, nativeQuery = true)
+    List<Object[]> findAllFiltrado(
+            @Param("inicio") java.sql.Date inicio,
+            @Param("fin") java.sql.Date fin,
+            @Param("tipo") String tipo,
+            @Param("resuelta") Boolean resuelta,
+            @Param("usuario") String usuario,
+            @Param("habitacion") String habitacion,
+            @Param("search") String search);
+
     long countByUsuarioId(Long usuarioId);
 }

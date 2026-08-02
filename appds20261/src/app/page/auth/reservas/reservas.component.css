@@ -12,6 +12,20 @@
   flex-wrap: wrap;
   gap: 12px;
 }
+.res-page__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--clr-on-surface);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.res-page__subtitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--clr-on-surface-variant);
+  opacity: 0.7;
+  margin: 4px 0 0;
+}
 
 /* Action buttons */
 .res-action-btn {
@@ -32,6 +46,52 @@
 .res-action-btn--cancel:hover { background:rgba(139,58,58,0.2); }
 .res-action-btn--edit { background:rgba(200,164,92,0.1); color:var(--aura-gold-dark); }
 .res-action-btn--edit:hover { background:rgba(200,164,92,0.2); }
+.res-action-btn--checkin { background:rgba(63,143,111,0.12); color:#2f7d5c; }
+.res-action-btn--checkin:hover { background:rgba(63,143,111,0.22); }
+
+.res-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--clr-on-surface-variant);
+}
+.res-input {
+  width: 100%;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid rgba(127,127,127,0.25) !important;
+  background: var(--clr-surface) !important;
+  color: var(--clr-on-surface) !important;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.res-btn--ghost {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(127,127,127,0.25);
+  background: transparent;
+  color: var(--clr-on-surface-variant);
+  cursor: pointer;
+  font-weight: 600;
+}
+.res-btn--checkin {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--aura-dark);
+  background: linear-gradient(135deg, var(--aura-gold), var(--aura-gold-dark));
+}
+.res-btn--checkin:disabled { opacity: 0.6; cursor: not-allowed; }
+.res-btn--checkin .material-symbols-outlined { animation: spin 1s linear infinite; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -77,5 +137,11 @@
 .res-datepicker-wrap {
   position: relative;
 }
+.res-skel-line{
+  height:14px;border-radius:6px;background:linear-gradient(90deg,var(--clr-surface-container-low) 25%,var(--clr-surface-container-high) 50%,var(--clr-surface-container-low) 75%);background-size:200% 100%;animation:res-shimmer 1.4s infinite
+}
+@keyframes res-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.res-action-btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.res-action-btn:disabled:hover{background:inherit}
 
 

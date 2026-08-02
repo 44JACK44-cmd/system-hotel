@@ -114,12 +114,15 @@ export class NuevaReservaComponent implements OnInit, OnDestroy {
   buscarCliente(event: any): void {
     const query = event?.query?.trim() || this.searchTerm?.trim();
     if (!query || query.length < 1) { this.clientesSugerencias = []; return; }
-    this.clienteService.buscar(query).subscribe(res => {
-      this.clientesSugerencias = (res.data || []).map((c: any) => ({
-        ...c,
-        label: `${c.nombreCompleto} - ${c.documento || ''}`,
-        subtitle: `${c.email || ''} ${c.telefono || ''}`
-      }));
+    this.clienteService.buscar(query).subscribe({
+      next: res => {
+        this.clientesSugerencias = (res.data || []).map((c: any) => ({
+          ...c,
+          label: `${c.nombreCompleto} - ${c.documento || ''}`,
+          subtitle: `${c.email || ''} ${c.telefono || ''}`
+        }));
+      },
+      error: () => this.clientesSugerencias = []
     });
   }
 

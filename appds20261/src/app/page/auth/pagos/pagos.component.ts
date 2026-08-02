@@ -13,6 +13,8 @@ import { SelectModule } from 'primeng/select';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { PaginatorModule } from 'primeng/paginator';
+import { DatePickerModule } from 'primeng/datepicker';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { PageResponse, HospedajeResponse } from '../../../shared/models';
@@ -22,7 +24,7 @@ import { EstadoActualizacionService } from '../../../services/estado-actualizaci
 @Component({
   selector: 'app-pagos',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, SelectModule, AutoCompleteModule, InputNumberModule, PaginatorModule],
+  imports: [CommonModule, FormsModule, ToastModule, SelectModule, AutoCompleteModule, InputNumberModule, PaginatorModule, DatePickerModule, TooltipModule],
   providers: [MessageService],
   templateUrl: './pagos.component.html',
   styleUrls: ['./pagos.component.css']
@@ -50,6 +52,23 @@ export class PagosComponent implements OnInit, OnDestroy {
   loading = false;
   dialogVisible = false;
   searchTerm = '';
+
+  /* Filtros Historial de Transacciones */
+  filterTipo = '';
+  filterMetodo = '';
+  filterInicio: Date | null = null;
+  filterFin: Date | null = null;
+  tipoOptions = [
+    { label: 'Todos', value: null },
+    { label: 'Adelanto', value: 'ADELANTO' },
+    { label: 'Saldo', value: 'SALDO' },
+    { label: 'Extensi&oacute;n', value: 'EXTENSION' }
+  ];
+  metodoOptions = [
+    { label: 'Todos', value: null },
+    { label: 'Yape', value: 'YAPE' },
+    { label: 'Efectivo', value: 'EFECTIVO' }
+  ];
 
   /* Server-side pagination */
   page = 0;
@@ -276,7 +295,15 @@ export class PagosComponent implements OnInit, OnDestroy {
 
   loadPagos(): void {
     this.loading = true;
-    this.pagoService.listarPaginado(this.page, this.pageSize, this.sortField || undefined, this.sortDir, this.searchTerm || undefined).subscribe({
+    this.pagoService.listarPaginado(this.page, this.pageSize, {
+      sortField: this.sortField || undefined,
+      sortDir: this.sortDir,
+      search: this.searchTerm || undefined,
+      tipo: this.filterTipo || undefined,
+      metodo: this.filterMetodo || undefined,
+      inicio: this.filterInicio ? this.toDateStr(this.filterInicio) : undefined,
+      fin: this.filterFin ? this.toDateStr(this.filterFin) : undefined
+    }).subscribe({
       next: (res: PageResponse<any>) => {
         this.pagos = res.content;
         this.totalRecords = res.totalElements;
@@ -286,6 +313,23 @@ export class PagosComponent implements OnInit, OnDestroy {
       },
       error: () => this.loading = false
     });
+  }
+
+  private toDateStr(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  resetFilters(): void {
+    this.filterTipo = '';
+    this.filterMetodo = '';
+    this.filterInicio = null;
+    this.filterFin = null;
+    this.searchTerm = '';
+    this.page = 0;
+    this.loadPagos();
   }
 
   loadCaja(): void {
@@ -307,6 +351,11 @@ export class PagosComponent implements OnInit, OnDestroy {
 
   onSearchInput(): void {
     this.searchSubject.next(this.searchTerm);
+  }
+
+  onFilterChange(): void {
+    this.page = 0;
+    this.loadPagos();
   }
 
   onPageChange(event: any): void {
@@ -374,7 +423,7 @@ export class PagosComponent implements OnInit, OnDestroy {
 
   buscarReservas(event: any): void {
     const query = event.query?.trim();
-    if (!query || query.length < 2) { this.reservasBuscadas = []; return; }
+    if (!query) { this.reservasBuscadas = []; return; }
     this.reservaService.search(query).subscribe({
       next: res => {
         const data = res.data || [];
@@ -393,7 +442,7 @@ export class PagosComponent implements OnInit, OnDestroy {
 
   buscarHospedajes(event: any): void {
     const query = event.query?.trim();
-    if (!query || query.length < 2) { this.hospedajesBuscados = []; return; }
+    if (!query) { this.hospedajesBuscados = []; return; }
     this.hospedajeService.search(query).subscribe({
       next: res => {
         const data = res.data || [];

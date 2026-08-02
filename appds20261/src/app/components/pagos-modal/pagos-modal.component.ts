@@ -93,7 +93,7 @@ export class PagosModalComponent implements OnInit, OnDestroy {
 
   buscarReservas(event: any): void {
     const query = event.query?.trim();
-    if (!query || query.length < 2) { this.reservasBuscadas = []; return; }
+    if (!query) { this.reservasBuscadas = []; return; }
     this.reservaService.search(query).subscribe({
       next: res => {
         const data = res.data || [];
@@ -112,7 +112,7 @@ export class PagosModalComponent implements OnInit, OnDestroy {
 
   buscarHospedajes(event: any): void {
     const query = event.query?.trim();
-    if (!query || query.length < 2) { this.hospedajesBuscados = []; return; }
+    if (!query) { this.hospedajesBuscados = []; return; }
     this.hospedajeService.search(query).subscribe({
       next: res => {
         const data = res.data || [];

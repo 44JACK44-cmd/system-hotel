@@ -1,9 +1,11 @@
 import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ReporteService } from '../../../observable/reporte.service';
 import { ToastModule } from 'primeng/toast';
 import { DatePickerModule } from 'primeng/datepicker';
+import { SelectModule } from 'primeng/select';
 import { MessageService } from 'primeng/api';
 import { Subject, merge, auditTime, takeUntil } from 'rxjs';
 import { EstadoActualizacionService } from '../../../services/estado-actualizacion.service';
@@ -14,7 +16,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, DatePickerModule],
+  imports: [CommonModule, FormsModule, ToastModule, DatePickerModule, SelectModule],
   providers: [MessageService],
   templateUrl: './reportes.component.html',
   styleUrls: ['./reportes.component.css']
@@ -23,6 +25,7 @@ Chart.register(...registerables);
 export class ReportesComponent implements OnInit, OnDestroy {
   private reporteService = inject(ReporteService);
   private messageService = inject(MessageService);
+  private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private appRef = inject(ApplicationRef);
   private estadoActualizacion = inject(EstadoActualizacionService);
@@ -35,6 +38,23 @@ export class ReportesComponent implements OnInit, OnDestroy {
   noConcretadas: any = null;
   historialIncidencias: any[] = [];
   ranking: any[] = [];
+
+  /* Indicador última actualización */
+  lastUpdated: Date = new Date();
+  private tickTimer: any = null;
+
+  get updatedAgo(): string {
+    const diffSec = Math.max(0, Math.floor((Date.now() - this.lastUpdated.getTime()) / 1000));
+    if (diffSec < 60) return diffSec <= 1 ? `hace ${diffSec}s` : `hace ${diffSec}s`;
+    const min = Math.floor(diffSec / 60);
+    if (min < 60) return min === 1 ? 'hace 1 min' : `hace ${min} min`;
+    const hr = Math.floor(min / 60);
+    return hr === 1 ? 'hace 1 hr' : `hace ${hr} hr`;
+  }
+
+  private stampUpdated(): void {
+    this.lastUpdated = new Date();
+  }
 
   /* Sort - Historial */
   histSortField = '';
@@ -88,6 +108,42 @@ export class ReportesComponent implements OnInit, OnDestroy {
   ocupacionFecha: Date | null = null;
   noConcretadasInicio: Date | null = null;
   noConcretadasFin: Date | null = null;
+
+  /* Filtros Ranking */
+  rankInicio: Date | null = null;
+  rankFin: Date | null = null;
+  rankLoading = false;
+
+  /* Filtros Historial Incidencias */
+  incFiltroInicio: Date | null = null;
+  incFiltroFin: Date | null = null;
+  incFiltroTipo = '';
+  incFiltroEstado = '';
+  incFiltroHabitacion = '';
+  incFiltroBusqueda = '';
+  incLoading = false;
+  incTipoOptions = [
+    { label: 'Todas', value: null },
+    { label: 'Limpieza', value: 'LIMPIEZA' },
+    { label: 'Limpieza Checkout', value: 'LIMPIEZA_CHECKOUT' },
+    { label: 'Mantenimiento', value: 'MANTENIMIENTO' },
+    { label: 'Otro', value: 'OTRO' }
+  ];
+  incEstadoOptions = [
+    { label: 'Todos', value: null },
+    { label: 'En Curso', value: 'EN CURSO' },
+    { label: 'Resuelta', value: 'RESUELTA' }
+  ];
+
+  resetIncFilters(): void {
+    this.incFiltroInicio = null;
+    this.incFiltroFin = null;
+    this.incFiltroTipo = '';
+    this.incFiltroEstado = '';
+    this.incFiltroHabitacion = '';
+    this.incFiltroBusqueda = '';
+    this.loadIncidencias();
+  }
 
   metodoChartData: any = null;
   chartOptions = {
@@ -158,6 +214,11 @@ export class ReportesComponent implements OnInit, OnDestroy {
     return `${y}-${m}-${day}`;
   }
 
+  private parseDateStr(s: string): Date {
+    const [y, m, d] = s.split('-').map(Number);
+    return new Date(y || 2000, (m || 1) - 1, d || 1);
+  }
+
   private fmtDateShort(dateStr: string): string {
     const [, m, d] = dateStr.split('-');
     const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -180,17 +241,29 @@ export class ReportesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    this.ingresoInicio = firstDay;
-    this.ingresoFin = today;
-    this.metodoInicio = this.toDateStr(firstDay);
-    this.metodoFin = this.toDateStr(today);
-    this.ocupacionFecha = today;
+    const hoy = new Date();
+    const today = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    const firstDay = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+
+    // Leer fecha operativa enviada desde el Dashboard (Admin)
+    const nav = this.router.getCurrentNavigation();
+    const navState = nav?.extras?.state as { fecha?: string; seccion?: string } | undefined;
+    const histState = window.history.state as { fecha?: string; seccion?: string } | undefined;
+    const fechaCtx = navState?.fecha || histState?.fecha;
+    const seccionCtx = navState?.seccion || histState?.seccion;
+    const fechaOp = fechaCtx ? this.parseDateStr(fechaCtx) : null;
+    const base = fechaOp ?? today;
+    const baseStart = fechaOp ? new Date(base) : firstDay;
+
+    this.ingresoInicio = baseStart;
+    this.ingresoFin = new Date(base);
+    this.metodoInicio = this.toDateStr(baseStart);
+    this.metodoFin = this.toDateStr(base);
+    this.ocupacionFecha = new Date(base);
     this.tendenciaInicio = new Date(today.getFullYear(), today.getMonth(), 1);
     this.tendenciaFin = today;
-    this.noConcretadasInicio = firstDay;
-    this.noConcretadasFin = today;
+    this.noConcretadasInicio = new Date(baseStart);
+    this.noConcretadasFin = new Date(base);
     this.loadIngresos();
     this.loadIngresosMetodo();
     this.loadOcupacion();
@@ -198,6 +271,9 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.loadIncidencias();
     this.loadRanking();
     this.loadTendencia();
+    if (seccionCtx === 'tendencia' || seccionCtx === 'impuestos') {
+      setTimeout(() => this.scrollToSection(seccionCtx as 'tendencia' | 'impuestos'), 350);
+    }
     merge(
       this.estadoActualizacion.on('PAGO_CAMBIO'),
       this.estadoActualizacion.on('HOSPEDAJE_CAMBIO'),
@@ -206,6 +282,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
       this.estadoActualizacion.on('CONSUMO_CAMBIO'),
       this.estadoActualizacion.on('INCIDENCIA_CAMBIO')
     ).pipe(auditTime(0), takeUntil(this.destroy$)).subscribe(() => this.recargar());
+
+    this.tickTimer = setInterval(() => this.cdr.detectChanges(), 1000);
   }
 
   ngAfterViewInit(): void {
@@ -215,14 +293,25 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   }
 
+  private scrollToSection(id: 'tendencia' | 'impuestos'): void {
+    const el = document.getElementById(id === 'tendencia' ? 'rep-tendencia' : 'rep-impuestos');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.classList.add('rep-section-flash');
+      setTimeout(() => el.classList.remove('rep-section-flash'), 1600);
+    }
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.tickTimer) { clearInterval(this.tickTimer); this.tickTimer = null; }
     if (this.chart) { this.chart.destroy(); this.chart = null; }
     if (this.themeObserver) this.themeObserver.disconnect();
   }
 
   private recargar(): void {
+    this.stampUpdated();
     this.loadIngresos();
     this.loadIngresosMetodo();
     this.loadOcupacion();
@@ -446,18 +535,28 @@ export class ReportesComponent implements OnInit, OnDestroy {
   }
 
   loadIncidencias(): void {
-    this.loading = true;
-    this.reporteService.historialIncidencias().subscribe({
-      next: (res) => { this.historialIncidencias = res.data || []; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
-      error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar incidencias' }); }
+    this.incLoading = true;
+    this.reporteService.historialIncidencias({
+      inicio: this.incFiltroInicio ? this.toDateStr(this.incFiltroInicio) : null,
+      fin: this.incFiltroFin ? this.toDateStr(this.incFiltroFin) : null,
+      tipo: this.incFiltroTipo || null,
+      estado: this.incFiltroEstado || null,
+      habitacion: this.incFiltroHabitacion || null,
+      search: this.incFiltroBusqueda || null
+    }).subscribe({
+      next: (res) => { this.historialIncidencias = res.data || []; this.incLoading = false; this.cdr.detectChanges(); this.appRef.tick(); },
+      error: () => { this.incLoading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar incidencias' }); }
     });
   }
 
   loadRanking(): void {
-    this.loading = true;
-    this.reporteService.rankingHabitaciones().subscribe({
-      next: (res) => { this.ranking = res.data || []; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
-      error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar ranking' }); }
+    this.rankLoading = true;
+    this.reporteService.rankingHabitaciones(
+      this.rankInicio ? this.toDateStr(this.rankInicio) : null,
+      this.rankFin ? this.toDateStr(this.rankFin) : null
+    ).subscribe({
+      next: (res) => { this.ranking = res.data || []; this.rankLoading = false; this.cdr.detectChanges(); this.appRef.tick(); },
+      error: () => { this.rankLoading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar ranking' }); }
     });
   }
 

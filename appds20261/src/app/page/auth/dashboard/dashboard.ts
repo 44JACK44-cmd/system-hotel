@@ -1,6 +1,8 @@
 import { Component, HostListener, inject, ApplicationRef, ChangeDetectorRef, NgZone, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { DatePickerModule } from 'primeng/datepicker';
 import { Subject, forkJoin, of } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 import { HabitacionService } from '../../../observable/habitacion.service';
@@ -24,7 +26,7 @@ import { EstadoActualizacionService } from '../../../services/estado-actualizaci
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, RouterModule, TableModule, TagModule, CardModule, ButtonModule, SkeletonModule, TooltipModule, NuevaReservaComponent, CheckInComponent, CheckOutComponent, PagosModalComponent],
+  imports: [CommonModule, RouterModule, FormsModule, DatePickerModule, TooltipModule, TableModule, TagModule, CardModule, ButtonModule, SkeletonModule, NuevaReservaComponent, CheckInComponent, CheckOutComponent, PagosModalComponent],
   standalone: true,
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
@@ -53,6 +55,71 @@ export class Dashboard implements OnInit, OnDestroy {
   loading = false;
   shortcutsEnabled = true;
 
+  // Operación por fecha
+  fechaOperativa: Date = new Date();
+  calendarioAbierto = false;
+  fechaLabelOperativa = '';
+  private cache = new Map<string, any>();
+
+  get fechaStr(): string { return this.toDateStr(this.fechaOperativa); }
+
+  get esHoy(): boolean {
+    return this.stripTime(this.fechaOperativa).getTime() === this.hoyInicio().getTime();
+  }
+
+  get modoOperativo(): 'hoy' | 'historico' | 'proyeccion' {
+    const f = this.stripTime(this.fechaOperativa).getTime();
+    const h = this.hoyInicio().getTime();
+    if (f === h) return 'hoy';
+    return f < h ? 'historico' : 'proyeccion';
+  }
+
+  get indicadorOperando(): string {
+    if (this.modoOperativo === 'hoy') return 'Hoy';
+    return this.modoOperativo === 'historico' ? 'Hist\u00f3rico' : 'Proyecci\u00f3n';
+  }
+
+  private hoyInicio(): Date {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  private stripTime(d: Date): Date {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    return x;
+  }
+
+  private toDateStr(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private formatFechaLarga(d: Date): string {
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Setiembre','Octubre','Noviembre','Diciembre'];
+    return `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  setFechaHoy() { this.seleccionarFecha(new Date()); }
+  setFechaAyer() { const d = new Date(); d.setDate(d.getDate() - 1); this.seleccionarFecha(d); }
+  setFechaManana() { const d = new Date(); d.setDate(d.getDate() + 1); this.seleccionarFecha(d); }
+
+  seleccionarFecha(f: Date): void {
+    if (!f) return;
+    const nueva = this.stripTime(new Date(f));
+    if (nueva.getTime() === this.stripTime(this.fechaOperativa).getTime()) {
+      this.calendarioAbierto = false;
+      return;
+    }
+    this.fechaOperativa = nueva;
+    this.fechaLabelOperativa = this.formatFechaLarga(this.fechaOperativa);
+    this.calendarioAbierto = false;
+    this.cargarDatos();
+  }
+
   @HostListener('document:keydown', ['$event'])
   handleKeyboard(event: KeyboardEvent): void {
     if (!this.shortcutsEnabled) return;
@@ -74,6 +141,7 @@ export class Dashboard implements OnInit, OnDestroy {
   cajaAbierta = false;
   cajaInfo: any = null;
   ingresosHoy = 0;
+  ingresosAdelantosFecha = 0;
   deudasPendientesCount: number = 0;
   alertResumen = { urgentes: 0, criticas: 0, importantes: 0, avisos: 0, informativas: 0, exitos: 0, total: 0, noLeidas: 0, pendientes: 0, completadasHoy: 0 };
   deudasMontoTotal: number = 0;
@@ -84,6 +152,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private huespedMap = new Map<string, string>();
 
   ngOnInit(): void {
+    this.fechaLabelOperativa = this.formatFechaLarga(this.fechaOperativa);
     this.cargarDatos();
     this.cargarAlertas();
     const refreshAll = () => { this.cargarDatos(); this.cargarAlertas(); };
@@ -152,6 +221,14 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   cargarDatos(): void {
+    if (this.esHoy) {
+      this.cargarDatosHoy();
+    } else {
+      this.cargarDatosFecha(this.fechaStr);
+    }
+  }
+
+  private cargarDatosHoy(): void {
     this.loading = true;
 
     const obsHabitaciones = this.habitacionService.listarActivas().pipe(
@@ -163,6 +240,13 @@ export class Dashboard implements OnInit, OnDestroy {
     const obsHospedajes = this.hospedajeService.listarActivos().pipe(
       catchError(() => of({ data: [] }))
     );
+
+    const cached = this.cache.get(this.fechaStr);
+    if (cached) {
+      this.aplicarCache(cached);
+      this.cargarAuxiliares();
+      return;
+    }
 
     forkJoin({
       habitaciones: obsHabitaciones,
@@ -199,40 +283,126 @@ export class Dashboard implements OnInit, OnDestroy {
           mantenimiento: rooms.filter((r: any) => r.estado === 'MANTENIMIENTO').length
         };
 
+        this.cache.set(this.fechaStr, {
+          pisos: this.pisos, reservasDelDia: this.reservasDelDia,
+          hospedajesActivos: this.hospedajesActivos, habitacionesCount: this.habitacionesCount
+        });
+
         this.loading = false;
 
         this.cdr.detectChanges();
 
         this.appRef.tick();
 
-        const today = new Date();
-        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-        this.cajaService.obtenerActual().pipe(takeUntil(this.destroy$)).subscribe({
-          next: (res) => {
-            this.cajaInfo = res.data;
-            this.cajaAbierta = res.data?.estado === 'ABIERTO';
-            this.cdr.detectChanges();
-          }
-        });
-        if (this.authService.isAdmin()) {
-          this.reporteService.ingresos(todayStr, todayStr).pipe(takeUntil(this.destroy$)).subscribe({
-            next: (res) => { this.ingresosHoy = res.data?.total || 0; this.cdr.detectChanges(); }
-          });
-        }
-        this.hospedajeService.listarDeudasPendientes().subscribe({
-          next: res => {
-            const deudas = (res.data || []) as any[];
-            this.deudasPendientesCount = deudas.length;
-            this.deudasMontoTotal = deudas.reduce((sum, d) => sum + (d.deudaPendiente || 0), 0);
-          },
-          error: () => {}
-        });
-        this.verificarNotificaciones();
+        this.cargarAuxiliares();
       },
       error: () => {
         this.loading = false;
         this.appRef.tick();
       }
     });
+  }
+
+  private aplicarResumenOcupacion(ocupacion: any): void {
+    if (!ocupacion) return;
+    const total = ocupacion.totalHabitaciones ?? this.habitacionesCount.total;
+    const disponibles = ocupacion.disponibles ?? 0;
+    const ocupadas = ocupacion.ocupadas ?? 0;
+    this.habitacionesCount = {
+      total: total || this.habitacionesCount.total,
+      disponibles,
+      ocupadas,
+      limpieza: ocupacion.limpieza ?? 0,
+      mantenimiento: ocupacion.mantenimiento ?? 0
+    };
+  }
+
+  private cargarDatosFecha(fecha: string): void {
+    const cached = this.cache.get(fecha);
+    if (cached) {
+      this.aplicarResumenOcupacion(cached.ocupacion);
+      this.reservasDelDia = cached.reservas || [];
+      this.hospedajesActivos = cached.hospedajes || [];
+      this.ingresosHoy = cached.ingresos || 0;
+      this.aplicarResumenOcupacion(cached.ocupacion);
+      this.cdr.detectChanges();
+      this.appRef.tick();
+      this.cargarAuxiliares();
+      return;
+    }
+
+    this.loading = true;
+    this.reporteService.ocupacion(fecha).pipe(catchError(() => of({ data: null }))).subscribe({
+      next: (res) => {
+        this.aplicarResumenOcupacion(res.data);
+        if (res.data) this.guardarCache(fecha, 'ocupacion', res.data);
+        this.loading = false;
+        this.cdr.detectChanges();
+        this.appRef.tick();
+      },
+      error: () => this.loading = false
+    });
+
+    this.reporteService.ingresos(fecha, fecha).pipe(catchError(() => of({ data: { total: 0 } }))).subscribe({
+      next: (res) => {
+        this.ingresosHoy = res.data?.total || 0;
+        this.ingresosAdelantosFecha = res.data?.totalAdelantos || 0;
+        if (res.data) this.guardarCache(fecha, 'ingresos', res.data?.total || 0);
+        this.cdr.detectChanges();
+      }
+    });
+
+    // Reservas proyectadas para la fecha (ingresos/check-in programados)
+    this.reservaService.listarTodas().pipe(catchError(() => of({ data: [] }))).subscribe({
+      next: (res) => {
+        const todas = (res.data || []) as any[];
+        const target = todas.filter(r =>
+          r.fechaEntrada && this.toDateStr(new Date(r.fechaEntrada)) === fecha && r.estado !== 'CANCELADA' && r.estado !== 'NO_SHOW'
+        );
+        this.reservasDelDia = target;
+        this.guardarCache(fecha, 'reservas', target);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private guardarCache(fecha: string, key: string, value: any): void {
+    const entry = this.cache.get(fecha) || {};
+    entry[key] = value;
+    this.cache.set(fecha, entry);
+  }
+
+  private aplicarCache(cached: any): void {
+    this.pisos = cached.pisos || [];
+    this.reservasDelDia = cached.reservasDelDia || [];
+    this.hospedajesActivos = cached.hospedajesActivos || [];
+    this.habitacionesCount = cached.habitacionesCount || { total: 0, disponibles: 0, ocupadas: 0, limpieza: 0, mantenimiento: 0 };
+    this.loading = false;
+  }
+
+  private cargarAuxiliares(): void {
+    this.cajaService.obtenerActual().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
+        this.cajaInfo = res.data;
+        this.cajaAbierta = res.data?.estado === 'ABIERTO';
+        this.cdr.detectChanges();
+      }
+    });
+    if (this.esHoy && this.authService.isAdmin()) {
+      const hoy = new Date();
+      const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
+      this.reporteService.ingresos(hoyStr, hoyStr).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (res) => { this.ingresosHoy = res.data?.total || 0; this.ingresosAdelantosFecha = res.data?.totalAdelantos || 0; this.cdr.detectChanges(); }
+      });
+    }
+    this.hospedajeService.listarDeudasPendientes().subscribe({
+      next: res => {
+        const deudas = (res.data || []) as any[];
+        this.deudasPendientesCount = deudas.length;
+        this.deudasMontoTotal = deudas.reduce((sum, d) => sum + (d.deudaPendiente || 0), 0);
+      },
+      error: () => {}
+    });
+    this.verificarNotificaciones();
   }
 }

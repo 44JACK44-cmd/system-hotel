@@ -28,7 +28,7 @@
           <p-autocomplete [(ngModel)]="searchTerm" [suggestions]="searchResults"
             (completeMethod)="buscarReserva($event)" (onSelect)="onSelect($event)"
             (focus)="onSearchFocus()"
-            optionLabel="displayLabel" [dropdown]="false" [minQueryLength]="2"
+            optionLabel="displayLabel" [dropdown]="false" [minQueryLength]="1"
             placeholder="Nombre de cliente, DNI, tel\u00E9fono o habitaci\u00F3n..."
             inputStyleClass="premium-input" styleClass="suggest-fullwidth"
             [maxlength]="100" autocomplete="off" />

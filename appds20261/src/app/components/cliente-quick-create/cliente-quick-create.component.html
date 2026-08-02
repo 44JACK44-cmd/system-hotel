@@ -1,6 +1,6 @@
 @if (visible) {
-  <div class="hs-overlay" (click)="cancelar()"></div>
-  <div class="hs-slide-panel" (click)="$event.stopPropagation()">
+  <div class="hs-overlay hs-overlay--animate" (click)="cancelar()"></div>
+  <div class="hs-slide-panel hs-slide-panel--animate" (click)="$event.stopPropagation()">
     <div class="hs-slide-panel__header">
       <div style="display:flex;align-items:center;gap:10px">
         <span class="material-symbols-outlined">person_add</span>

@@ -9,6 +9,9 @@ import { ClienteService } from '../../../observable/cliente.service';
 import { HabitacionService } from '../../../observable/habitacion.service';
 import { IncidenciaService } from '../../../observable/incidencia.service';
 import { ReservaService } from '../../../observable/reserva.service';
+import { PagoService } from '../../../observable/pago.service';
+import { AuthService } from '../../../observable/auth.service';
+import { BoletoService, fmtFecha, moneda } from '../../../services/boleto.service';
 import { CheckOutComponent } from '../../../components/checkout/checkout.component';
 import { ConsumoModalComponent } from '../../../components/consumo-modal/consumo-modal.component';
 import { ClienteQuickCreateComponent } from '../../../components/cliente-quick-create/cliente-quick-create.component';
@@ -20,7 +23,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, switchMap, of, catchError, takeUntil, forkJoin } from 'rxjs';
 import { EstadoActualizacionService } from '../../../services/estado-actualizacion.service';
 
 
@@ -39,6 +42,9 @@ export class HospedajesComponent implements OnInit, OnDestroy {
   private habService = inject(HabitacionService);
   private incidenciaService = inject(IncidenciaService);
   private reservaService = inject(ReservaService);
+  private pagoService = inject(PagoService);
+  private authService = inject(AuthService);
+  private boletoSvc = inject(BoletoService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private cdr = inject(ChangeDetectorRef);
@@ -82,6 +88,7 @@ export class HospedajesComponent implements OnInit, OnDestroy {
 
   directoCliente: any = null;
   clientesFiltrados: any[] = [];
+  buscarClientesLoading = false;
   directoHabitacionId: number | null = null;
   directoNoches = 1;
   directoMontoPago = 0;
@@ -127,6 +134,7 @@ export class HospedajesComponent implements OnInit, OnDestroy {
 
   private filterSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
+  private clienteSearchSubject = new Subject<string>();
 
   ngOnInit(): void {
     this.loadActivos();
@@ -138,6 +146,20 @@ export class HospedajesComponent implements OnInit, OnDestroy {
       debounceTime(200),
       distinctUntilChanged()
     ).subscribe(() => this.applyFilter());
+    this.clienteSearchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(q => this.clienteService.buscar(q).pipe(
+        catchError(() => of({ data: [] as any[] }))
+      )),
+      takeUntil(this.destroy$)
+    ).subscribe(res => {
+      this.buscarClientesLoading = false;
+      this.clientesFiltrados = (res.data || []).map((c: any) => ({
+        ...c,
+        nombreCompleto: c.nombreCompleto || `${c.documento || ''} ${c.email || ''}`.trim() || 'Sin nombre'
+      }));
+    });
     this.estadoActualizacion.on('HABITACION_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.loadHabitaciones();
       this.loadIncidenciasLimpieza();
@@ -480,15 +502,13 @@ export class HospedajesComponent implements OnInit, OnDestroy {
 
   buscarClientes(event: any): void {
     const query = event?.query?.trim() || '';
-    if (!query || query.length < 1) return;
-    this.clienteService.buscar(query).subscribe({
-      next: res => {
-        this.clientesFiltrados = (res.data || []).map((c: any) => ({
-          ...c,
-          nombreCompleto: c.nombreCompleto || `${c.documento || ''} ${c.email || ''}`.trim() || 'Sin nombre'
-        }));
-      }
-    });
+    if (!query) {
+      this.clientesFiltrados = [];
+      this.buscarClientesLoading = false;
+      return;
+    }
+    this.clienteSearchSubject.next(query);
+    this.buscarClientesLoading = true;
   }
 
   onClienteDirectoSelect(event: any): void {
@@ -565,44 +585,103 @@ export class HospedajesComponent implements OnInit, OnDestroy {
     this.showCheckoutPanel = true;
   }
 
-  verFacturaDeHospedaje(h: any): void {
+  imprimirComprobante(h: any): void {
     if (!h) return;
-    const total = (h.totalPagado || 0) + (h.deudaPendiente || 0);
-    const win = window.open('', '_blank');
-    if (!win) return;
-    win.document.write(`<html><head><title>Factura #${h.id}</title><style>body{font-family:monospace;padding:40px;max-width:400px;margin:auto}hr{border:none;border-top:1px dashed #000}h2{text-align:center}.total{font-size:1.3em;font-weight:bold;text-align:right}</style></head><body>`);
-    win.document.write(`<h2>FACTURA</h2><p>Hospedaje #${h.id}</p><hr>`);
-    win.document.write(`<p><strong>Huésped:</strong> ${h.clienteNombre}</p>`);
-    win.document.write(`<p><strong>Habitación:</strong> ${h.habitacionNumero}</p>`);
-    win.document.write(`<p><strong>Ingreso:</strong> ${this.formatFecha(h.fechaIngreso)}</p>`);
-    win.document.write(`<p><strong>Total:</strong> S/ ${total.toFixed(2)}</p>`);
-    win.document.write(`<p><strong>Pagado:</strong> S/ ${(h.totalPagado || 0).toFixed(2)}</p>`);
-    win.document.write(`<p><strong>Deuda:</strong> S/ ${(h.deudaPendiente || 0).toFixed(2)}</p><hr>`);
-    win.document.write('<div style="text-align:center;margin-top:40px;color:#666">Gracias por su preferencia</div>');
-    win.document.write('</body></html>');
-    win.document.close();
-    win.print();
+    const cargas: any[] = [
+      this.pagoService.listarPorHospedaje(h.id),
+      this.consumoService.listarPorHospedaje(h.id),
+    ];
+    if (h.clienteId) {
+      cargas.push(this.clienteService.obtenerPorId(h.clienteId));
+    }
+    if (h.reservaId) {
+      cargas.push(this.reservaService.obtenerPorId(h.reservaId));
+    }
+
+    forkJoin(cargas).subscribe({
+      next: (res: any[]) => {
+        const [pagosRes, consumosRes] = res;
+        let cliente: any = null;
+        if (h.clienteId) cliente = res[2]?.data;
+        this.ensamblarComprobante(h, pagosRes?.data, consumosRes?.data, cliente || null);
+      },
+      error: () => this.ensamblarComprobante(h, [], [], null)
+    });
   }
 
-  verFactura(): void {
-    if (!this.detailHospedaje) return;
-    const h = this.detailHospedaje;
-    const win = window.open('', '_blank');
-    if (!win) return;
-    const total = (h.totalPagado || 0) + (h.deudaPendiente || 0);
-    win.document.write(`<html><head><title>Factura #${h.id}</title><style>body{font-family:monospace;padding:40px;max-width:400px;margin:auto}hr{border:none;border-top:1px dashed #000}h2{text-align:center}.total{font-size:1.3em;font-weight:bold;text-align:right}</style></head><body>`);
-    win.document.write(`<h2>FACTURA</h2><p>Hospedaje #${h.id}</p><hr>`);
-    win.document.write(`<p><strong>Huésped:</strong> ${h.clienteNombre}</p>`);
-    win.document.write(`<p><strong>Habitación:</strong> ${h.habitacionNumero} - ${h.habitacionTipo}</p>`);
-    win.document.write(`<p><strong>Ingreso:</strong> ${this.formatFecha(h.fechaIngreso)}</p>`);
-    win.document.write(`<p><strong>Salida Prog.:</strong> ${this.formatFecha(h.fechaSalidaProgramada)}</p><hr>`);
-    win.document.write(`<p><strong>Total:</strong> S/ ${total.toFixed(2)}</p>`);
-    win.document.write(`<p><strong>Pagado:</strong> S/ ${(h.totalPagado || 0).toFixed(2)}</p>`);
-    win.document.write(`<p><strong>Deuda:</strong> S/ ${(h.deudaPendiente || 0).toFixed(2)}</p><hr>`);
-    win.document.write('<div style="text-align:center;margin-top:40px;color:#666">Gracias por su preferencia</div>');
-    win.document.write('</body></html>');
-    win.document.close();
-    win.print();
+  private ensamblarComprobante(h: any, pagos: any[] | undefined, consumos: any[] | undefined, cliente: any): void {
+    cliente = cliente || {};
+    const noct = h.fechaIngreso ? Math.max(1, Math.round((new Date(h.fechaSalidaProgramada || h.fechaIngreso).getTime() - new Date(h.fechaIngreso).getTime()) / 86400000)) : 0;
+    const precioNoche = Number(h.habitacionPrecio || 0);
+    const subtotalHospedaje = precioNoche * noct;
+    const subtotalConsumos = (consumos || []).reduce((s, c) => s + (c.subtotal || 0), 0);
+    const totalGeneral = subtotalHospedaje + subtotalConsumos;
+    const totalPagado = Number(h.totalPagado || 0);
+    const saldoPendiente = Number(h.deudaPendiente || 0);
+
+    this.boletoSvc.abrirComprobante({
+      tipoDocumento: 'FACTURA',
+      numero: String(h.id).padStart(6, '0'),
+      hospedajeId: h.id,
+      recepcionista: this.authService.getNombreCompleto() || h.usuarioNombre || '',
+      cliente: [
+        { label: 'Nombre completo', value: cliente.nombreCompleto || h.clienteNombre },
+        { label: 'Documento', value: cliente.documento || null },
+        { label: 'Tipo documento', value: cliente.tipoDocumento || null },
+        { label: 'Teléfono', value: cliente.telefono || h.clienteTelefono },
+        { label: 'Correo', value: cliente.email || null },
+        { label: 'Estancias', value: cliente.totalEstancias || null },
+        { label: 'Tipo cliente', value: cliente.lealtad || null },
+      ],
+      hospedaje: [
+        { label: 'Habitación', value: h.habitacionNumero },
+        { label: 'Tipo', value: h.habitacionTipo },
+        { label: 'Piso', value: h.habitacionPiso },
+        { label: 'Check-In', value: fmtFecha(h.fechaIngreso) },
+        { label: 'Check-Out prog.', value: fmtFecha(h.fechaSalidaProgramada) },
+        { label: 'Check-Out real', value: fmtFecha(h.fechaSalidaReal) },
+        { label: 'Noches', value: noct },
+        { label: 'Estado', value: h.estado },
+      ],
+      habitacion: [
+        { label: 'Número', value: h.habitacionNumero },
+        { label: 'Tipo', value: h.habitacionTipo },
+        { label: 'Piso', value: h.habitacionPiso },
+        { label: 'Precio por noche', value: moneda(precioNoche) },
+      ],
+      detalle: [
+        { concepto: 'Alojamiento (' + noct + ' noche(s))', cantidad: noct, precioUnitario: precioNoche, subtotal: subtotalHospedaje },
+      ],
+      consumos: (consumos || []).map(c => ({
+        fecha: c.fechaRegistro,
+        producto: c.descripcion,
+        cantidad: c.cantidad,
+        precio: c.precioUnitario,
+        subtotal: c.subtotal,
+      })),
+      totalConsumos: subtotalConsumos,
+      pagos: (pagos || []).map(p => ({
+        fecha: p.fechaPago,
+        metodo: p.metodo,
+        tipo: p.tipo,
+        monto: p.monto,
+        usuario: p.usuarioNombre,
+      })),
+      resumen: [
+        { label: 'Subtotal hospedaje', value: moneda(subtotalHospedaje) },
+        { label: 'Subtotal consumos', value: moneda(subtotalConsumos) },
+        { label: 'Subtotal extensiones', value: moneda(0) },
+        { label: 'Descuentos', value: moneda(0) },
+        { label: 'Impuestos', value: moneda(0) },
+        { label: 'TOTAL GENERAL', value: moneda(totalGeneral) },
+        { label: 'Total pagado', value: moneda(totalPagado) },
+        { label: 'Saldo pendiente', value: moneda(saldoPendiente) },
+        { label: 'Cambio', value: moneda(0) },
+      ],
+      observaciones: h.observacion,
+      categoria: '',
+      pie: 'Gracias por hospedarse con nosotros. Esperamos verlo nuevamente.'
+    });
   }
 
   getScheduledCheckouts(): number {

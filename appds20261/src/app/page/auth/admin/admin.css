@@ -82,6 +82,72 @@
   color: var(--clr-on-surface-variant);
 }
 
+/* Datepicker operativo */
+.ope-datepicker-wrap { position: relative; }
+
+.ope-calendar-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  min-width: 300px;
+  max-width: 92vw;
+  background: var(--clr-surface-container-lowest);
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.25);
+}
+.ope-quick-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.ope-quick-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--clr-outline-variant);
+  background: var(--clr-surface-container-low);
+  color: var(--clr-on-surface);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.ope-quick-btn:hover { border-color: var(--aura-gold); color: var(--aura-gold); }
+.ope-quick-btn--active { border-color: var(--aura-gold); color: var(--aura-gold); }
+
+.ope-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.ope-indicator .material-symbols-outlined { font-size: 16px; }
+.ope-indicator--hoy { background: color-mix(in srgb, var(--clr-status-available) 14%, transparent); color: var(--clr-status-available); border-color: color-mix(in srgb, var(--clr-status-available) 30%, transparent); }
+.ope-indicator--historico { background: color-mix(in srgb, var(--clr-status-info) 14%, transparent); color: var(--clr-status-info); border-color: color-mix(in srgb, var(--clr-status-info) 30%, transparent); }
+.ope-indicator--proyeccion { background: color-mix(in srgb, var(--aura-gold) 18%, transparent); color: var(--aura-gold-dark); border-color: color-mix(in srgb, var(--aura-gold) 40%, transparent); }
+
+@media (max-width: 480px) {
+  .ope-calendar-pop {
+    position: fixed;
+    top: auto;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+    width: auto;
+  }
+}
+
 /* Grid layout */
 .admin-split {
   display: grid;

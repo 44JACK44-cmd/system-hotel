@@ -67,7 +67,7 @@
             <label class="pag-field-label">Reserva</label>
             <p-autocomplete [(ngModel)]="reservaObj" [suggestions]="reservasBuscadas"
               (completeMethod)="buscarReservas($event)" (onSelect)="onReservaSelect($event)"
-              optionLabel="label" [dropdown]="false" [minQueryLength]="2"
+              optionLabel="label" [dropdown]="false" [minQueryLength]="1" [delay]="300"
               placeholder="Buscar reserva..." inputStyleClass="pag-input" styleClass="w-full"
               [ngModelOptions]="{standalone: true}" />
           </div>
@@ -75,7 +75,7 @@
             <label class="pag-field-label">Hospedaje</label>
             <p-autocomplete [(ngModel)]="hospedajeObj" [suggestions]="hospedajesBuscados"
               (completeMethod)="buscarHospedajes($event)" (onSelect)="onHospedajeSelect($event)"
-              optionLabel="label" [dropdown]="false" [minQueryLength]="2"
+              optionLabel="label" [dropdown]="false" [minQueryLength]="1" [delay]="300"
               placeholder="Buscar hospedaje..." inputStyleClass="pag-input" styleClass="w-full"
               [ngModelOptions]="{standalone: true}" />
           </div>

@@ -8,15 +8,15 @@
 <p-toast />
 <p-confirmdialog />
   <div class="hos-tabs">
-    <button class="hos-tab" [class.hos-tab--active]="activeTab === 'activos'" (click)="activeTab='activos';loadActivos()">
+    <button class="hos-tab hos-tab--activos" [class.hos-tab--active]="activeTab === 'activos'" (click)="activeTab='activos';loadActivos()">
       <span class="material-symbols-outlined">hotel</span>
       Hospedajes Activos
     </button>
-    <button class="hos-tab" [class.hos-tab--active]="activeTab === 'checkin'" (click)="activeTab='checkin'">
+    <button class="hos-tab hos-tab--checkin" [class.hos-tab--active]="activeTab === 'checkin'" (click)="activeTab='checkin'">
       <span class="material-symbols-outlined">key</span>
       Ingreso (Reserva)
     </button>
-    <button class="hos-tab" [class.hos-tab--active]="activeTab === 'directo'" (click)="activeTab='directo'">
+    <button class="hos-tab hos-tab--directo" [class.hos-tab--active]="activeTab === 'directo'" (click)="activeTab='directo'">
       <span class="material-symbols-outlined">add_box</span>
       Ingreso Directo
     </button>
@@ -84,7 +84,7 @@
                     <td data-label="Acciones" class="hos-td-actions">
                       <div class="hos-quick-actions">
                         <button class="hos-action-btn-icon" pTooltip="Cargar Consumo" (click)="selectHospedaje(h.id); $event.stopPropagation()"><span class="material-symbols-outlined">add_shopping_cart</span></button>
-                        <button class="hos-action-btn-icon" pTooltip="Ver Factura" (click)="verFacturaDeHospedaje(h); $event.stopPropagation()"><span class="material-symbols-outlined">description</span></button>
+                        <button class="hos-action-btn-icon" pTooltip="Imprimir Boleto" (click)="verFacturaDeHospedaje(h); $event.stopPropagation()"><span class="material-symbols-outlined">print</span></button>
                         <button class="hos-action-btn-icon" pTooltip="Check-out Anticipado" (click)="showCheckoutFor(h.id); $event.stopPropagation()"><span class="material-symbols-outlined">exit_to_app</span></button>
                       </div>
                     </td>
@@ -209,7 +209,7 @@
             <div style="display:flex;gap:12px;padding:12px 0">
               <button class="premium-btn" style="padding:10px 20px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant);flex:1;justify-content:center" (click)="verFactura()">
                 <span class="material-symbols-outlined">print</span>
-                Factura
+                Boleto
               </button>
               <button class="premium-btn" style="flex:1;justify-content:center;padding:12px" (click)="showCheckout()">
                 <span class="material-symbols-outlined">logout</span>
@@ -243,7 +243,7 @@
       <div style="margin-bottom:20px">
         <div class="premium-field">
           <label>BUSCAR RESERVA</label>
-          <p-autocomplete [(ngModel)]="checkInReservaObj" [suggestions]="reservasBuscadasCheckIn" (completeMethod)="buscarReservasCheckIn($event)" (onSelect)="onReservaCheckInSelect($event)" optionLabel="label" [dropdown]="false" [minQueryLength]="2" placeholder="Buscar reserva por nombre, habitación o ID..." inputStyleClass="premium-input" styleClass="suggest-fullwidth" [ngModelOptions]="{standalone: true}" />
+          <p-autocomplete [(ngModel)]="checkInReservaObj" [suggestions]="reservasBuscadasCheckIn" (completeMethod)="buscarReservasCheckIn($event)" (onSelect)="onReservaCheckInSelect($event)" optionLabel="label" [dropdown]="false" [minQueryLength]="1" placeholder="Buscar reserva por nombre, habitación o ID..." inputStyleClass="premium-input" styleClass="suggest-fullwidth" [ngModelOptions]="{standalone: true}" />
         </div>
       </div>
 
@@ -322,11 +322,10 @@
           <label>Cliente</label>
           <div class="hos-di-cliente-row">
             <div class="hos-di-cliente-row__search">
-              <p-autocomplete [(ngModel)]="directoCliente" [suggestions]="clientesFiltrados" (completeMethod)="buscarClientes($event)" (onSelect)="onClienteDirectoSelect($event)" optionLabel="nombreCompleto" [dropdown]="false" [minQueryLength]="1" [delay]="300" placeholder="Buscar cliente..." inputStyleClass="premium-input" styleClass="suggest-fullwidth" [ngModelOptions]="{standalone:true}" />
+              <p-autocomplete [(ngModel)]="directoCliente" [suggestions]="clientesFiltrados" (completeMethod)="buscarClientes($event)" (onSelect)="onClienteDirectoSelect($event)" optionLabel="nombreCompleto" [dropdown]="false" [minQueryLength]="1" [delay]="0" [loading]="buscarClientesLoading" placeholder="Buscar cliente..." inputStyleClass="premium-input" styleClass="suggest-fullwidth" [ngModelOptions]="{standalone:true}" />
             </div>
             <button class="premium-btn premium-btn--icon" title="Agregar nuevo cliente" aria-label="Agregar nuevo cliente" (click)="abrirQuickCreateCliente()"><span class="material-symbols-outlined">person_add</span></button>
           </div>
-          <app-cliente-quick-create [visible]="showQuickCreateCliente" (clienteCreado)="onClienteCreado($event)" (close)="cerrarQuickCreateCliente()" />
           @if (directoCliente) {
             <div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:6px 10px;background:rgba(76,175,80,0.08);border-radius:8px;border:1px solid rgba(76,175,80,0.15)">
               <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-status-available)">check_circle</span>
@@ -379,6 +378,7 @@
 @if (showCheckoutPanel) {
   <app-checkout [visible]="showCheckoutPanel" [hospedajeId]="selectedHospedajeId" (close)="closeCheckout()" />
 }
+<app-cliente-quick-create [visible]="showQuickCreateCliente" (clienteCreado)="onClienteCreado($event)" (close)="cerrarQuickCreateCliente()" />
 @if (showConsumoModal) {
   <app-consumo-modal
     [visible]="showConsumoModal"

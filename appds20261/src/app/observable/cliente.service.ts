@@ -36,10 +36,11 @@ export class ClienteService {
   }
 
   buscar(termino: string): Observable<GenericResponse<ClienteResponse[]>> {
-    if (typeof termino !== 'string' || termino === '[object Object]') {
-      throw new Error(`buscar() recibió valor inválido: ${String(termino)} (typeof: ${typeof termino})`);
+    const q = (typeof termino === 'string') ? termino.trim() : '';
+    if (!q) {
+      return of(toGenericResponse<ClienteResponse[]>(({ listCliente: [] }), 'listCliente'));
     }
-    return this.http.get<any>(`${this.API}/search?termino=${termino}`).pipe(
+    return this.http.get<any>(`${this.API}/search?termino=${encodeURIComponent(q)}`).pipe(
       map(r => toGenericResponse<ClienteResponse[]>(r, 'listCliente'))
     );
   }

@@ -5,6 +5,101 @@
   gap: 18px;
 }
 
+/* Operación por fecha */
+.ope-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ope-datepicker-wrap { position: relative; }
+.ove-date-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--clr-surface-container-lowest);
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: 12px;
+  color: var(--clr-on-surface);
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.ove-date-btn:hover { border-color: var(--aura-gold); box-shadow: var(--shadow-md); }
+.ove-date-btn > .material-symbols-outlined { color: var(--aura-gold); font-size: 22px; }
+.ove-date-btn__txt { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+.ove-date-btn__label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--clr-on-surface-variant); }
+.ove-date-btn__fecha { font-size: 14px; font-weight: 800; }
+.ove-date-btn__arrow { font-size: 18px; color: var(--clr-on-surface-variant); }
+
+.ope-calendar-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  min-width: 300px;
+  max-width: 340px;
+  padding: 12px;
+  background: var(--clr-surface-container-lowest);
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: 14px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.25);
+}
+.ope-quick-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.ope-quick-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--clr-outline-variant);
+  background: var(--clr-surface-container-low);
+  color: var(--clr-on-surface);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.ope-quick-btn:hover { border-color: var(--aura-gold); color: var(--aura-gold); }
+.ope-quick-btn--active { border-color: var(--aura-gold); color: var(--aura-gold); }
+
+.ope-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.ope-indicator .material-symbols-outlined { font-size: 16px; }
+.ope-indicator__fecha { font-weight: 700; opacity: 0.85; text-transform: none; letter-spacing: 0; }
+.ope-indicator--hoy { background: color-mix(in srgb, var(--clr-status-available) 14%, transparent); color: var(--clr-status-available); border-color: color-mix(in srgb, var(--clr-status-available) 30%, transparent); }
+.ope-indicator--historico { background: color-mix(in srgb, var(--clr-status-info) 14%, transparent); color: var(--clr-status-info); border-color: color-mix(in srgb, var(--clr-status-info) 30%, transparent); }
+.ope-indicator--proyeccion { background: color-mix(in srgb, var(--aura-gold) 18%, transparent); color: var(--aura-gold-dark); border-color: color-mix(in srgb, var(--aura-gold) 40%, transparent); }
+
+@media (max-width: 480px) {
+  .ope-calendar-pop {
+    position: fixed;
+    top: auto;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+    width: auto;
+  }
+  .ope-banner { align-items: stretch; }
+  .ove-date-btn { width: 100%; justify-content: space-between; }
+  .ope-indicator { width: fit-content; }
+}
+
 /* KPI Grid */
 .dash-kpi-grid {
   display: grid;

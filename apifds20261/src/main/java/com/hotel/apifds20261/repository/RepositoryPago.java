@@ -27,12 +27,28 @@ public interface RepositoryPago extends JpaRepository<EntityPago, Long> {
 
     List<EntityPago> findByTipoOrderByFechaPagoDesc(String tipo);
 
-    @Query("SELECT p FROM EntityPago p WHERE " +
-           "(:search IS NULL OR LOWER(p.usuario.nombreCompleto) LIKE LOWER(CONCAT('%',:search,'%')) " +
-           "OR LOWER(p.tipo) LIKE LOWER(CONCAT('%',:search,'%')) " +
-           "OR LOWER(p.metodo) LIKE LOWER(CONCAT('%',:search,'%')) " +
-           "OR LOWER(p.referencia) LIKE LOWER(CONCAT('%',:search,'%')))")
-    Page<EntityPago> findAllPaginated(@Param("search") String search, Pageable pageable);
+    @Query(value = """
+            SELECT p.* FROM pagos p
+            LEFT JOIN usuarios u ON u.id = p.usuario_id
+            WHERE (:search IS NULL OR LOWER(u.nombre_completo) LIKE LOWER(CONCAT('%',:search,'%')) OR LOWER(p.tipo) LIKE LOWER(CONCAT('%',:search,'%')) OR LOWER(p.metodo) LIKE LOWER(CONCAT('%',:search,'%')) OR LOWER(p.referencia) LIKE LOWER(CONCAT('%',:search,'%')))
+            AND (:tipo IS NULL OR p.tipo = :tipo)
+            AND (:metodo IS NULL OR p.metodo = :metodo)
+            AND (:inicio IS NULL OR p.fecha_pago >= :inicio)
+            AND (:fin IS NULL OR p.fecha_pago < :fin)
+            """, nativeQuery = true, countQuery = """
+            SELECT COUNT(*) FROM pagos p
+            LEFT JOIN usuarios u ON u.id = p.usuario_id
+            WHERE (:search IS NULL OR LOWER(u.nombre_completo) LIKE LOWER(CONCAT('%',:search,'%')) OR LOWER(p.tipo) LIKE LOWER(CONCAT('%',:search,'%')) OR LOWER(p.metodo) LIKE LOWER(CONCAT('%',:search,'%')) OR LOWER(p.referencia) LIKE LOWER(CONCAT('%',:search,'%')))
+            AND (:tipo IS NULL OR p.tipo = :tipo)
+            AND (:metodo IS NULL OR p.metodo = :metodo)
+            AND (:inicio IS NULL OR p.fecha_pago >= :inicio)
+            AND (:fin IS NULL OR p.fecha_pago < :fin)
+            """)
+    Page<Object[]> findAllPaginated(@Param("search") String search,
+            @Param("tipo") String tipo,
+            @Param("metodo") String metodo,
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fin") LocalDateTime fin, Pageable pageable);
 
     long countByUsuarioId(Long usuarioId);
 }
