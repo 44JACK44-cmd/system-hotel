@@ -349,9 +349,33 @@
   .room-grid { gap: 8px; }
   .room-section__header { gap: 10px; }
 }
-@media (max-width: 375px) {
+@media (max-width: 480px) {
   .room-grid { grid-template-columns: 1fr; }
   .inc-page { padding: 10px; gap: 12px; }
   .inc-form-card { padding: 12px; }
+
+  /* Reportar Incidencia: full width button + responsive field label */
+  .inc-page .premium-card .premium-btn {
+    width: 100% !important;
+    box-sizing: border-box;
+    padding: 12px 14px !important;
+    font-size: 12px !important;
+    min-height: 40px;
+  }
+  .inc-page .premium-card .premium-btn .material-symbols-outlined {
+    font-size: 16px !important;
+  }
+  .inc-page .premium-card label[for^=""] ,
+  .inc-page .premium-field label {
+    font-size: 11px;
+  }
 }
-.field-error { color: var(--clr-error, #ef4444); font-size: 11px; margin-top: 2px; }
+
+/* Ensure form action buttons never overflow card on narrow screens */
+@media (max-width: 767px) {
+  .inc-table-card button[style*="vertical-align"] {
+    padding: 4px 10px !important;
+    font-size: 10px !important;
+  }
+}
+

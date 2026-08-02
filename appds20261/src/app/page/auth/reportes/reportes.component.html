@@ -348,17 +348,17 @@
           <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-error)">cleaning_services</span>
           Historial de Incidencias
         </h3>
-        <div style="display:flex;gap:6px">
-          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadIncidencias()" [disabled]="incLoading">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button class="premium-btn rep-action-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadIncidencias()" [disabled]="incLoading">
             @if (incLoading) { <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;font-size:14px">sync</span> }
             @if (!incLoading) { <span class="material-symbols-outlined" style="font-size:14px">refresh</span> }
             {{ incLoading ? 'Cargando' : 'Cargar' }}
           </button>
-          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportCSV(historialIncidencias, 'incidencias', ['habitacion','tipo','motivo','fechaInicio','duracionHoras','usuario','estado'])">
+          <button class="premium-btn rep-action-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportCSV(historialIncidencias, 'incidencias', ['habitacion','tipo','motivo','fechaInicio','duracionHoras','usuario','estado'])">
             <span class="material-symbols-outlined" style="font-size:14px">download</span>
             CSV
           </button>
-          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportPDF(historialIncidencias, 'Historial de Incidencias', ['habitacion','tipo','motivo','estado','duracionHoras','usuario'])">
+          <button class="premium-btn rep-action-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportPDF(historialIncidencias, 'Historial de Incidencias', ['habitacion','tipo','motivo','estado','duracionHoras','usuario'])">
             <span class="material-symbols-outlined" style="font-size:14px">picture_as_pdf</span>
             PDF
           </button>
@@ -388,12 +388,12 @@
         <div class="rep-filter-item" style="flex:1;min-width:160px">
           <input class="rep-input" type="text" [(ngModel)]="incFiltroBusqueda" placeholder="Motivo o usuario..." style="max-width:180px" />
         </div>
-        <div style="display:flex;gap:6px">
-          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadIncidencias()">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button class="premium-btn rep-action-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadIncidencias()">
             <span class="material-symbols-outlined" style="font-size:14px">filter_alt</span>
             Aplicar
           </button>
-          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="resetIncFilters()">
+          <button class="premium-btn rep-action-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="resetIncFilters()">
             <span class="material-symbols-outlined" style="font-size:14px">restart_alt</span>
             Limpiar
           </button>
@@ -436,7 +436,7 @@
           <span class="material-symbols-outlined" style="font-size:16px;color:var(--clr-secondary)">leaderboard</span>
           Ranking de Habitaciones
         </h3>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           <div class="rep-filter-item">
             <span class="rep-filter-label">Desde</span>
             <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="rankInicio" dateFormat="dd/mm/yy" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="custom-datepicker" /></div>
@@ -445,11 +445,11 @@
             <span class="rep-filter-label">Hasta</span>
             <div class="rep-datepicker-wrap"><p-datepicker [(ngModel)]="rankFin" dateFormat="dd/mm/yy" [showIcon]="true" [iconDisplay]="'input'" inputStyleClass="rep-date-input rep-date-input--sm" styleClass="custom-datepicker" /></div>
           </div>
-          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadRanking()" [disabled]="rankLoading">
+          <button class="premium-btn rep-action-btn" style="padding:6px 12px;min-width:auto;font-size:11px" (click)="loadRanking()" [disabled]="rankLoading">
             <span class="material-symbols-outlined" style="font-size:14px">refresh</span>
             {{ rankLoading ? 'Cargando' : 'Cargar' }}
           </button>
-          <button class="premium-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportCSV(ranking, 'ranking-habitaciones', ['numero','tipo','vecesReservada','ingresoGenerado'])">
+          <button class="premium-btn rep-action-btn" style="padding:6px 12px;min-width:auto;font-size:11px;background:var(--clr-surface-container-lowest);color:var(--clr-on-surface-variant);box-shadow:none;border:1px solid var(--clr-outline-variant)" (click)="exportCSV(ranking, 'ranking-habitaciones', ['numero','tipo','vecesReservada','ingresoGenerado'])">
             <span class="material-symbols-outlined" style="font-size:14px">download</span>
             CSV
           </button>

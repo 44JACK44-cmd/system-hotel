@@ -80,6 +80,7 @@
   .rep-filter-item{width:100%}
   .rep-date-input{max-width:100%;width:100%}
   .rep-filter-divider{display:none}
+  .rep-action-btn{width:100%;flex:1 1 100%}
 }
 @media(max-width:375px){
   .rep-page{padding:8px;gap:10px}
