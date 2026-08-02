@@ -19,6 +19,16 @@ import java.util.List;
 public class BusinessParametro {
 
     private final RepositoryParametro parametroRepository;
+    private final javax.sql.DataSource dataSource;
+
+    @jakarta.annotation.PostConstruct
+    private void migrarEsquemaImagenes() {
+        try (var conn = dataSource.getConnection(); var st = conn.createStatement()) {
+            st.execute("ALTER TABLE parametros MODIFY COLUMN valor MEDIUMTEXT");
+            st.execute("ALTER TABLE usuarios MODIFY COLUMN foto_perfil MEDIUMTEXT");
+        } catch (Exception ignored) {
+        }
+    }
 
     public List<ParametroResponse> listarTodos() {
         List<EntityParametro> entities = parametroRepository.findAll();
