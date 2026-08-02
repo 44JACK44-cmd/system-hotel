@@ -1,6 +1,8 @@
 import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { HospedajeService } from '../../../observable/hospedaje.service';
 import { ConsumoService, ConsumoResponse } from '../../../observable/consumo.service';
 import { ClienteService } from '../../../observable/cliente.service';
@@ -42,6 +44,10 @@ export class HospedajesComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private appRef = inject(ApplicationRef);
   private estadoActualizacion = inject(EstadoActualizacionService);
+  private router = inject(Router);
+
+  // Cola de acciones pendientes
+  private accionPendiente: { entidadId?: number; accion?: string } | null = null;
 
   activeTab = 'activos';
   loading = false;
@@ -148,6 +154,77 @@ export class HospedajesComponent implements OnInit, OnDestroy {
     });
     this.estadoActualizacion.on('INCIDENCIA_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => this.loadIncidenciasLimpieza());
     this.estadoActualizacion.on('CLIENTE_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => this.loadClientes());
+
+    // Detectar navegación con state usando router.events (más confiable que getCurrentNavigation)
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe((event: NavigationEnd) => {
+      console.log('[ALERTAS] Hospedajes - NavigationEnd detectado');
+      this.procesarStateNavegacion();
+    });
+  }
+
+  private procesarStateNavegacion(): void {
+    const state = window.history.state as { entidadId?: number; accion?: string } | undefined;
+    console.log('[ALERTAS] Hospedajes - State recibido:', state);
+    if (state?.entidadId || state?.accion) {
+      if (this.loading || this.hospedajes.length === 0) {
+        console.log('[ALERTAS] Hospedajes - Datos no listos, encolando acción...');
+        this.accionPendiente = state;
+      } else {
+        console.log('[ALERTAS] Hospedajes - Datos listos, ejecutando acción...');
+        this.ejecutarAccionInicial(state);
+        this.limpiarStateNavegacion();
+      }
+    }
+  }
+
+  private limpiarStateNavegacion(): void {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  private ejecutarAccionInicial(state: { entidadId?: number; accion?: string; entidades?: number[] }): void {
+    console.log('[ALERTAS] Hospedajes - Ejecutando acción:', state);
+    if (!state?.accion) return;
+    switch (state.accion) {
+      case 'checkout':
+      case 'Realizar Check-Out':
+      case 'Abrir Check-Out':
+        if (state.entidadId) {
+          console.log('[ALERTAS] Hospedajes - Llamando showCheckoutFor(', state.entidadId, ')');
+          this.showCheckoutFor(state.entidadId);
+        }
+        break;
+      case 'pago':
+      case 'Registrar Pago':
+        if (state.entidadId) {
+          console.log('[ALERTAS] Hospedajes - Llamando selectHospedaje(', state.entidadId, ') para pago');
+          this.selectHospedaje(state.entidadId);
+        }
+        break;
+      case 'checkout-todos':
+        if (state.entidades?.length) {
+          console.log('[ALERTAS] Hospedajes - checkout-todos, abriendo primero de', state.entidades.length);
+          this.showCheckoutFor(state.entidades[0]);
+          this.messageService.add({ severity: 'info', summary: 'Check-Outs', detail: `${state.entidades.length} hospedaje(s) con check-out pendiente` });
+        }
+        break;
+      case 'checkin-todos':
+        console.log('[ALERTAS] Hospedajes - checkin-todos: redirigiendo a Reservas');
+        this.router.navigate(['/recepcion/reservas'], { state: { accion: 'checkin-todos' } });
+        break;
+      case 'directo':
+        console.log('[ALERTAS] Hospedajes - directo: abriendo pestaña Ingreso Directo');
+        this.activeTab = 'directo';
+        break;
+      default:
+        if (state.entidadId) {
+          console.log('[ALERTAS] Hospedajes - Acción por defecto: selectHospedaje(', state.entidadId, ')');
+          this.selectHospedaje(state.entidadId);
+        }
+    }
+    this.accionPendiente = null;
   }
 
   ngOnDestroy(): void {
@@ -172,8 +249,8 @@ export class HospedajesComponent implements OnInit, OnDestroy {
   loadActivos(): void {
     this.loading = true;
     this.hospedajeService.listarActivos().subscribe({
-      next: res => { this.hospedajes = res.data || []; this.filteredHospedajes = [...this.hospedajes]; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
-      error: () => this.loading = false
+      next: res => { this.hospedajes = res.data || []; this.filteredHospedajes = [...this.hospedajes]; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); this.procesarStateNavegacion(); },
+      error: () => { this.loading = false; this.procesarStateNavegacion(); }
     });
   }
 

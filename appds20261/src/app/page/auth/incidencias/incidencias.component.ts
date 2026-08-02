@@ -1,6 +1,8 @@
 import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IncidenciaService } from '../../../observable/incidencia.service';
 import { HabitacionService } from '../../../observable/habitacion.service';
@@ -28,6 +30,10 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private appRef = inject(ApplicationRef);
   private estadoActualizacion = inject(EstadoActualizacionService);
+  private router = inject(Router);
+
+  // Cola de acciones pendientes
+  private accionPendiente: { entidadId?: number; accion?: string } | null = null;
 
   incidencias: any[] = [];
   habitaciones: any[] = [];
@@ -123,6 +129,93 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
     ).subscribe(() => this.loadIncidencias());
     this.estadoActualizacion.on('HABITACION_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => this.loadHabitaciones());
     this.estadoActualizacion.on('INCIDENCIA_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => this.loadIncidencias());
+
+    // Detectar navegación con state usando router.events
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe((event: NavigationEnd) => {
+      console.log('[ALERTAS] Incidencias - NavigationEnd detectado');
+      this.procesarStateNavegacion();
+    });
+  }
+
+  private procesarStateNavegacion(): void {
+    const state = window.history.state as { entidadId?: number; accion?: string } | undefined;
+    console.log('[ALERTAS] Incidencias - State recibido:', state);
+    if (state?.entidadId || state?.accion) {
+      if (this.loading || this.incidencias.length === 0) {
+        console.log('[ALERTAS] Incidencias - Datos no listos, encolando acción...');
+        this.accionPendiente = state;
+      } else {
+        console.log('[ALERTAS] Incidencias - Datos listos, ejecutando acción...');
+        this.ejecutarAccionInicial(state);
+        this.limpiarStateNavegacion();
+      }
+    }
+  }
+
+  private limpiarStateNavegacion(): void {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  private ejecutarAccionInicial(state: { entidadId?: number; accion?: string }): void {
+    console.log('[ALERTAS] Incidencias - Ejecutando acción:', state);
+    switch (state.accion) {
+      case 'resolver-todas':
+        console.log('[ALERTAS] Incidencias - Finalizando todas las incidencias activas');
+        this.finalizarTodas();
+        break;
+      case 'Resolver incidencia':
+      case 'Ver detalle':
+        if (state.entidadId) {
+          console.log('[ALERTAS] Incidencias - Buscando incidencia:', state.entidadId);
+          const inc = this.incidencias.find(i => i.id === state.entidadId);
+          if (inc) {
+            console.log('[ALERTAS] Incidencias - Incidencia encontrada, llamando finalizar');
+            this.finalizar(inc);
+          } else {
+            console.log('[ALERTAS] Incidencias - Incidencia NO encontrada');
+          }
+        }
+        break;
+      default:
+        console.log('[ALERTAS] Incidencias - Acción no reconocida:', state.accion);
+    }
+    this.accionPendiente = null;
+  }
+
+  private finalizarTodas(): void {
+    const ids = this.incidencias.map(i => i.id).filter((id): id is number => id != null);
+    if (ids.length === 0) {
+      console.log('[ALERTAS] Incidencias - No hay incidencias activas que finalizar');
+      return;
+    }
+    console.log('[ALERTAS] Incidencias - Finalizando', ids.length, 'incidencias');
+    this.loading = true;
+    let done = 0;
+    ids.forEach(id => {
+      this.incidenciaService.finalizar(id).subscribe({
+        next: () => {
+          done++;
+          if (done === ids.length) {
+            this.loading = false;
+            this.messageService.add({ severity: 'success', summary: 'Exito', detail: `${done} incidencia(s) finalizada(s)` });
+            this.loadIncidencias();
+            this.estadoActualizacion.habitacionCambio();
+            this.estadoActualizacion.incidenciaCambio();
+            this.estadoActualizacion.notificacionCambio();
+          }
+        },
+        error: () => {
+          done++;
+          if (done === ids.length) {
+            this.loading = false;
+            this.loadIncidencias();
+          }
+        }
+      });
+    });
   }
 
   ngOnDestroy(): void {
@@ -143,8 +236,8 @@ export class IncidenciasComponent implements OnInit, OnDestroy {
   loadIncidencias(): void {
     this.loading = true;
     this.incidenciaService.listarActivas().subscribe({
-      next: res => { this.incidencias = res.data || []; this.totalRecords = this.incidenciasActivas.length; this.page = 0; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); },
-      error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar incidencias' }); }
+      next: res => { this.incidencias = res.data || []; this.totalRecords = this.incidenciasActivas.length; this.page = 0; this.loading = false; this.cdr.detectChanges(); this.appRef.tick(); this.procesarStateNavegacion(); },
+      error: () => { this.loading = false; this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar incidencias' }); this.procesarStateNavegacion(); }
     });
   }
 

@@ -835,6 +835,27 @@
   display: flex;
   justify-content: flex-end;
 }
+/* Ingreso Directo: fila Cliente (buscador + botón compacto "Agregar nuevo cliente") */
+.hos-di-cliente-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+.hos-di-cliente-row__search {
+  flex: 1;
+  min-width: 0;
+}
+/* Variante compacta del botón premium: solo icono, 40px, mismo alto del input */
+.premium-btn--icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  flex-shrink: 0;
+}
+.premium-btn--icon .material-symbols-outlined {
+  font-size: 20px;
+}
 
 /* Extend row */
 .hos-extend-row {

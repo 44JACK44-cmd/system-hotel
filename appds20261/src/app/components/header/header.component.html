@@ -117,9 +117,45 @@
                   <span>{{ alertasFiltradas.length }} alerta(s)</span>
                 </div>
 
+                <!-- Acciones Masivas -->
+                @if (hayAccionesMasivas()) {
+                  <div class="hs-co-bulk-actions">
+                    @if (hayCheckOutsVencidos()) {
+                      <button type="button" class="hs-bulk-btn hs-bulk-btn--danger" (click)="abrirCheckOuts()">
+                        <span class="material-symbols-outlined">logout</span>
+                        Realizar {{ checkoutCount }} Check-Out{{ checkoutCount > 1 ? 's' : '' }}
+                      </button>
+                    }
+                    @if (hayIncidenciasActivas()) {
+                      <button type="button" class="hs-bulk-btn hs-bulk-btn--warning" (click)="resolverIncidencias()">
+                        <span class="material-symbols-outlined">warning</span>
+                        Resolver {{ incidenciaCount }} incidencia{{ incidenciaCount > 1 ? 's' : '' }}
+                      </button>
+                    }
+                    @if (hayCheckInsPendientes()) {
+                      <button type="button" class="hs-bulk-btn hs-bulk-btn--primary" (click)="abrirCheckIns()">
+                        <span class="material-symbols-outlined">key</span>
+                        {{ checkinCount }} Check-In{{ checkinCount > 1 ? 's' : '' }} pendiente{{ checkinCount > 1 ? 's' : '' }}
+                      </button>
+                    }
+                    @if (hayCajasAbiertas()) {
+                      <button type="button" class="hs-bulk-btn hs-bulk-btn--gold" (click)="cerrarCajas()">
+                        <span class="material-symbols-outlined">account_balance</span>
+                        Cerrar {{ cajaCount }} caja{{ cajaCount > 1 ? 's' : '' }} abierta{{ cajaCount > 1 ? 's' : '' }}
+                      </button>
+                    }
+                    @if (hayInformativasParaDescartar()) {
+                      <button type="button" class="hs-bulk-btn hs-bulk-btn--muted" (click)="descartarInformativas()">
+                        <span class="material-symbols-outlined">visibility_off</span>
+                        Descartar {{ informativasCount }} informativa{{ informativasCount > 1 ? 's' : '' }}
+                      </button>
+                    }
+                  </div>
+                }
+
                 @if (alertasFiltradas.length > 0) {
                   @for (a of alertasFiltradas; track a.grupoId) {
-                    <div class="hs-alert-item" [class]="'hs-alert-item--' + a.tipo" (click)="navegarAlerta(a)">
+                    <div class="hs-alert-item" [class]="'hs-alert-item--' + a.tipo" [class.hs-alert-item--new]="esNuevaAlerta(a.grupoId)" (click)="navegarAlerta(a); marcarAlertaVista(a.grupoId)">
                       <div class="hs-alert-item__bar" [class]="'hs-alert-item__bar--' + a.tipo"></div>
                       <div class="hs-alert-item__icon"><span class="material-symbols-outlined">{{ a.icono }}</span></div>
                       <div class="hs-alert-item__content">

@@ -1,6 +1,8 @@
 import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { PagoService } from '../../../observable/pago.service';
 import { EgresoService } from '../../../observable/egreso.service';
 import { CajaService } from '../../../observable/caja.service';
@@ -36,6 +38,10 @@ export class PagosComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private appRef = inject(ApplicationRef);
   private estadoActualizacion = inject(EstadoActualizacionService);
+  private router = inject(Router);
+
+  // Cola de acciones pendientes
+  private accionPendiente: { entidadId?: number; accion?: string } | null = null;
 
   Math = Math;
   pagos: any[] = [];
@@ -113,6 +119,60 @@ export class PagosComponent implements OnInit, OnDestroy {
       this.loadAllPagos();
       this.loadPagos();
     });
+
+    // Detectar navegación con state usando router.events
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe((event: NavigationEnd) => {
+      console.log('[ALERTAS] Pagos - NavigationEnd detectado');
+      this.procesarStateNavegacion();
+    });
+  }
+
+  private procesarStateNavegacion(): void {
+    const state = window.history.state as { entidadId?: number; accion?: string } | undefined;
+    console.log('[ALERTAS] Pagos - State recibido:', state);
+    if (state?.entidadId || state?.accion) {
+      if (this.loading || this.cajaActual === null) {
+        console.log('[ALERTAS] Pagos - Datos no listos, encolando acción...');
+        this.accionPendiente = state;
+      } else {
+        console.log('[ALERTAS] Pagos - Datos listos, ejecutando acción...');
+        this.ejecutarAccionInicial(state);
+        this.limpiarStateNavegacion();
+      }
+    }
+  }
+
+  private limpiarStateNavegacion(): void {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  private ejecutarAccionInicial(state: { entidadId?: number; accion?: string }): void {
+    console.log('[ALERTAS] Pagos - Ejecutando acción:', state);
+    switch (state.accion) {
+      case 'cerrar-cajas':
+      case 'Cerrar Caja':
+        if (this.cajaActual?.estado === 'ABIERTO') {
+          console.log('[ALERTAS] Pagos - Abriendo modal cierre de caja');
+          this.showCierreModal = true;
+        }
+        break;
+      case 'pago':
+      case 'Registrar Pago':
+        if (state.entidadId) {
+          console.log('[ALERTAS] Pagos - Cargando deuda para pago:', state.entidadId);
+          this.cargarDeudaParaPago(state.entidadId);
+        }
+        break;
+      case 'cerrar-cajas-todos':
+        console.log('[ALERTAS] Pagos - cerrar-cajas-todos: no implementado aún');
+        break;
+      default:
+        console.log('[ALERTAS] Pagos - Acción no reconocida:', state.accion);
+    }
+    this.accionPendiente = null;
   }
 
   ngOnDestroy(): void {
@@ -230,7 +290,18 @@ export class PagosComponent implements OnInit, OnDestroy {
 
   loadCaja(): void {
     this.cajaService.obtenerActual().subscribe({
-      next: res => { this.cajaActual = res.data; this.cdr.detectChanges(); this.appRef.tick(); }
+      next: res => { this.cajaActual = res.data; this.cdr.detectChanges(); this.appRef.tick(); this.procesarStateNavegacion(); }
+    });
+  }
+
+  private cargarDeudaParaPago(hospedajeId: number): void {
+    this.hospedajeService.obtenerPorId(hospedajeId).subscribe({
+      next: res => {
+        const h = res.data;
+        if (h && h.deudaPendiente && h.deudaPendiente > 0) {
+          this.abrirCobrar(h);
+        }
+      }
     });
   }
 

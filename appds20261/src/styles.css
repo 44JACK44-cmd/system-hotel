@@ -990,6 +990,52 @@ button, a, .hs-clickable {
 .suggest-fullwidth .p-autocomplete-overlay { min-width: 300px; }
 .suggest-fullwidth .p-autocomplete-item { padding: 8px 12px; }
 
+/* ============================================================
+   INPUTS CON ICONO — espaciado reutilizable (global)
+   Garantiza que los iconos NUNCA se superpongan a placeholder,
+   texto, labels o valores en móvil, tablet y zoom.
+   ============================================================ */
+
+/* DatePicker con icono DENTRO del input ([iconDisplay]="input"):
+   reserva espacio a la derecha para el icono de calendario. */
+.p-datepicker:has(.p-datepicker-input-icon-container) .p-datepicker-input,
+.p-datepicker:has(.p-datepicker-input-icon-container) .p-inputtext {
+  padding-right: 2.75rem !important;
+}
+
+/* DatePicker con icono en botón ([iconDisplay]="button"): */
+.p-datepicker:has(.p-datepicker-dropdown) .p-datepicker-input,
+.p-datepicker:has(.p-datepicker-dropdown) .p-inputtext {
+  padding-right: 2.75rem !important;
+}
+
+/* Controles PrimeNG: nunca desbordar su contenedor en pantallas pequeñas */
+.p-select,
+.p-autocomplete,
+.p-inputnumber,
+.p-datepicker,
+.p-iconfield {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.p-select-label,
+.p-autocomplete-input,
+.p-inputnumber-input,
+.p-datepicker-input {
+  min-width: 0;
+  box-sizing: border-box;
+}
+.p-inputnumber { width: 100%; }
+
+/* Los inputs que reservan espacio a la izquierda para iconos SIEMPRE
+   respetan ese espacio (sin importar el padding base). */
+.hs-input-icon .premium-input,
+.hs-input-icon .hs-input,
+.suggest-fullwidth .p-autocomplete-input {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
 /* ===== Calendar / DatePicker Premium ===== */
 .p-datepicker-panel {
   animation: hs-scale-in 0.15s var(--ease-out);
@@ -1652,7 +1698,14 @@ div[style*="overflow-y: auto"] table thead th {
   .premium-card { padding: 12px !important; border-radius: 12px !important; }
   .premium-btn { padding: 10px 16px !important; font-size: 13px !important; min-height: 40px !important; }
   .premium-btn .material-symbols-outlined { font-size: 16px !important; }
-  .premium-input { font-size: 13px !important; padding: 8px 12px !important; }
+  /* IMPORTANTE: solo reducimos el padding VERTICAL.
+     El padding horizontal NO se toca: reserva el espacio de los iconos
+     (padding-left: 32/36/56px) para que nunca invadan el texto en móvil/zoom. */
+  .premium-input {
+    font-size: 13px !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
   .premium-kpi-value { font-size: 20px !important; }
   .premium-field { gap: 4px !important; }
   .premium-field label { font-size: 10px !important; }

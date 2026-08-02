@@ -1,6 +1,6 @@
 import { Component, HostListener, inject, ApplicationRef, ChangeDetectorRef, NgZone, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Subject, forkJoin, of } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 import { HabitacionService } from '../../../observable/habitacion.service';
@@ -24,7 +24,7 @@ import { EstadoActualizacionService } from '../../../services/estado-actualizaci
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, TableModule, TagModule, CardModule, ButtonModule, SkeletonModule, TooltipModule, NuevaReservaComponent, CheckInComponent, CheckOutComponent, PagosModalComponent],
+  imports: [CommonModule, RouterModule, TableModule, TagModule, CardModule, ButtonModule, SkeletonModule, TooltipModule, NuevaReservaComponent, CheckInComponent, CheckOutComponent, PagosModalComponent],
   standalone: true,
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
@@ -110,6 +110,10 @@ export class Dashboard implements OnInit, OnDestroy {
 
   irALimpieza(): void {
     this.router.navigate(['/recepcion/incidencias']);
+  }
+
+  irAIngresoDirecto(): void {
+    this.router.navigate(['/recepcion/hospedajes'], { state: { accion: 'directo' } });
   }
 
   private verificarNotificaciones(): void {

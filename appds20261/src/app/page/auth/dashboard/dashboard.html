@@ -1,26 +1,48 @@
 <div class="dash-page">
 
-  <!-- Quick Action Bar -->
+  <!-- Accesos Rápidos -->
   <div class="dash-actions-bar">
-    <button class="dash-action-btn" (click)="showNuevaReserva = true" pTooltip="Nueva Reserva" tooltipPosition="bottom">
-      <span class="material-symbols-outlined">calendar_month</span>
-      <span>Nueva Reserva</span>
+    <button class="dash-action-btn dash-action-btn--nueva" (click)="showNuevaReserva = true" pTooltip="Nueva Reserva" tooltipPosition="bottom">
+      <span class="dash-action-icon"><span class="material-symbols-outlined">calendar_month</span></span>
+      <span class="dash-action-text">
+        <span class="dash-action-title">Nueva Reserva</span>
+        <span class="dash-action-sub">Reservar con anticipación</span>
+      </span>
     </button>
-    <button class="dash-action-btn dash-action-btn--primary" (click)="showCheckIn = true" pTooltip="Check-In Rápido" tooltipPosition="bottom">
-      <span class="material-symbols-outlined">key</span>
-      <span>Check-In</span>
+    <button class="dash-action-btn dash-action-btn--ingreso" (click)="showCheckIn = true" pTooltip="Registrar llegada de un huésped" tooltipPosition="bottom">
+      <span class="dash-action-icon"><i class="pi pi-sign-in"></i></span>
+      <span class="dash-action-text">
+        <span class="dash-action-title">Registrar Ingreso</span>
+        <span class="dash-action-sub">Llegada de un huésped</span>
+      </span>
     </button>
-    <button class="dash-action-btn dash-action-btn--danger" (click)="showCheckOut = true; selectedCheckOutId = null" pTooltip="Check-out" tooltipPosition="bottom">
-      <span class="material-symbols-outlined">logout</span>
-      <span>Check-Out</span>
+    <button class="dash-action-btn dash-action-btn--salida" (click)="showCheckOut = true; selectedCheckOutId = null" pTooltip="Finalizar hospedaje" tooltipPosition="bottom">
+      <span class="dash-action-icon"><i class="pi pi-sign-out"></i></span>
+      <span class="dash-action-text">
+        <span class="dash-action-title">Registrar Salida</span>
+        <span class="dash-action-sub">Finalizar hospedaje</span>
+      </span>
     </button>
-    <button class="dash-action-btn" (click)="showPagos = true" pTooltip="Pagos" tooltipPosition="bottom">
-      <i class="pi pi-credit-card"></i>
-      <span>Caja / Pagos</span>
+    <button class="dash-action-btn dash-action-btn--caja" (click)="showPagos = true" pTooltip="Pagos y movimientos" tooltipPosition="bottom">
+      <span class="dash-action-icon"><i class="pi pi-wallet"></i></span>
+      <span class="dash-action-text">
+        <span class="dash-action-title">Caja</span>
+        <span class="dash-action-sub">Pagos y movimientos</span>
+      </span>
     </button>
-    <button class="dash-action-btn" (click)="irALimpieza()" pTooltip="Limpieza" tooltipPosition="bottom">
-      <span class="material-symbols-outlined">cleaning_services</span>
-      <span>Limpieza</span>
+    <button class="dash-action-btn dash-action-btn--directo" (click)="irAIngresoDirecto()" pTooltip="Registrar sin reserva" tooltipPosition="bottom">
+      <span class="dash-action-icon"><i class="pi pi-user-plus"></i></span>
+      <span class="dash-action-text">
+        <span class="dash-action-title">Ingreso Directo</span>
+        <span class="dash-action-sub">Registrar sin reserva</span>
+      </span>
+    </button>
+    <button class="dash-action-btn dash-action-btn--incidencias" (click)="irALimpieza()" pTooltip="Reportar o resolver" tooltipPosition="bottom">
+      <span class="dash-action-icon"><i class="pi pi-exclamation-triangle"></i></span>
+      <span class="dash-action-text">
+        <span class="dash-action-title">Incidencias</span>
+        <span class="dash-action-sub">Reportar o resolver</span>
+      </span>
     </button>
   </div>
 
@@ -78,6 +100,34 @@
       <div class="dash-kpi-sub">{{ deudasMontoTotal | number:'1.2-2' }} S/ pendientes</div>
     </div>
   </div>
+
+  <!-- Alerta Crítica - Tarjeta Superior -->
+  @if (alertResumen.urgentes > 0 || alertResumen.criticas > 0) {
+    <section class="premium-card dash-critical-alert">
+      <div class="dash-critical-icon">
+        <span class="material-symbols-outlined">priority_high</span>
+      </div>
+      <div class="dash-critical-content">
+        @if (alertResumen.urgentes > 0) {
+          <div class="dash-critical-item">
+            <span class="material-symbols-outlined">report</span>
+            <span>{{ alertResumen.urgentes }} Check-Out vencido{{ alertResumen.urgentes > 1 ? 's' : '' }}</span>
+          </div>
+        }
+        @if (alertResumen.criticas > 0) {
+          <div class="dash-critical-item">
+            <span class="material-symbols-outlined">warning</span>
+            <span>{{ alertResumen.criticas }} Incidencia{{ alertResumen.criticas > 1 ? 's' : '' }} activa{{ alertResumen.criticas > 1 ? 's' : '' }}</span>
+          </div>
+        }
+        <span class="dash-critical-sub">Requieren atención inmediata</span>
+      </div>
+      <button class="dash-critical-btn" (click)="abrirAlertas('URGENTE')" pTooltip="Resolver ahora" tooltipPosition="right">
+        <span class="material-symbols-outlined">arrow_forward</span>
+        Resolver ahora
+      </button>
+    </section>
+  }
 
   <!-- Centro Operativo -->
   <section class="premium-card dash-centro-operativo">

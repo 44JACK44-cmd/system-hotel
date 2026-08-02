@@ -320,9 +320,11 @@
       <div class="premium-grid-2" style="margin-bottom:16px">
         <div class="premium-field">
           <label>Cliente</label>
-          <div style="display:flex;gap:8px;align-items:flex-start">
-            <p-autocomplete [(ngModel)]="directoCliente" [suggestions]="clientesFiltrados" (completeMethod)="buscarClientes($event)" (onSelect)="onClienteDirectoSelect($event)" optionLabel="nombreCompleto" [dropdown]="false" [minQueryLength]="1" [delay]="300" placeholder="Buscar cliente..." inputStyleClass="premium-input" styleClass="suggest-fullwidth" [ngModelOptions]="{standalone:true}" />
-            <button class="premium-btn" style="padding:10px 14px;flex-shrink:0" (click)="abrirQuickCreateCliente()"><span class="material-symbols-outlined" style="font-size:18px">person_add</span></button>
+          <div class="hos-di-cliente-row">
+            <div class="hos-di-cliente-row__search">
+              <p-autocomplete [(ngModel)]="directoCliente" [suggestions]="clientesFiltrados" (completeMethod)="buscarClientes($event)" (onSelect)="onClienteDirectoSelect($event)" optionLabel="nombreCompleto" [dropdown]="false" [minQueryLength]="1" [delay]="300" placeholder="Buscar cliente..." inputStyleClass="premium-input" styleClass="suggest-fullwidth" [ngModelOptions]="{standalone:true}" />
+            </div>
+            <button class="premium-btn premium-btn--icon" title="Agregar nuevo cliente" aria-label="Agregar nuevo cliente" (click)="abrirQuickCreateCliente()"><span class="material-symbols-outlined">person_add</span></button>
           </div>
           <app-cliente-quick-create [visible]="showQuickCreateCliente" (clienteCreado)="onClienteCreado($event)" (close)="cerrarQuickCreateCliente()" />
           @if (directoCliente) {
@@ -374,10 +376,14 @@
     </div>
   }
 </div>
-<app-checkout [visible]="showCheckoutPanel" [hospedajeId]="selectedHospedajeId" (close)="closeCheckout()" />
-<app-consumo-modal
-  [visible]="showConsumoModal"
-  [hospedajeId]="selectedHospedajeId"
-  [editConsumo]="editConsumo"
-  (close)="showConsumoModal = false"
-  (saved)="onConsumoSaved()" />
+@if (showCheckoutPanel) {
+  <app-checkout [visible]="showCheckoutPanel" [hospedajeId]="selectedHospedajeId" (close)="closeCheckout()" />
+}
+@if (showConsumoModal) {
+  <app-consumo-modal
+    [visible]="showConsumoModal"
+    [hospedajeId]="selectedHospedajeId"
+    [editConsumo]="editConsumo"
+    (close)="showConsumoModal = false"
+    (saved)="onConsumoSaved()" />
+}

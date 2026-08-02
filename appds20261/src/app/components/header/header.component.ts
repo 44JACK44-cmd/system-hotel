@@ -62,6 +62,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   activeVista: VistaAlerta = 'alertas';
   alertaConfig: AlertaConfig | null = null;
 
+  // Track nuevas alertas para animación
+  private nuevosGruposIds = new Set<string>();
+
   filtroTipo: 'TODOS' | 'URGENTE' | 'IMPORTANTE' | 'EXITO' = 'TODOS';
   filtroCategoria = 'TODAS';
   filtroLectura: 'TODAS' | 'NOLEIDAS' | 'LEIDAS' = 'TODAS';
@@ -140,6 +143,32 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   get hayAlertasUrgentes(): boolean {
     return this.alertList.some(a => a.tipo === 'URGENTE');
+  }
+
+  // Helpers para acciones masivas
+  get checkoutCount(): number {
+    return this.alertList.filter(a => a.categoria === 'CHECKOUT' && (a.tipo === 'URGENTE' || a.tipo === 'AVISO')).length;
+  }
+  get incidenciaCount(): number {
+    return this.alertList.filter(a => a.categoria === 'INCIDENCIA').length;
+  }
+  get checkinCount(): number {
+    return this.alertList.filter(a => a.categoria === 'CHECKIN').reduce((sum, a) => sum + (a.cantidad || 1), 0);
+  }
+  get cajaCount(): number {
+    return this.alertList.filter(a => a.categoria === 'CAJA').length;
+  }
+  get informativasCount(): number {
+    return this.alertList.filter(a => a.tipo === 'INFORMATIVA' || a.tipo === 'EXITO' || a.tipo === 'AVISO').length;
+  }
+
+  hayCheckOutsVencidos(): boolean { return this.checkoutCount > 0; }
+  hayIncidenciasActivas(): boolean { return this.incidenciaCount > 0; }
+  hayCheckInsPendientes(): boolean { return this.checkinCount > 0; }
+  hayCajasAbiertas(): boolean { return this.cajaCount > 0; }
+  hayInformativasParaDescartar(): boolean { return this.informativasCount > 0; }
+  hayAccionesMasivas(): boolean {
+    return this.hayCheckOutsVencidos() || this.hayIncidenciasActivas() || this.hayCheckInsPendientes() || this.hayCajasAbiertas() || this.hayInformativasParaDescartar();
   }
 
   get alertasCriticas(): Alerta[] { return this.alertList.filter(a => a.tipo === 'CRITICA'); }
@@ -254,6 +283,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.alertaService.getAlertas().subscribe({
       next: alertas => {
         const prevAlta = this.alertList.filter(a => (a.tipo === 'URGENTE' || a.tipo === 'CRITICA') && !a.leida).length;
+        
+        // Detectar alertas nuevas
+        const prevIds = new Set(this.alertList.map(a => a.grupoId));
+        const nuevas = alertas.filter(a => !prevIds.has(a.grupoId));
+        nuevas.forEach(a => this.nuevosGruposIds.add(a.grupoId));
+        
         this.alertList = alertas;
         const newAlta = alertas.filter(a => (a.tipo === 'URGENTE' || a.tipo === 'CRITICA') && !a.leida).length;
         if (newAlta > prevAlta && this.alertaConfig?.sonidoActivado !== false) {
@@ -261,6 +296,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  esNuevaAlerta(grupoId: string): boolean {
+    return this.nuevosGruposIds.has(grupoId);
+  }
+
+  marcarAlertaVista(grupoId: string): void {
+    this.nuevosGruposIds.delete(grupoId);
   }
 
   private cargarActividad(): void {
@@ -331,6 +374,43 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Acciones masivas
+  descartarInformativas(): void {
+    this.alertaService.marcarTodasLeidas().subscribe({
+      next: () => {
+        this.alertList = this.alertList.map(a => {
+          if (a.tipo === 'INFORMATIVA' || a.tipo === 'EXITO' || a.tipo === 'AVISO') {
+            return { ...a, leida: true };
+          }
+          return a;
+        });
+      }
+    });
+  }
+
+  resolverIncidencias(): void {
+    this.notifOpen = false;
+    this.router.navigate(['/recepcion/incidencias'], { state: { accion: 'resolver-todas' } });
+  }
+
+  abrirCheckIns(): void {
+    this.notifOpen = false;
+    this.router.navigate(['/recepcion/reservas'], { state: { accion: 'checkin-todos', cantidad: this.checkinCount } });
+  }
+
+  abrirCheckOuts(): void {
+    this.notifOpen = false;
+    const ids = this.alertList
+      .filter(a => a.categoria === 'CHECKOUT' && (a.tipo === 'URGENTE' || a.tipo === 'AVISO') && a.entidadId)
+      .map(a => a.entidadId);
+    this.router.navigate(['/recepcion/hospedajes'], { state: { accion: 'checkout-todos', entidades: ids } });
+  }
+
+  cerrarCajas(): void {
+    this.notifOpen = false;
+    this.router.navigate(['/recepcion/pagos'], { state: { accion: 'cerrar-cajas' } });
+  }
+
   irAIncidencia(n: any): void {
     if (n.entidadTipo === 'INCIDENCIA' && n.entidadId) {
       this.marcarLeida(n);
@@ -340,34 +420,42 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   navegarAlerta(a: Alerta): void {
+    console.log('[ALERTAS] Click recibido en navegarAlerta:', { grupoId: a.grupoId, entidadTipo: a.entidadTipo, entidadId: a.entidadId, accion: a.accion });
     this.marcarAlertaLeida(a);
     this.notifOpen = false;
     if (a.entidadTipo && a.entidadId) {
-      this.navegarEntidad(a.entidadTipo, a.entidadId);
+      console.log('[ALERTAS] Navegando con entidad (alerta):', a.entidadTipo, a.entidadId, a.accion);
+      this.navegarEntidad(a.entidadTipo, a.entidadId, a.accion);
     } else if (a.accion) {
+      console.log('[ALERTAS] Navegando simple (alerta):', a.accion);
       this.router.navigate([a.accion]);
     }
   }
 
   ejecutarAccion(a: Alerta, accion: AlertaAccion): void {
+    console.log('[ALERTAS] Click recibido en ejecutarAccion:', { alerta: a.grupoId, accion: accion.label });
     if (!a.leida) this.marcarAlertaLeida(a);
     this.notifOpen = false;
     if (accion.entidadTipo) {
-      this.navegarEntidad(accion.entidadTipo, accion.entidadId);
+      console.log('[ALERTAS] Navegando con entidad:', accion.entidadTipo, accion.entidadId, accion.label);
+      this.navegarEntidad(accion.entidadTipo, accion.entidadId, accion.label);
     } else if (accion.accion) {
+      console.log('[ALERTAS] Navegando simple:', accion.accion);
       this.router.navigate([accion.accion]);
     }
   }
 
-  private navegarEntidad(tipo: string, id: number | null): void {
+  private navegarEntidad(tipo: string, id: number | null, accionExtra?: string): void {
+    const navigationExtras = id ? { state: { entidadId: id, accion: accionExtra } } : {};
+    console.log('[ALERTAS] navegarEntidad:', { tipo, id, accionExtra, navigationExtras });
     switch (tipo) {
-      case 'HOSPEDAJE': this.router.navigate(['/recepcion/hospedajes']); break;
-      case 'RESERVA': this.router.navigate(['/recepcion/reservas']); break;
-      case 'HABITACION': this.router.navigate([this.authService.isAdmin() ? '/admin/habitaciones' : '/recepcion/hospedajes']); break;
-      case 'INCIDENCIA': this.router.navigate(['/recepcion/incidencias']); break;
-      case 'CAJA': this.router.navigate(['/recepcion/pagos']); break;
-      case 'CLIENTE': this.router.navigate(['/recepcion/clientes']); break;
-      case 'PAGO': this.router.navigate(['/recepcion/pagos']); break;
+      case 'HOSPEDAJE': this.router.navigate(['/recepcion/hospedajes'], navigationExtras); break;
+      case 'RESERVA': this.router.navigate(['/recepcion/reservas'], navigationExtras); break;
+      case 'HABITACION': this.router.navigate([this.authService.isAdmin() ? '/admin/habitaciones' : '/recepcion/hospedajes'], navigationExtras); break;
+      case 'INCIDENCIA': this.router.navigate(['/recepcion/incidencias'], navigationExtras); break;
+      case 'CAJA': this.router.navigate(['/recepcion/pagos'], navigationExtras); break;
+      case 'CLIENTE': this.router.navigate(['/recepcion/clientes'], navigationExtras); break;
+      case 'PAGO': this.router.navigate(['/recepcion/pagos'], navigationExtras); break;
     }
   }
 

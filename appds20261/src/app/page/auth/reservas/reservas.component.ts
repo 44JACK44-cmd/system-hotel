@@ -1,7 +1,7 @@
 import { Component, inject, ChangeDetectorRef, ApplicationRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { ReservaService } from '../../../observable/reserva.service';
 import { ClienteService } from '../../../observable/cliente.service';
 import { HabitacionService } from '../../../observable/habitacion.service';
@@ -15,7 +15,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { PaginatorModule } from 'primeng/paginator';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil, filter } from 'rxjs';
 import { PageResponse } from '../../../shared/models';
 import { LayoutStateService } from '../../../services/layout-state.service';
 import { EstadoActualizacionService } from '../../../services/estado-actualizacion.service';
@@ -41,6 +41,9 @@ export class ReservasComponent implements OnInit, OnDestroy {
   private appRef = inject(ApplicationRef);
   private route = inject(ActivatedRoute);
   private estadoActualizacion = inject(EstadoActualizacionService);
+  private router = inject(Router);
+
+  private accionPendiente: { entidadId?: number; accion?: string; cantidad?: number } | null = null;
 
   reservas: any[] = [];
   searchTerm = '';
@@ -117,6 +120,47 @@ export class ReservasComponent implements OnInit, OnDestroy {
     });
     this.estadoActualizacion.on('RESERVA_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => this.loadReservas());
     this.estadoActualizacion.on('HABITACION_CAMBIO').pipe(takeUntil(this.destroy$)).subscribe(() => this.loadHabitaciones());
+
+    // Detectar navegación con state usando router.events
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.procesarStateNavegacion());
+  }
+
+  private procesarStateNavegacion(): void {
+    const state = window.history.state as { entidadId?: number; accion?: string; cantidad?: number } | undefined;
+    console.log('[ALERTAS] Reservas - State recibido:', state);
+    if (state?.accion) {
+      if (this.loading || this.reservas.length === 0) {
+        console.log('[ALERTAS] Reservas - Datos no listos, encolando acción...');
+        this.accionPendiente = state;
+      } else {
+        console.log('[ALERTAS] Reservas - Datos listos, ejecutando acción...');
+        this.ejecutarAccionInicial(state);
+        this.limpiarStateNavegacion();
+      }
+    }
+  }
+
+  private ejecutarAccionInicial(state: { entidadId?: number; accion?: string; cantidad?: number }): void {
+    console.log('[ALERTAS] Reservas - Ejecutando acción:', state);
+    switch (state.accion) {
+      case 'checkin-todos':
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Check-Ins',
+          detail: `${state.cantidad || 1} check-in(s) pendiente(s). Filtre por fecha de entrada de hoy.`
+        });
+        break;
+      default:
+        console.log('[ALERTAS] Reservas - Acción no reconocida:', state.accion);
+    }
+    this.accionPendiente = null;
+  }
+
+  private limpiarStateNavegacion(): void {
+    window.history.replaceState({}, '', window.location.pathname);
   }
 
   ngOnDestroy(): void {
@@ -134,8 +178,9 @@ export class ReservasComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.cdr.detectChanges();
         this.appRef.tick();
+        this.procesarStateNavegacion();
       },
-      error: () => this.loading = false
+      error: () => { this.loading = false; this.procesarStateNavegacion(); }
     });
   }
 
